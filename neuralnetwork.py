@@ -1,23 +1,27 @@
 import numpy
-
 import logging
-
+import math
 
 
 class NeuralNetwork:
 
     def __init__(self, input_size=4, hidden_layers=(4), output_size=2):
-        self.input_layer = numpy.array([Node(0), Node(0), Node(0), Node(0), Node(0)])
-        self.input_layer[4].intensity = 1
+        self.input_layer = numpy.array([Node(0), Node(0), Node(0), Node(0)])
 
-        self.hidden_layer = numpy.array([Node(1,5,weights=[1,0,0,0,0],bias=0),
-                                         Node(1,5,weights=[0,1,0,0,0],bias=0),
-                                         Node(1,5,weights=[0,0,1,0,0],bias=0),
-                                         Node(1,5,weights=[0,0,0,1,0],bias=0),
-                                         Node(1,5,weights=[0,0,0,0,1],bias=0)])
+        self.hidden_layers = list()
+        self.hidden_layers.append(numpy.array([Node(1,4,weights=[1,0,0,0],bias=0),
+                                               Node(1,4,weights=[0,1,0,0],bias=0),
+                                               Node(1,4,weights=[0,0,1,0],bias=0),
+                                               Node(1,4,weights=[0,0,0,1],bias=0)])
+                                  )
+        self.hidden_layers.append(numpy.array([Node(2,4,weights=[1,0,0,0],bias=0),
+                                               Node(2,4,weights=[0,1,0,0],bias=0),
+                                               Node(2,4,weights=[0,0,1,0],bias=0),
+                                               Node(2,4,weights=[0,0,0,1],bias=0)])
+                                  )
 
-        self.output_layer = numpy.array([Node(2,4,weights=[-1,1,1,-1],bias=-1),
-                                         Node(2,4,weights=[1,-1,-1,1],bias=-1)])
+        self.output_layer = numpy.array([Node(3,4,weights=[-1,1,1,-1],bias=-1),
+                                         Node(3,4,weights=[1,-1,-1,1],bias=-1)])
 
 
 
@@ -32,20 +36,22 @@ class NeuralNetwork:
         #   (if it hasn't changed since the last fire, its children probably don't need to changed either).
 
         # Go through each layer left2right excluding input layer
-        # for layer in hidden_layers:
-        #     for node in layer:
-        for i in range(len(self.hidden_layer)):
-        #for node in self.hidden_layer:
-            temp=0
-            for weight, in_node in zip(self.hidden_layer[i].weights, self.input_layer):
-                temp+=in_node.intensity*weight
-            self.hidden_layer[i].intensity = temp+self.hidden_layer[i].bias
-            self.hidden_layer[i].hasChanged = True
+        previous_layer = self.input_layer
+
+        for layeri in range(len(self.hidden_layers)):
+            for i in range(len(self.hidden_layers[layeri])):
+            #for node in self.hidden_layer:
+                temp=0
+                for weight, in_node in zip(self.hidden_layers[layeri][i].weights, previous_layer):
+                    temp+=in_node.intensity*weight
+                self.hidden_layers[layeri][i].intensity = temp+self.hidden_layers[layeri][i].bias
+                self.hidden_layers[layeri][i].hasChanged = True
+            previous_layer = self.hidden_layers[layeri]
 
         for i in range(len(self.output_layer)):
             temp=0
             # for yadayada in zip(node, self.hidden_layer[-1]):
-            for weight, in_node in zip(self.output_layer[i].weights, self.hidden_layer):
+            for weight, in_node in zip(self.output_layer[i].weights, self.hidden_layers[-1]):
                 temp+=in_node.intensity*weight
             self.output_layer[i].intensity = temp+self.output_layer[i].bias
             self.output_layer[i].hasChanged = True
@@ -55,13 +61,18 @@ class NeuralNetwork:
         return self.output_layer[num].intensity
 
     # simplified version to get hidden intensities
-    def get_hidden(self, num):
-        return self.hidden_layer[num].intensity
+    def get_hidden(self, num, layer):
+        return self.hidden_layers[layer][num].intensity
 
     # don't set inputs directly! would put them on private, but Python has no privates
     def set_input(self, num, intense):
         self.input_layer[num].intensity = intense
         self.input_layer[num].hasChanged = True
+
+    @staticmethod
+    def Sigmoid(x):
+        return 1 / 1+math.e**-x
+
 
 class Node:
     ids = [-1]
@@ -106,6 +117,6 @@ class visualnode:
 
     def change(self, new):
         if new == 1:
-            self.sprite.image = image_blackneuron
-        else:
             self.sprite.image = image_whiteneuron
+        else:
+            self.sprite.image = image_blackneuron

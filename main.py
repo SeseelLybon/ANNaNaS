@@ -26,10 +26,15 @@ nodei2 = neuralnetwork.visualnode([110,200],0,1.5)
 nodei3 = neuralnetwork.visualnode([110,300],0,1.5)
 nodei4 = neuralnetwork.visualnode([110,400],0,1.5)
 
-nodeh1 = neuralnetwork.visualnode([200,100],0,1.5)
-nodeh2 = neuralnetwork.visualnode([200,200],0,1.5)
-nodeh3 = neuralnetwork.visualnode([200,300],0,1.5)
-nodeh4 = neuralnetwork.visualnode([200,400],0,1.5)
+nodeh01 = neuralnetwork.visualnode([160,100],0,1.5)
+nodeh02 = neuralnetwork.visualnode([160,200],0,1.5)
+nodeh03 = neuralnetwork.visualnode([160,300],0,1.5)
+nodeh04 = neuralnetwork.visualnode([160,400],0,1.5)
+
+nodeh11 = neuralnetwork.visualnode([210,100],0,1.5)
+nodeh12 = neuralnetwork.visualnode([210,200],0,1.5)
+nodeh13 = neuralnetwork.visualnode([210,300],0,1.5)
+nodeh14 = neuralnetwork.visualnode([210,400],0,1.5)
 
 brain = neuralnetwork.NeuralNetwork()
 
@@ -44,9 +49,9 @@ def on_draw():
     global window
     window.clear()
 
-    inputchecker = checkergrid.Checker([40, 300], random.choice(checkergrid.paterns), scale=1.5)
-    #nxt()
-    #inputchecker = checkergrid.Checker([40, 300], checkergrid.paterns[ptrn], scale=1.5)
+    #inputchecker = checkergrid.Checker([40, 300], random.choice(checkergrid.paterns), scale=1.5)
+    inputchecker = checkergrid.Checker([40, 300], checkergrid.paterns[ptrn], scale=1.5)
+    nxt()
 
     brain.set_input(0,inputchecker.patern[0,0])
     nodei1.change(inputchecker.patern[0,0])
@@ -62,10 +67,15 @@ def on_draw():
 
     brain.fire_network()
 
-    nodeh1.change(brain.get_hidden(0))
-    nodeh2.change(brain.get_hidden(1))
-    nodeh3.change(brain.get_hidden(2))
-    nodeh4.change(brain.get_hidden(3))
+    nodeh01.change(brain.get_hidden(0,0))
+    nodeh02.change(brain.get_hidden(1,0))
+    nodeh03.change(brain.get_hidden(2,0))
+    nodeh04.change(brain.get_hidden(3,0))
+
+    nodeh11.change(brain.get_hidden(0,1))
+    nodeh12.change(brain.get_hidden(1,1))
+    nodeh13.change(brain.get_hidden(2,1))
+    nodeh14.change(brain.get_hidden(3,1))
 
     nodeo1.change(brain.get_output(0))
     nodeo2.change(brain.get_output(1))
@@ -79,7 +89,7 @@ def on_mouse_release(x, y, button, modifiers):
 def falseupdate(dt):
     pass
 
-pyglet.clock.schedule_interval_soft(falseupdate, 1 / 4)
+#pyglet.clock.schedule_interval_soft(falseupdate, 1 / 1)
 pyglet.app.run()
 
 logging.critical("End of main")
