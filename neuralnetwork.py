@@ -87,7 +87,7 @@ class NeuralNetwork:
     def Sigmoid(x):
         return 1 / 1+math.e**-x
 
-    def mutateself(self,mutatechance=1/30):
+    def mutate(self,mutatechance=1/30):
         for nodei in range(len(self.input_layer)):
             for weighti in range(len(self.input_layer[nodei].weights)):
                 if numpy.random.rand() <= mutatechance:
@@ -147,7 +147,6 @@ class NeuralNetwork:
         return temp
 
 
-    @staticmethod
 
 
 
@@ -161,7 +160,7 @@ class NeuralNetwork:
         self.batch.draw()
 
     # Tries to position the nodes of the neural network using Pyglet at this position, within these dimentions
-    def updatepos(self, pos, dim):
+    def updateposGFX(self, pos, dim):
         self.pos = pos
         self.dim = dim
 
@@ -190,9 +189,7 @@ class NeuralNetwork:
                                                    new_y)
 
 
-    def updateedges(self):
-        #glClear(GL_COLOR_BUFFER_BIT)
-
+    def updateedgesGFX(self):
 
         # first hidden layer is special as it accesses input layer things
         for hnodei in range(len(self.hidden_layers[0])):
@@ -283,7 +280,7 @@ class NeuralNetwork:
                                                    ),
                                                   ('c3B', col))
 
-    def updateintensity(self):
+    def updateintensityGFX(self):
 
         # update intensities of input nodes
         temp_am_nodes = len(self.input_layer)
@@ -309,7 +306,13 @@ class NeuralNetwork:
             else:
                 self.output_layer[nodei].sprite.image = image_blackneuron
 
-        self.updateedges()
+        self.updateedgesGFX()
+
+        # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+        # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+        # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+        # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+        # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
 
 
 image_blackneuron = pyglet.resource.image("resources/" + "blackneuron.png")

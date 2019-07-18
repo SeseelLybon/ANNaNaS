@@ -1,4 +1,4 @@
-import neuralnetwork
+from neuralnetwork import NeuralNetwork
 import pyglet
 import numpy
 #import garbage
@@ -6,21 +6,58 @@ import numpy
 
 class Population:
 
-    generation = 0
-    def selectparent(self):
+
+    generation = 1
+    bestBraini = -1
+
+    def __init__(self, size):
+        self.brains = [None]*size
+        self.size = size
+        self.fitnessSum = 0
+
+        for i in range(len(self.brains)):
+            self.brains[i] = NeuralNetwork(4,4,2)
+
+    def update(self):
         pass
-        #rand = numpy.random.rand(0, fitnesssum)
-        runningsum = 0
-        #go through all the brains in the population, and if at some point the runningsum > rand, then pick that brain as a parent,
-        #do this untill the population is re-regenerated
-        #also, remember to save the best brain from the last generation
+
+    def selectParent(self):
+        rand = numpy.random.randint(0, self.fitnessSum)
+        runningSum = 0
+        for i in range(len(self.brains)):
+            runningSum +=  self.brains[i].fitness
+            if runningSum > rand:
+                return self.brains[i]
+
+    def calculateFitnessSum(self):
+        self.fitnessSum = 0
+        for i in range(len(self.brains)):
+            self.fitnessSum += self.brains[i].fitness
 
     def naturalSelection(self):
-        pass
-        # temp_newbrains = listfornewbrains
-        # pick the best brain and same him
-        # then clone the best brain
+        newBrains = [None]*self.size
+        self.setBestBrain()
+
+        # save the best brain
+        newBrains[0] = self.brains[self.bestBraini].clone()
+
         # then use select parent and fill the list of new brains with them as parents
-        self.generation += 1
+        for i in range(1,len(newBrains)):
+            newBrains[i] = self.selectParent().clone()
+            newBrains[i].mutate()
+            newBrains[i].fitness = 0
+
         #swap out the old brains for the new brains
+        self.brains = newBrains
+        self.generation += 1
+
+
+    def setBestBrain(self):
+        maxFit = 0
+        tempbestBraini = -1
+        for i in range(len(self.brains)):
+            if self.brains[i].fitness > maxFit:
+                tempbestBraini = i
+                maxFit = self.brains[i].fitness
+        self.bestBraini = tempbestBraini
 
