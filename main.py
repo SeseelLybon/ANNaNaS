@@ -21,7 +21,7 @@ outputchecker_1 = checkergrid.Checker([400,300],checkergrid.paterns[5], scale=1.
 
 outputchecker_2 = checkergrid.Checker([400,200],checkergrid.paterns[10], scale=1.5)
 
-pops = Population(200)
+pops = Population(20)
 
 pops.patern = 0
 
@@ -56,11 +56,11 @@ def on_draw():
 
                 if pops.brains[braini].get_output(0) == 1 and pops.brains[braini].get_output(1) != 1:
                     if paterni == 5:
-                        pops.brains[braini].fitness+=1
+                        pops.brains[braini].fitness+=15
 
                 elif pops.brains[braini].get_output(0) != 1 and pops.brains[braini].get_output(1) == 1:
                     if paterni == 10:
-                        pops.brains[braini].fitness+=1
+                        pops.brains[braini].fitness+=15
 
                 elif pops.brains[braini].get_output(0) != 1 and pops.brains[braini].get_output(1) != 1:
                     if not paterni == 10\
@@ -69,7 +69,7 @@ def on_draw():
                         pass
 
         pops.setBestBrain()
-        if pops.brains[pops.bestBraini].fitness == 16:
+        if pops.brains[pops.bestBraini].fitness == 14+15*2:
             print("found perfect brain")
             pyglet.clock.unschedule(falseupdate)
             showGraph = True
@@ -78,6 +78,7 @@ def on_draw():
             return
 
         print("Best of generation is", pops.bestBraini, pops.brains[pops.bestBraini].fitness)
+        print("Generating new generation")
         #generate new brains
         pops.calculateFitnessSum()
         pops.naturalSelection()
@@ -114,8 +115,10 @@ def on_key_press(symbol, modifiers):
     if symbol == key.SPACE:
         if perfectBrainFound:
             perfectBrainFound = False
+            pyglet.clock.schedule_interval_soft(falseupdate, 1 / 1)
         else:
             perfectBrainFound = True
+            pyglet.clock.unschedule(falseupdate)
 
 
 def falseupdate(dt):

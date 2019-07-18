@@ -16,7 +16,7 @@ class Population:
         self.fitnessSum = 0
 
         for i in range(len(self.brains)):
-            self.brains[i] = NeuralNetwork(4,4,2)
+            self.brains[i] = NeuralNetwork(5,5,2)
 
     def update(self):
         pass
@@ -56,7 +56,7 @@ class Population:
         maxFit = 0
         tempbestBraini = -1
         for i in range(len(self.brains)):
-            if self.brains[i].fitness > maxFit:
+            if self.brains[i].fitness >= maxFit:
                 tempbestBraini = i
                 maxFit = self.brains[i].fitness
         self.bestBraini = tempbestBraini
