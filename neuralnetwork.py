@@ -2,12 +2,16 @@ import logging
 import math
 import numpy
 import pyglet
+from pyglet.gl import *
 import checkergrid
 
 
 class NeuralNetwork:
 
     def __init__(self, input_size=4, hidden_layers=(4), output_size=2):
+        self.pos = (0,0)
+        self.dim = (0,0)
+
         self.input_layer = numpy.array([Node(0), Node(0), Node(0), Node(0)])
 
         self.hidden_layers = list()
@@ -16,11 +20,13 @@ class NeuralNetwork:
                                                Node(1,4,weights=[0,0,1,0],bias=0),
                                                Node(1,4,weights=[0,0,0,1],bias=0)])
                                   )
+        '''
         self.hidden_layers.append(numpy.array([Node(2,4,weights=[1,0,0,0],bias=0),
                                                Node(2,4,weights=[0,1,0,0],bias=0),
                                                Node(2,4,weights=[0,0,1,0],bias=0),
                                                Node(2,4,weights=[0,0,0,1],bias=0)])
                                   )
+        '''
 
         self.output_layer = numpy.array([Node(3,4,weights=[-1,1,1,-1],bias=-1),
                                          Node(3,4,weights=[1,-1,-1,1],bias=-1)])
@@ -78,35 +84,126 @@ class NeuralNetwork:
 
     # Tries to position the nodes of the neural network using Pyglet at this position, within these dimentions
     def updatepos(self, pos, dim):
+        self.pos = pos
+        self.dim = dim
 
         #position input nodes
         temp_am_nodes = len(self.input_layer)
         for nodei in range(temp_am_nodes):
-            self.input_layer[nodei].sprite.update(pos[0], pos[1]-(dim[1]/temp_am_nodes)*nodei)
+            self.input_layer[nodei].sprite.update(int(pos[0]),
+                                                  int(pos[1]-(dim[1]/temp_am_nodes)*nodei))
 
+        #position hidden layers' nodes
         am_layers = len(self.hidden_layers)+1
         for layeri in range(len(self.hidden_layers)):
             #position the hidden layer layeri nodes
             temp_am_nodes = len(self.hidden_layers[0])
             for nodei in range(temp_am_nodes):
-                self.hidden_layers[layeri][nodei].sprite.update(pos[0]+dim[0]/am_layers*(layeri+1),
-                                                                pos[1]-(dim[1]/temp_am_nodes)*nodei)
-        '''
-        #position the hidden layer 0 nodes
-        temp_am_nodes = len(self.hidden_layers[0])
-        for nodei in range(temp_am_nodes):
-            self.hidden_layers[0][nodei].sprite.update(pos[0]+dim[0]/3*1, pos[1]-(dim[1]/temp_am_nodes)*nodei)
-
-        #position the hidden layer 1 nodes
-        temp_am_nodes = len(self.hidden_layers[1])
-        for nodei in range(temp_am_nodes):
-            self.hidden_layers[1][nodei].sprite.update(pos[0]+dim[0]/3*2, pos[1]-(dim[1]/temp_am_nodes)*nodei)
-        '''
+                self.hidden_layers[layeri][nodei].sprite.update(int(pos[0]+dim[0]/am_layers*(layeri+1)),
+                                                                int(pos[1]-(dim[1]/temp_am_nodes)*nodei))
 
         #position output nodes
         temp_am_nodes = len(self.output_layer)
         for nodei in range(temp_am_nodes):
-            self.output_layer[nodei].sprite.update(pos[0]+dim[0], pos[1]-(dim[1]/temp_am_nodes)*nodei)
+            self.output_layer[nodei].sprite.update(int(pos[0]+dim[0]),
+                                                   int(pos[1]-(dim[1]/temp_am_nodes)*nodei))
+
+
+    def updateedges(self):
+        #glClear(GL_COLOR_BUFFER_BIT)
+
+
+        # first hidden layer is special as it accesses input layer things
+        for hnodei in range(len(self.hidden_layers[0])):
+            #inodei can also be used to get the weights
+            for inodei in range(len(self.input_layer)):
+                weight =self.hidden_layers[0][hnodei].weights[inodei]
+                if weight < 0:
+                    weight*=-1
+                    #RGB
+                    col = (0, 0, 255,
+                           0, 0, 255)
+                    glLineWidth(weight+1)
+                elif weight == 0:
+                    col = (255, 255, 255,
+                           255, 255, 255)
+                    glLineWidth(1)
+                else: # weight > 0:
+                    col = (255, 0, 0,
+                           255, 0, 0)
+                    glLineWidth(weight+1)
+
+                pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.input_layer[inodei].sprite.x+10,
+                                                           self.input_layer[inodei].sprite.y + 10,
+                                                           self.hidden_layers[0][hnodei].sprite.x + 10,
+                                                           self.hidden_layers[0][hnodei].sprite.y + 10)
+                                                   ),
+                                                   ('c3B',col))
+
+        # second to last hidden layers
+        if len(self.hidden_layers) > 0:
+            for layeri in range(1, len(self.hidden_layers)):
+                for hnodei in range(len(self.hidden_layers[layeri])):
+
+                    # inodei can also be used to get the weights
+                    for inodei in range(len(self.input_layer)):
+
+                        weight =self.hidden_layers[layeri][hnodei].weights[inodei]
+                        if weight < 0:
+                            weight*=-1
+                            #RGB
+                            col = (0, 0, 255,
+                                   0, 0, 255)
+                            glLineWidth(weight+1)
+                        elif weight == 0:
+                            col = (255, 255, 255,
+                                   255, 255, 255)
+                            glLineWidth(1)
+                        else: # weight > 0:
+                            col = (255, 0, 0,
+                                   255, 0, 0)
+                            glLineWidth(weight+1)
+
+                        #glVertex2i(self.hidden_layers[layeri-1][inodei].sprite.x + 10, self.hidden_layers[layeri-1][inodei].sprite.y + 10)
+                        #glVertex2i(self.hidden_layers[layeri][hnodei].sprite.x + 10, self.hidden_layers[layeri][hnodei].sprite.y + 10)
+                        pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.hidden_layers[layeri-1][inodei].sprite.x + 10,
+                                                                   self.hidden_layers[layeri-1][inodei].sprite.y + 10,
+                                                                   self.hidden_layers[layeri][hnodei].sprite.x + 10,
+                                                                   self.hidden_layers[layeri][hnodei].sprite.y + 10)
+                                                           ),
+                                                          ('c3B', col))
+        # last hidden layer to output layer
+        for hnodei in range(len(self.hidden_layers[-1])):
+            #inodei can also be used to get the weights
+            for inodei in range(len(self.output_layer)):
+
+                weight =self.output_layer[inodei].weights[hnodei]
+                if weight < 0:
+                    weight*=-1
+                    #RGB
+                    col = (0, 0, 255,
+                           0, 0, 255)
+                    glLineWidth(weight+1)
+                elif weight == 0:
+                    col = (255, 255, 255,
+                           255, 255, 255)
+                    glLineWidth(1)
+                else: # weight > 0:
+                    col = (255, 0, 0,
+                           255, 0, 0)
+                    glLineWidth(weight+1)
+
+                #glVertex2i(self.output_layer[inodei].sprite.x+10,self.output_layer[inodei].sprite.y+10)
+                #glVertex2i(self.hidden_layers[0][hnodei].sprite.x+10,self.hidden_layers[0][hnodei].sprite.y+10)
+                pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.output_layer[inodei].sprite.x+10,
+                                                           self.output_layer[inodei].sprite.y + 10,
+                                                           self.hidden_layers[-1][hnodei].sprite.x + 10,
+                                                           self.hidden_layers[-1][hnodei].sprite.y + 10)
+                                                   ),
+                                                  ('c3B', col))
+
+
+        #glEnd()
 
 
     def updateintensity(self):
@@ -127,17 +224,6 @@ class NeuralNetwork:
                 else:
                     self.hidden_layers[layeri][nodei].sprite.image = image_blackneuron
 
-
-        '''
-        # update intensities of hidden layer 0 nodes
-        temp_am_nodes = len(self.hidden_layers[0])
-        for nodei in range(temp_am_nodes):
-            if self.hidden_layers[0][nodei].intensity == 1:
-                self.hidden_layers[0][nodei].sprite.image = image_whiteneuron
-            else:
-                self.hidden_layers[0][nodei].sprite.image = image_blackneuron
-        '''
-
         # update intensities of output nodes
         temp_am_nodes = len(self.output_layer)
         for nodei in range(temp_am_nodes):
@@ -145,6 +231,8 @@ class NeuralNetwork:
                 self.output_layer[nodei].sprite.image = image_whiteneuron
             else:
                 self.output_layer[nodei].sprite.image = image_blackneuron
+
+        self.updateedges()
 
 
 class Node:
