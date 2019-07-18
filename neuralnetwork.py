@@ -2,51 +2,54 @@ import logging
 import math
 import numpy
 import pyglet
+import copy
 from pyglet.gl import *
-import checkergrid
 
 
 class NeuralNetwork:
 
-    def __init__(self, input_size=4, hidden_layers=(4), output_size=2):
+    def __init__(self, input_size=4, hidden_size=4, output_size=2):
         self.pos = (0,0)
         self.dim = (0,0)
+        self.batch = pyglet.graphics.Batch()
+        self.fitness = 0
 
-        self.input_layer = numpy.array([Node(0), Node(0), Node(0), Node(0)])
+        #self.input_layer = [Node(0, batch=self.batch),
+        #                    Node(0, batch=self.batch),
+        #                    Node(0, batch=self.batch),
+        #                    Node(0, batch=self.batch)]
+
+        self.input_layer = list()
+        for i in range(input_size):
+            self.input_layer.append(Node(0, batch=self.batch))
+
+        #self.hidden_layers.append(numpy.array([Node(1,4,weights=[1,0,0,0],bias=0),
+        #                                       Node(1,4,weights=[0,1,0,0],bias=0),
+        #                                       Node(1,4,weights=[0,0,1,0],bias=0),
+        #                                       Node(1,4,weights=[0,0,0,1],bias=0)])
 
         self.hidden_layers = list()
-        '''
-        self.hidden_layers.append(numpy.array([Node(1,4,weights=[1,0,0,0],bias=0),
-                                               Node(1,4,weights=[0,1,0,0],bias=0),
-                                               Node(1,4,weights=[0,0,1,0],bias=0),
-                                               Node(1,4,weights=[0,0,0,1],bias=0)])
-                                  )
-        '''
-        self.hidden_layers.append(numpy.array([Node(1,4),
-                                               Node(1,4),
-                                               Node(1,4),
-                                               Node(1,4)])
-                                  )
+        self.hidden_layers.append(list())
+        for i in range(hidden_size):
+            self.hidden_layers[0].append(Node(1, input_size, batch=self.batch))
 
-        self.output_layer = numpy.array([Node(2,4),
-                                         Node(2,4)])
 
-        #self.output_layer = numpy.array([Node(3,4,weights=[-1,1,1,-1],bias=-1),
-        #                                 Node(3,4,weights=[1,-1,-1,1],bias=-1)])
+        #self.output_layer = numpy.array([Node(2,4,batch=self.batch),
+        #                                 Node(2,4,batch=self.batch)])
+
+        self.output_layer = list()
+        for i in range(output_size):
+            self.output_layer.append(Node(2, hidden_size, batch=self.batch))
+
+
 
 
 
 
     # Fires all input nodes
     # TODO: Optimize which nodes are recalculated and which aren't. depth-first
-
     def fire_network(self):
 
-        # TODO: for later; optimized that calls a node old if one of it's parents is old,
-        #   Except for the input layer, which is only oldified if it is changed,
-        #   (if it hasn't changed since the last fire, its children probably don't need to changed either).
-
-        # Go through each layer left2right excluding input layer
         previous_layer = self.input_layer
 
         for layeri in range(len(self.hidden_layers)):
@@ -84,6 +87,79 @@ class NeuralNetwork:
     def Sigmoid(x):
         return 1 / 1+math.e**-x
 
+    def mutateself(self,mutatechance=1/30):
+
+        for nodei in range(len(self.input_layer)):
+            for weighti in range(len(self.input_layer[nodei].weights)):
+                if numpy.random.rand() <= mutatechance:
+                    temp = self.input_layer[nodei].weights[weighti]
+                    if temp == 1 or temp == -1:
+                        temp = 0
+                    elif temp == 0:
+                        if numpy.random.rand() >= 0.5:
+                            temp = 1
+                        else:
+                            temp = -1
+                    self.input_layer[nodei].weights[weighti] = temp
+
+        for nodei in range(len(self.hidden_layers[0])):
+            for weighti in range(len(self.hidden_layers[0][nodei].weights)):
+                if numpy.random.rand() <= mutatechance:
+                    temp = self.hidden_layers[0][nodei].weights[weighti]
+                    if temp == 1 or temp == -1:
+                        temp = 0
+                    elif temp == 0:
+                        if numpy.random.rand() >= 0.5:
+                            temp = 1
+                        else:
+                            temp = -1
+                    self.hidden_layers[0][nodei].weights[weighti] = temp
+
+        for nodei in range(len(self.output_layer)):
+            for weighti in range(len(self.output_layer[nodei].weights)):
+                if numpy.random.rand() <= mutatechance:
+                    temp = self.output_layer[nodei].weights[weighti]
+                    if temp == 1 or temp == -1:
+                        temp = 0
+                    elif temp == 0:
+                        if numpy.random.rand() >= 0.5:
+                            temp = 1
+                        else:
+                            temp = -1
+                    self.output_layer[nodei].weights[weighti] = temp
+
+    def clone(self):
+        temp = NeuralNetwork(len(self.input_layer),
+                             len(self.hidden_layers[0]),
+                             len(self.output_layer))
+
+        for i in range(len(self.input_layer)):
+            temp.input_layer[i].weights = copy.deepcopy(self.input_layer[i].weights)
+            temp.input_layer[i].bias = self.input_layer[i].bias
+
+        for i in range(len(self.hidden_layers[0])):
+            temp.hidden_layers[0][i].weights = copy.deepcopy(self.hidden_layers[0][i].weights)
+            temp.hidden_layers[0][i].bias = self.hidden_layers[0][i].bias
+
+        for i in range(len(self.output_layer)):
+            temp.output_layer[i].weights = copy.deepcopy(self.output_layer[i].weights)
+            temp.output_layer[i].bias = self.output_layer[i].bias
+
+        return temp
+
+
+    @staticmethod
+
+
+
+    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+
+    def draw(self):
+        self.batch.draw()
 
     # Tries to position the nodes of the neural network using Pyglet at this position, within these dimentions
     def updatepos(self, pos, dim):
@@ -208,10 +284,6 @@ class NeuralNetwork:
                                                    ),
                                                   ('c3B', col))
 
-
-        #glEnd()
-
-
     def updateintensity(self):
 
         # update intensities of input nodes
@@ -246,23 +318,32 @@ image_whiteneuron = pyglet.resource.image("resources/" + "whiteneuron.png")
 
 class Node:
     ids = [-1]
-    def __init__(self, layer, parent_size=0, weights=None, bias=0):
+    def __init__(self, layer, parent_size=0, weights=None, bias=None, batch=None):
         self.number = self.genid()
         self.layer = layer
         self.intensity = 0
         if weights is None:
-            self.weights = numpy.random.random_integers(-1,1,[parent_size,])
+            self.weights = numpy.random.randint(-1,2,[parent_size,])
         else:
             self.weights=weights
         self.hasChanged = True
-        self.bias = bias
+
+        if bias is None:
+            self.bias = numpy.random.randint(-1,2)
+        else:
+            self.bias = bias
+
         self.sprite = pyglet.sprite.Sprite(image_whiteneuron, x=0,
                                                               y=0,
-                                           batch=checkergrid.batch )
-
-    def activate(self):
-        pass
+                                           batch=batch )
 
     def genid(self):
         self.ids[0]+=1
         return self.ids[0]
+
+if __name__ == "__main__":
+    oldbrain = NeuralNetwork()
+    newbrain = oldbrain.clone()
+    temp = False
+
+

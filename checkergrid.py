@@ -3,7 +3,7 @@
 import numpy
 import pyglet
 
-batch = pyglet.graphics.Batch()
+checkerbatch = pyglet.graphics.Batch()
 
 image_blacktile = pyglet.resource.image("resources/" + "blacktile.png")
 image_whitetile = pyglet.resource.image("resources/" + "whitetile.png")
@@ -20,12 +20,12 @@ class Checker:
                 if self.patern[x,y] == 0:
                     self.sprites[x][y] = pyglet.sprite.Sprite(image_blacktile, x=self.pos.x+x*20*self.scale,
                                                                                y=self.pos.y+y*20*self.scale,
-                                                             batch=batch )
+                                                             batch=checkerbatch )
                     self.sprites[x][y].scale = self.scale
                 elif self.patern[x,y] == 1:
                     self.sprites[x][y] = pyglet.sprite.Sprite(image_whitetile, x=self.pos.x+x*20*self.scale,
                                                                                y=self.pos.y+y*20*self.scale,
-                                                             batch=batch )
+                                                             batch=checkerbatch )
                     self.sprites[x][y].scale = self.scale
 
     def updatespritepos(self, pos):
