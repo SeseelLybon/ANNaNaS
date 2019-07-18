@@ -88,7 +88,6 @@ class NeuralNetwork:
         return 1 / 1+math.e**-x
 
     def mutateself(self,mutatechance=1/30):
-
         for nodei in range(len(self.input_layer)):
             for weighti in range(len(self.input_layer[nodei].weights)):
                 if numpy.random.rand() <= mutatechance:
