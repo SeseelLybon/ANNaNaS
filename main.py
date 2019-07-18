@@ -19,27 +19,6 @@ outputchecker_1 = checkergrid.Checker([400,300],checkergrid.paterns[5], scale=1.
 
 outputchecker_2 = checkergrid.Checker([400,200],checkergrid.paterns[10], scale=1.5)
 
-'''
-
-nodei1 = neuralnetwork.visualnode([110,100],0,1.5)
-nodei2 = neuralnetwork.visualnode([110,200],0,1.5)
-nodei3 = neuralnetwork.visualnode([110,300],0,1.5)
-nodei4 = neuralnetwork.visualnode([110,400],0,1.5)
-
-nodeh01 = neuralnetwork.visualnode([160,100],0,1.5)
-nodeh02 = neuralnetwork.visualnode([160,200],0,1.5)
-nodeh03 = neuralnetwork.visualnode([160,300],0,1.5)
-nodeh04 = neuralnetwork.visualnode([160,400],0,1.5)
-
-nodeh11 = neuralnetwork.visualnode([210,100],0,1.5)
-nodeh12 = neuralnetwork.visualnode([210,200],0,1.5)
-nodeh13 = neuralnetwork.visualnode([210,300],0,1.5)
-nodeh14 = neuralnetwork.visualnode([210,400],0,1.5)
-
-
-nodeo1 = neuralnetwork.visualnode([300,300],0,1.5)
-nodeo2 = neuralnetwork.visualnode([300,200],0,1.5)
-'''
 
 brain = neuralnetwork.NeuralNetwork()
 brain.updatepos([110, 300], [240, 300])

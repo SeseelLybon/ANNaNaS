@@ -15,21 +15,24 @@ class NeuralNetwork:
         self.input_layer = numpy.array([Node(0), Node(0), Node(0), Node(0)])
 
         self.hidden_layers = list()
+        '''
         self.hidden_layers.append(numpy.array([Node(1,4,weights=[1,0,0,0],bias=0),
                                                Node(1,4,weights=[0,1,0,0],bias=0),
                                                Node(1,4,weights=[0,0,1,0],bias=0),
                                                Node(1,4,weights=[0,0,0,1],bias=0)])
                                   )
         '''
-        self.hidden_layers.append(numpy.array([Node(2,4,weights=[1,0,0,0],bias=0),
-                                               Node(2,4,weights=[0,1,0,0],bias=0),
-                                               Node(2,4,weights=[0,0,1,0],bias=0),
-                                               Node(2,4,weights=[0,0,0,1],bias=0)])
+        self.hidden_layers.append(numpy.array([Node(1,4),
+                                               Node(1,4),
+                                               Node(1,4),
+                                               Node(1,4)])
                                   )
-        '''
 
-        self.output_layer = numpy.array([Node(3,4,weights=[-1,1,1,-1],bias=-1),
-                                         Node(3,4,weights=[1,-1,-1,1],bias=-1)])
+        self.output_layer = numpy.array([Node(2,4),
+                                         Node(2,4)])
+
+        #self.output_layer = numpy.array([Node(3,4,weights=[-1,1,1,-1],bias=-1),
+        #                                 Node(3,4,weights=[1,-1,-1,1],bias=-1)])
 
 
 
@@ -105,8 +108,11 @@ class NeuralNetwork:
         #position output nodes
         temp_am_nodes = len(self.output_layer)
         for nodei in range(temp_am_nodes):
+
+            new_y = int(pos[1]-(dim[1]/temp_am_nodes)*nodei)
+
             self.output_layer[nodei].sprite.update(int(pos[0]+dim[0]),
-                                                   int(pos[1]-(dim[1]/temp_am_nodes)*nodei))
+                                                   new_y)
 
 
     def updateedges(self):
@@ -235,6 +241,9 @@ class NeuralNetwork:
         self.updateedges()
 
 
+image_blackneuron = pyglet.resource.image("resources/" + "blackneuron.png")
+image_whiteneuron = pyglet.resource.image("resources/" + "whiteneuron.png")
+
 class Node:
     ids = [-1]
     def __init__(self, layer, parent_size=0, weights=None, bias=0):
@@ -257,21 +266,3 @@ class Node:
     def genid(self):
         self.ids[0]+=1
         return self.ids[0]
-
-
-image_blackneuron = pyglet.resource.image("resources/" + "blackneuron.png")
-image_whiteneuron = pyglet.resource.image("resources/" + "whiteneuron.png")
-
-class visualnode:
-    def __init__(self, position):
-        self.pos = checkergrid.vector2d(position)
-        self.sprite = pyglet.sprite.Sprite(image_whiteneuron, x=self.pos.x,
-                                                              y=self.pos.y,
-                                           batch=checkergrid.batch )
-
-
-    def change(self, new):
-        if new == 1:
-            self.sprite.image = image_whiteneuron
-        else:
-            self.sprite.image = image_blackneuron
