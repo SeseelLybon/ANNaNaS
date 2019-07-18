@@ -1,6 +1,8 @@
-import numpy
 import logging
 import math
+import numpy
+import pyglet
+import checkergrid
 
 
 class NeuralNetwork:
@@ -74,6 +76,77 @@ class NeuralNetwork:
         return 1 / 1+math.e**-x
 
 
+    # Tries to position the nodes of the neural network using Pyglet at this position, within these dimentions
+    def updatepos(self, pos, dim):
+
+        #position input nodes
+        temp_am_nodes = len(self.input_layer)
+        for nodei in range(temp_am_nodes):
+            self.input_layer[nodei].sprite.update(pos[0], pos[1]-(dim[1]/temp_am_nodes)*nodei)
+
+        am_layers = len(self.hidden_layers)+1
+        for layeri in range(len(self.hidden_layers)):
+            #position the hidden layer layeri nodes
+            temp_am_nodes = len(self.hidden_layers[0])
+            for nodei in range(temp_am_nodes):
+                self.hidden_layers[layeri][nodei].sprite.update(pos[0]+dim[0]/am_layers*(layeri+1),
+                                                                pos[1]-(dim[1]/temp_am_nodes)*nodei)
+        '''
+        #position the hidden layer 0 nodes
+        temp_am_nodes = len(self.hidden_layers[0])
+        for nodei in range(temp_am_nodes):
+            self.hidden_layers[0][nodei].sprite.update(pos[0]+dim[0]/3*1, pos[1]-(dim[1]/temp_am_nodes)*nodei)
+
+        #position the hidden layer 1 nodes
+        temp_am_nodes = len(self.hidden_layers[1])
+        for nodei in range(temp_am_nodes):
+            self.hidden_layers[1][nodei].sprite.update(pos[0]+dim[0]/3*2, pos[1]-(dim[1]/temp_am_nodes)*nodei)
+        '''
+
+        #position output nodes
+        temp_am_nodes = len(self.output_layer)
+        for nodei in range(temp_am_nodes):
+            self.output_layer[nodei].sprite.update(pos[0]+dim[0], pos[1]-(dim[1]/temp_am_nodes)*nodei)
+
+
+    def updateintensity(self):
+
+        # update intensities of input nodes
+        temp_am_nodes = len(self.input_layer)
+        for nodei in range(temp_am_nodes):
+            if self.input_layer[nodei].intensity == 1:
+                self.input_layer[nodei].sprite.image = image_whiteneuron
+            else:
+                self.input_layer[nodei].sprite.image = image_blackneuron
+
+        # update intensities of hidden layer nodes
+        for layeri in range(len(self.hidden_layers)):
+            for nodei in range(len(self.hidden_layers[layeri])):
+                if self.hidden_layers[layeri][nodei].intensity == 1:
+                    self.hidden_layers[layeri][nodei].sprite.image = image_whiteneuron
+                else:
+                    self.hidden_layers[layeri][nodei].sprite.image = image_blackneuron
+
+
+        '''
+        # update intensities of hidden layer 0 nodes
+        temp_am_nodes = len(self.hidden_layers[0])
+        for nodei in range(temp_am_nodes):
+            if self.hidden_layers[0][nodei].intensity == 1:
+                self.hidden_layers[0][nodei].sprite.image = image_whiteneuron
+            else:
+                self.hidden_layers[0][nodei].sprite.image = image_blackneuron
+        '''
+
+        # update intensities of output nodes
+        temp_am_nodes = len(self.output_layer)
+        for nodei in range(temp_am_nodes):
+            if self.output_layer[nodei].intensity == 1:
+                self.output_layer[nodei].sprite.image = image_whiteneuron
+            else:
+                self.output_layer[nodei].sprite.image = image_blackneuron
+
+
 class Node:
     ids = [-1]
     def __init__(self, layer, parent_size=0, weights=None, bias=0):
@@ -86,6 +159,9 @@ class Node:
             self.weights=weights
         self.hasChanged = True
         self.bias = bias
+        self.sprite = pyglet.sprite.Sprite(image_whiteneuron, x=0,
+                                                              y=0,
+                                           batch=checkergrid.batch )
 
     def activate(self):
         pass
@@ -94,26 +170,17 @@ class Node:
         self.ids[0]+=1
         return self.ids[0]
 
-import numpy
-import pyglet
-import checkergrid
 
 image_blackneuron = pyglet.resource.image("resources/" + "blackneuron.png")
 image_whiteneuron = pyglet.resource.image("resources/" + "whiteneuron.png")
 
 class visualnode:
-    def __init__(self, position, intensity, scale):
-        self.scale = scale
+    def __init__(self, position):
         self.pos = checkergrid.vector2d(position)
+        self.sprite = pyglet.sprite.Sprite(image_whiteneuron, x=self.pos.x,
+                                                              y=self.pos.y,
+                                           batch=checkergrid.batch )
 
-        if intensity == 0:
-            self.sprite = pyglet.sprite.Sprite(image_blackneuron, x=self.pos.x,
-                                                                           y=self.pos.y,
-                                               batch=checkergrid.batch )
-        else:
-            self.sprite = pyglet.sprite.Sprite(image_whiteneuron, x=self.pos.x,
-                                                                           y=self.pos.y,
-                                              batch=checkergrid.batch )
 
     def change(self, new):
         if new == 1:
