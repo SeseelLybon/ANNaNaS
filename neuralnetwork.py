@@ -52,7 +52,7 @@ class NeuralNetwork:
             temp=0
             for weight, in_node in zip(self.hidden_layers[0][nodei].weights, self.input_layer):
                 temp+=in_node.intensity*weight
-            self.hidden_layers[0][nodei].intensity = self.Sigmoidi(temp)
+            self.hidden_layers[0][nodei].intensity = self.ReLU(temp)
             #previous_layer = self.hidden_layers[layeri]
 
         for nodei in range(len(self.output_layer)):
@@ -60,7 +60,7 @@ class NeuralNetwork:
             # for yadayada in zip(node, self.hidden_layer[-1]):
             for weight, hid_node in zip(self.output_layer[nodei].weights, self.hidden_layers[0]):
                 temp+=hid_node.intensity*weight
-            self.output_layer[nodei].intensity = self.Sigmoidi(temp)
+            self.output_layer[nodei].intensity = self.ReLU(temp)
 
     # simplified version to get output intensities
     def get_output(self, num):
@@ -73,6 +73,10 @@ class NeuralNetwork:
     @staticmethod
     def Sigmoid(x):
         return 1 / (1+math.e**-x)
+
+    @staticmethod
+    def ReLU(x):
+        return max(0, min(x,1))
 
     @staticmethod
     def Sigmoidi(x):
@@ -277,7 +281,7 @@ class NeuralNetwork:
         # update intensities of input nodes
         temp_am_nodes = len(self.input_layer)
         for nodei in range(temp_am_nodes):
-            if self.input_layer[nodei].intensity > 0.5:
+            if self.input_layer[nodei].intensity > 0:
                 self.input_layer[nodei].sprite.image = image_whiteneuron
             else:
                 self.input_layer[nodei].sprite.image = image_blackneuron
@@ -285,7 +289,7 @@ class NeuralNetwork:
         # update intensities of hidden layer nodes
         for layeri in range(len(self.hidden_layers)):
             for nodei in range(len(self.hidden_layers[layeri])):
-                if self.hidden_layers[layeri][nodei].intensity > 0.5:
+                if self.hidden_layers[layeri][nodei].intensity > 0:
                     self.hidden_layers[layeri][nodei].sprite.image = image_whiteneuron
                 else:
                     self.hidden_layers[layeri][nodei].sprite.image = image_blackneuron
@@ -293,7 +297,7 @@ class NeuralNetwork:
         # update intensities of output nodes
         temp_am_nodes = len(self.output_layer)
         for nodei in range(temp_am_nodes):
-            if self.output_layer[nodei].intensity > 0.5:
+            if self.output_layer[nodei].intensity > 0:
                 self.output_layer[nodei].sprite.image = image_whiteneuron
             else:
                 self.output_layer[nodei].sprite.image = image_blackneuron
