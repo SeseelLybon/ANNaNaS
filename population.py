@@ -16,7 +16,7 @@ class Population:
         self.fitnessSum = 0
 
         for i in range(len(self.brains)):
-            self.brains[i] = NeuralNetwork(5,5,2)
+            self.brains[i] = NeuralNetwork(4+1,8+1,16)
 
     def update(self):
         pass

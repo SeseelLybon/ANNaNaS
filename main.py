@@ -17,11 +17,11 @@ pyglet.gl.glClearColor(0.3,0.3,0.3,1)
 #inputchecker = checkergrid.Checker([40,300],randpater, scale=1.5)
 
 # output checkers are just for visuals
-outputchecker_1 = checkergrid.Checker([400,300],checkergrid.paterns[5], scale=1.5)
+outputchecker_1 = checkergrid.Checker([550,300],checkergrid.paterns[5], scale=1.5)
 
-outputchecker_2 = checkergrid.Checker([400,200],checkergrid.paterns[10], scale=1.5)
+outputchecker_2 = checkergrid.Checker([550,200],checkergrid.paterns[10], scale=1.5)
 
-pops = Population(800)
+pops = Population(200)
 
 pops.patern = 0
 
@@ -87,7 +87,7 @@ def on_draw():
 
     else:
 
-        inputchecker = checkergrid.Checker([40,300],checkergrid.paterns[patern], scale=1.5)
+        inputchecker = checkergrid.Checker([20,200],checkergrid.paterns[patern], scale=1.5)
         pops.brains[pops.bestBraini].set_input(0,checkergrid.paterns[patern][0,0])
         pops.brains[pops.bestBraini].set_input(1,checkergrid.paterns[patern][1,0])
         pops.brains[pops.bestBraini].set_input(2,checkergrid.paterns[patern][0,1])
@@ -99,7 +99,7 @@ def on_draw():
         patern=patern%16
 
     if pops.bestBraini != -1:
-        pops.brains[pops.bestBraini].updateposGFX([150,300],[200,200])
+        pops.brains[pops.bestBraini].updateposGFX([100,400],[400,400])
         pops.brains[pops.bestBraini].updateintensityGFX()
         pops.brains[pops.bestBraini].draw()
         checkergrid.checkerbatch.draw()
