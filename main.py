@@ -54,21 +54,32 @@ def on_draw():
 
                 pops.brains[braini].fire_network()
 
-                if pops.brains[braini].get_output(0) == 1 and pops.brains[braini].get_output(1) != 1:
-                    pops.brains[braini].fitness+=0
-                    if paterni == 5:
-                        pops.brains[braini].fitness+=15
+                for i in range(16):
+                    temp = pops.brains[braini].get_output(i)
+                    if paterni != i:
+                        if temp == 0:
+                            pass
+                            #give points?
+                    else: # paterni == i:
+                        if temp != 1:
+                            pass
+                            #give points?
 
-                elif pops.brains[braini].get_output(0) != 1 and pops.brains[braini].get_output(1) == 1:
-                    pops.brains[braini].fitness+=0
-                    if paterni == 10:
-                        pops.brains[braini].fitness+=15
-
-                elif pops.brains[braini].get_output(0) != 1 and pops.brains[braini].get_output(1) != 1:
-                    if not paterni == 10\
-                            and not paterni == 5:
-                        pops.brains[braini].fitness+=1
-                        pass
+                #if pops.brains[braini].get_output(0) == 1 and pops.brains[braini].get_output(1) != 1:
+                #    pops.brains[braini].fitness+=0
+                #    if paterni == 5:
+                #        pops.brains[braini].fitness+=15
+#
+                #elif pops.brains[braini].get_output(0) != 1 and pops.brains[braini].get_output(1) == 1:
+                #    pops.brains[braini].fitness+=0
+                #    if paterni == 10:
+                #        pops.brains[braini].fitness+=15
+#
+                #elif pops.brains[braini].get_output(0) != 1 and pops.brains[braini].get_output(1) != 1:
+                #    if not paterni == 10\
+                #            and not paterni == 5:
+                #        pops.brains[braini].fitness+=1
+                #        pass
 
         pops.setBestBrain()
         if pops.brains[pops.bestBraini].fitness == 14+15*2:
