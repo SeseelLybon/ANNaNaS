@@ -21,7 +21,7 @@ outputchecker_1 = checkergrid.Checker([400,300],checkergrid.paterns[5], scale=1.
 
 outputchecker_2 = checkergrid.Checker([400,200],checkergrid.paterns[10], scale=1.5)
 
-pops = Population(20)
+pops = Population(800)
 
 pops.patern = 0
 
@@ -55,10 +55,12 @@ def on_draw():
                 pops.brains[braini].fire_network()
 
                 if pops.brains[braini].get_output(0) == 1 and pops.brains[braini].get_output(1) != 1:
+                    pops.brains[braini].fitness+=0
                     if paterni == 5:
                         pops.brains[braini].fitness+=15
 
                 elif pops.brains[braini].get_output(0) != 1 and pops.brains[braini].get_output(1) == 1:
+                    pops.brains[braini].fitness+=0
                     if paterni == 10:
                         pops.brains[braini].fitness+=15
 

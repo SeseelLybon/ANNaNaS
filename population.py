@@ -44,7 +44,7 @@ class Population:
         # then use select parent and fill the list of new brains with them as parents
         for i in range(1,len(newBrains)):
             newBrains[i] = self.selectParent().clone()
-            newBrains[i].mutate()
+            newBrains[i].mutate(1/50)
             newBrains[i].fitness = 0
 
         #swap out the old brains for the new brains

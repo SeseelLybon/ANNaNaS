@@ -52,7 +52,7 @@ class NeuralNetwork:
             temp=0
             for weight, in_node in zip(self.hidden_layers[0][nodei].weights, self.input_layer):
                 temp+=in_node.intensity*weight
-            self.hidden_layers[0][nodei].intensity = self.Sigmoid(temp)
+            self.hidden_layers[0][nodei].intensity = self.Sigmoidi(temp)
             #previous_layer = self.hidden_layers[layeri]
 
         for nodei in range(len(self.output_layer)):
@@ -60,7 +60,7 @@ class NeuralNetwork:
             # for yadayada in zip(node, self.hidden_layer[-1]):
             for weight, hid_node in zip(self.output_layer[nodei].weights, self.hidden_layers[0]):
                 temp+=hid_node.intensity*weight
-            self.output_layer[nodei].intensity = self.Sigmoid(temp)
+            self.output_layer[nodei].intensity = self.Sigmoidi(temp)
 
     # simplified version to get output intensities
     def get_output(self, num):
@@ -76,7 +76,7 @@ class NeuralNetwork:
 
     @staticmethod
     def Sigmoidi(x):
-        temp = 1 / 1+math.e**-x
+        temp = 1 / (1+math.e**-x)
         if temp > 0.5:
             return 1
         else:
