@@ -199,9 +199,10 @@ class NeuralNetwork:
                            0, 0, 255)
                     glLineWidth(weight+1)
                 elif weight == 0:
-                    col = (255, 255, 255,
-                           255, 255, 255)
-                    glLineWidth(1)
+                    continue
+                    #col = (255, 255, 255,
+                    #       255, 255, 255)
+                    #glLineWidth(1)
                 else: # weight > 0:
                     col = (255, 0, 0,
                            255, 0, 0)
@@ -230,9 +231,10 @@ class NeuralNetwork:
                                    0, 0, 255)
                             glLineWidth(weight+1)
                         elif weight == 0:
-                            col = (255, 255, 255,
-                                   255, 255, 255)
-                            glLineWidth(1)
+                            continue
+                            #col = (255, 255, 255,
+                            #       255, 255, 255)
+                            #glLineWidth(1)
                         else: # weight > 0:
                             col = (255, 0, 0,
                                    255, 0, 0)
@@ -258,14 +260,15 @@ class NeuralNetwork:
                     col = (0, 0, 255,
                            0, 0, 255)
                     glLineWidth(weight+1)
+                elif weight == 0:
+                    continue
+                    #col = (255, 255, 255,
+                    #       255, 255, 255)
+                    #glLineWidth(1)
                 elif weight > 0:
                     col = (255, 0, 0,
                            255, 0, 0)
                     glLineWidth(weight+1)
-                else:#if weight == 0:
-                    col = (255, 255, 255,
-                           255, 255, 255)
-                    glLineWidth(1)
 
                 #glVertex2i(self.output_layer[inodei].sprite.x+10,self.output_layer[inodei].sprite.y+10)
                 #glVertex2i(self.hidden_layers[0][hnodei].sprite.x+10,self.hidden_layers[0][hnodei].sprite.y+10)
