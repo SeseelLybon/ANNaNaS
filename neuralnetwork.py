@@ -145,6 +145,20 @@ class NeuralNetwork:
 
         return temp
 
+    def backpropegate(self):
+        pass
+        # TODO: ... something with back propegation. Alternative to Mutate
+
+
+    def pickle(self):
+        pass
+        # TODO: Basically save this NN for later use.
+
+    def unpickle(self):
+        pass
+        # TODO: Basically load to put data in this NN
+        #   Maybe also a better way than how clone does it?
+
 
 
 
