@@ -24,7 +24,7 @@ for i in range(16):
                                                    checkergrid.paterns[i],
                                                    scale=1) )
 
-pops = Population(100)
+pops = Population(1000)
 
 pops.patern = 0
 
@@ -55,7 +55,11 @@ def on_draw():
         #for braini in range(1):
             #per patern
             score_total = 0
+            score_total_c = 0
+            score_total_w = 0
 
+
+            # First test if it can turn on all the correct one.
             for paterni in range(16):
                 pops.brains[braini].set_input(0,checkergrid.paterns[paterni][0,0])
                 pops.brains[braini].set_input(1,checkergrid.paterns[paterni][1,0])
@@ -64,34 +68,24 @@ def on_draw():
 
                 pops.brains[braini].fire_network()
 
-                score_patern = 0
+                score_patern_c = 0
+                score_patern_w = 0
 
-                # First test if it can turn on all the correct one.
                 for i in range(16): # Going through all outputs! Not paterns
                     temp = pops.brains[braini].get_output(i)
                     if paterni == i and temp == 1:
-                        score_patern+=17
+                        score_patern_c+=17
+                    if paterni != i and temp == 0:
+                        score_patern_w+=1
 
-                score_total+= score_patern
+                score_total_c+= score_patern_c
+                score_total_w+= score_patern_w
 
-            # Second test if it can pass the first test 100%
-            if score_total >= 17*16: #272
-                for paterni in range(16):
-                    pops.brains[braini].set_input(0, checkergrid.paterns[paterni][0, 0])
-                    pops.brains[braini].set_input(1, checkergrid.paterns[paterni][1, 0])
-                    pops.brains[braini].set_input(2, checkergrid.paterns[paterni][0, 1])
-                    pops.brains[braini].set_input(3, checkergrid.paterns[paterni][1, 1])
 
-                    pops.brains[braini].fire_network()
 
-                    score_patern = 0
-
-                    for i in range(16): # Going through all outputs! Not paterns
-                        temp = pops.brains[braini].get_output(i)
-                        if paterni != i and temp == 0:
-                            score_patern+=1
-
-                    score_total+= score_patern
+            score_total+= score_total_c
+            if score_total_c >= 17 * 16:  # 272
+                score_total+= score_total_w
 
 
 

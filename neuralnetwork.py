@@ -20,16 +20,16 @@ class NeuralNetwork:
         #set bias node
         self.input_layer[-1].intensity = 1
 
-        self.hidden_layers = [None]*1
-        self.hidden_layers[0] = [None]*hidden_size
-        for i in range(hidden_size):
-            self.hidden_layers[0][i] = Node(1, input_size, batch=self.batch)
-        #set bias node
-        self.hidden_layers[0][-1].intensity = 1
+        if hidden_size == 0:# len(hidden_size) == 0:
+            hidden_size = input_size
+        else:
+            self.hidden_layers = [None]*1
+            self.hidden_layers[0] = [None]*hidden_size
+            for i in range(hidden_size):
+                self.hidden_layers[0][i] = Node(1, input_size, batch=self.batch)
+            #set bias node
+            self.hidden_layers[0][-1].intensity = 1
 
-
-        #self.output_layer = numpy.array([Node(2,4,batch=self.batch),
-        #                                 Node(2,4,batch=self.batch)])
 
         self.output_layer = [None]*output_size
         for i in range(output_size):
@@ -90,41 +90,44 @@ class NeuralNetwork:
         for nodei in range(len(self.input_layer)):
             for weighti in range(len(self.input_layer[nodei].weights)):
                 if numpy.random.rand() <= mutatechance:
-                    temp = self.input_layer[nodei].weights[weighti]
-                    if temp == 1 or temp == -1:
-                        temp = 0
-                    elif temp == 0:
-                        if numpy.random.rand() >= 0.5:
-                            temp = 1
-                        else:
-                            temp = -1
-                    self.input_layer[nodei].weights[weighti] = temp
+                    #temp = self.input_layer[nodei].weights[weighti]
+                    #if temp == 1 or temp == -1:
+                    #    temp = 0
+                    #elif temp == 0:
+                    #    if numpy.random.rand() >= 0.5:
+                    #        temp = 1
+                    #    else:
+                    #        temp = -1
+                    #self.input_layer[nodei].weights[weighti] = temp
+                    self.input_layer[nodei].weights[weighti] = min(numpy.random.randint(-1,2),1)
 
         for nodei in range(len(self.hidden_layers[0])):
             for weighti in range(len(self.hidden_layers[0][nodei].weights)):
                 if numpy.random.rand() <= mutatechance:
-                    temp = self.hidden_layers[0][nodei].weights[weighti]
-                    if temp == 1 or temp == -1:
-                        temp = 0
-                    elif temp == 0:
-                        if numpy.random.rand() >= 0.5:
-                            temp = 1
-                        else:
-                            temp = -1
-                    self.hidden_layers[0][nodei].weights[weighti] = temp
+                    #temp = self.hidden_layers[0][nodei].weights[weighti]
+                    #if temp == 1 or temp == -1:
+                    #    temp = 0
+                    #elif temp == 0:
+                    #    if numpy.random.rand() >= 0.5:
+                    #        temp = 1
+                    #    else:
+                    #        temp = -1
+                    #self.hidden_layers[0][nodei].weights[weighti] = temp
+                    self.hidden_layers[0][nodei].weights[weighti] = min(numpy.random.randint(-1,2),1)
 
         for nodei in range(len(self.output_layer)):
             for weighti in range(len(self.output_layer[nodei].weights)):
                 if numpy.random.rand() <= mutatechance:
-                    temp = self.output_layer[nodei].weights[weighti]
-                    if temp == 1 or temp == -1:
-                        temp = 0
-                    elif temp == 0:
-                        if numpy.random.rand() >= 0.5:
-                            temp = 1
-                        else:
-                            temp = -1
-                    self.output_layer[nodei].weights[weighti] = temp
+                    #temp = self.output_layer[nodei].weights[weighti]
+                    #if temp == 1 or temp == -1:
+                    #    temp = 0
+                    #elif temp == 0:
+                    #    if numpy.random.rand() >= 0.5:
+                    #        temp = 1
+                    #    else:
+                    #        temp = -1
+                    #self.output_layer[nodei].weights[weighti] = temp
+                    self.output_layer[nodei].weights[weighti] = min(numpy.random.randint(-1,2),1)
 
     def clone(self):
         temp = NeuralNetwork(len(self.input_layer),

@@ -1,6 +1,7 @@
 from neuralnetwork import NeuralNetwork
 import pyglet
 import numpy
+import logging
 #import garbage
 
 
@@ -10,13 +11,16 @@ class Population:
     generation = 1
     bestBraini = -1
 
+    stagnatedGenerations = 0
+    prev_bestFitness = 0
+
     def __init__(self, size):
         self.brains = [None]*size
         self.size = size
         self.fitnessSum = 0
 
         for i in range(len(self.brains)):
-            self.brains[i] = NeuralNetwork(4+1,8+1,16)
+            self.brains[i] = NeuralNetwork(4+1,4+1,16)
 
     def update(self):
         pass
@@ -41,10 +45,21 @@ class Population:
         # save the best brain
         newBrains[0] = self.brains[self.bestBraini].clone()
 
+        mutatechance=1/40
+
+        if self.brains[self.bestBraini].fitness == self.prev_bestFitness:
+            self.stagnatedGenerations += 1
+        else:
+            self.stagnatedGenerations = 0
+
+        self.prev_bestFitness = self.brains[self.bestBraini].fitness
+
+        logging.debug(self.stagnatedGenerations)
+
         # then use select parent and fill the list of new brains with them as parents
         for i in range(1,len(newBrains)):
             newBrains[i] = self.selectParent().clone()
-            newBrains[i].mutate(1/50)
+            newBrains[i].mutate(mutatechance)
             newBrains[i].fitness = 0
 
         #swap out the old brains for the new brains
