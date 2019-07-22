@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 import checkergrid
 from population import Population
 
-window = pyglet.window.Window(640,460)
+window = pyglet.window.Window(700,900)
 pyglet.gl.glClearColor(0.3,0.3,0.3,1)
 
 
@@ -17,11 +17,14 @@ pyglet.gl.glClearColor(0.3,0.3,0.3,1)
 #inputchecker = checkergrid.Checker([40,300],randpater, scale=1.5)
 
 # output checkers are just for visuals
-outputchecker_1 = checkergrid.Checker([550,300],checkergrid.paterns[5], scale=1.5)
 
-outputchecker_2 = checkergrid.Checker([550,200],checkergrid.paterns[10], scale=1.5)
+outputcheckers = list()
+for i in range(16):
+        outputcheckers.append( checkergrid.Checker([600,800-50*i],
+                                                   checkergrid.paterns[i],
+                                                   scale=1) )
 
-pops = Population(200)
+pops = Population(1000)
 
 pops.patern = 0
 
@@ -45,6 +48,7 @@ def on_draw():
         for braini in range(len(pops.brains)):
         #for braini in range(1):
             #per patern
+            totalscoresum = 0
             for paterni in range(16):
                 pops.brains[braini].set_input(0,checkergrid.paterns[paterni][0,0])
                 pops.brains[braini].set_input(1,checkergrid.paterns[paterni][1,0])
@@ -54,16 +58,18 @@ def on_draw():
 
                 pops.brains[braini].fire_network()
 
+                score = 0
                 for i in range(16):
                     temp = pops.brains[braini].get_output(i)
-                    if paterni != i:
-                        if temp == 0:
-                            pass
-                            #give points?
-                    else: # paterni == i:
-                        if temp != 1:
-                            pass
-                            #give points?
+                    if paterni == i:
+                        score+=(1-temp)**2
+                    else:
+                        score +=(0-temp)**2
+                totalscoresum+=10/max(score, 0.001)
+
+            totalscoreavg=totalscoresum/16
+            pops.brains[braini].fitness=10/max(totalscoreavg, 0.001)
+
 
                 #if pops.brains[braini].get_output(0) == 1 and pops.brains[braini].get_output(1) != 1:
                 #    pops.brains[braini].fitness+=0
@@ -82,7 +88,7 @@ def on_draw():
                 #        pass
 
         pops.setBestBrain()
-        if pops.brains[pops.bestBraini].fitness == 14+15*2:
+        if pops.brains[pops.bestBraini].fitness == 10/0.00001:
             print("found perfect brain")
             pyglet.clock.unschedule(falseupdate)
             showGraph = True
@@ -98,7 +104,7 @@ def on_draw():
 
     else:
 
-        inputchecker = checkergrid.Checker([20,200],checkergrid.paterns[patern], scale=1.5)
+        inputchecker = checkergrid.Checker([10,600],checkergrid.paterns[patern], scale=1.5)
         pops.brains[pops.bestBraini].set_input(0,checkergrid.paterns[patern][0,0])
         pops.brains[pops.bestBraini].set_input(1,checkergrid.paterns[patern][1,0])
         pops.brains[pops.bestBraini].set_input(2,checkergrid.paterns[patern][0,1])
@@ -110,7 +116,7 @@ def on_draw():
         patern=patern%16
 
     if pops.bestBraini != -1:
-        pops.brains[pops.bestBraini].updateposGFX([100,400],[400,400])
+        pops.brains[pops.bestBraini].updateposGFX([90,810],[450,800])
         pops.brains[pops.bestBraini].updateintensityGFX()
         pops.brains[pops.bestBraini].draw()
         checkergrid.checkerbatch.draw()

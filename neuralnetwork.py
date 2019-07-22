@@ -14,16 +14,16 @@ class NeuralNetwork:
         self.batch = pyglet.graphics.Batch()
         self.fitness = 0
 
-        self.input_layer = list()
+        self.input_layer = [None]*input_size
         for i in range(input_size):
-            self.input_layer.append(Node(0, batch=self.batch))
+            self.input_layer[i] = Node(0, batch=self.batch)
         #set bias node
         self.input_layer[-1].intensity = 1
 
-        self.hidden_layers = list()
-        self.hidden_layers.append(list())
+        self.hidden_layers = [None]*1
+        self.hidden_layers[0] = [None]*hidden_size
         for i in range(hidden_size):
-            self.hidden_layers[0].append(Node(1, input_size, batch=self.batch))
+            self.hidden_layers[0][i] = Node(1, input_size, batch=self.batch)
         #set bias node
         self.hidden_layers[0][-1].intensity = 1
 
@@ -31,9 +31,9 @@ class NeuralNetwork:
         #self.output_layer = numpy.array([Node(2,4,batch=self.batch),
         #                                 Node(2,4,batch=self.batch)])
 
-        self.output_layer = list()
+        self.output_layer = [None]*output_size
         for i in range(output_size):
-            self.output_layer.append(Node(2, hidden_size, batch=self.batch))
+            self.output_layer[i] = Node(2, hidden_size, batch=self.batch)
 
 
 
