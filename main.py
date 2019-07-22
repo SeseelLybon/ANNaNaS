@@ -1,3 +1,10 @@
+#-------------------------------------
+# Inspired by Code Bullet,
+#             3blue1brown
+#
+#-------------------------------------
+
+
 import pyglet
 from pyglet.window import key
 import logging
@@ -73,9 +80,9 @@ def on_draw():
 
                 for i in range(16): # Going through all outputs! Not paterns
                     temp = pops.brains[braini].get_output(i)
-                    if paterni == i and temp == 1:
+                    if paterni == i and temp >= 0.9:
                         score_patern_c+=17
-                    if paterni != i and temp == 0:
+                    if paterni != i and temp <= 0.1:
                         score_patern_w+=1
 
                 score_total_c+= score_patern_c

@@ -99,7 +99,7 @@ class NeuralNetwork:
                     #    else:
                     #        temp = -1
                     #self.input_layer[nodei].weights[weighti] = temp
-                    self.input_layer[nodei].weights[weighti] = min(numpy.random.randint(-1,2),1)
+                    self.input_layer[nodei].weights[weighti] = numpy.random.uniform(-2,2)
 
         for nodei in range(len(self.hidden_layers[0])):
             for weighti in range(len(self.hidden_layers[0][nodei].weights)):
@@ -113,7 +113,7 @@ class NeuralNetwork:
                     #    else:
                     #        temp = -1
                     #self.hidden_layers[0][nodei].weights[weighti] = temp
-                    self.hidden_layers[0][nodei].weights[weighti] = min(numpy.random.randint(-1,2),1)
+                    self.hidden_layers[0][nodei].weights[weighti] = numpy.random.uniform(-2,2)
 
         for nodei in range(len(self.output_layer)):
             for weighti in range(len(self.output_layer[nodei].weights)):
@@ -127,7 +127,7 @@ class NeuralNetwork:
                     #    else:
                     #        temp = -1
                     #self.output_layer[nodei].weights[weighti] = temp
-                    self.output_layer[nodei].weights[weighti] = min(numpy.random.randint(-1,2),1)
+                    self.output_layer[nodei].weights[weighti] = numpy.random.uniform(-2,2)
 
     def clone(self):
         temp = NeuralNetwork(len(self.input_layer),
@@ -287,26 +287,27 @@ class NeuralNetwork:
         # update intensities of input nodes
         temp_am_nodes = len(self.input_layer)
         for nodei in range(temp_am_nodes):
-            if self.input_layer[nodei].intensity > 0:
-                self.input_layer[nodei].sprite.image = image_whiteneuron
-            else:
-                self.input_layer[nodei].sprite.image = image_blackneuron
+            intens = self.input_layer[nodei].intensity
+            intens = min(intens*255, 255)
+            self.input_layer[nodei].sprite.color = (intens,intens,intens)
 
         # update intensities of hidden layer nodes
         for layeri in range(len(self.hidden_layers)):
             for nodei in range(len(self.hidden_layers[layeri])):
-                if self.hidden_layers[layeri][nodei].intensity > 0:
-                    self.hidden_layers[layeri][nodei].sprite.image = image_whiteneuron
-                else:
-                    self.hidden_layers[layeri][nodei].sprite.image = image_blackneuron
+                intens = self.hidden_layers[layeri][nodei].intensity
+                intens = min(intens*255, 255)
+                self.hidden_layers[layeri][nodei].sprite.color = (intens,intens,intens)
 
         # update intensities of output nodes
         temp_am_nodes = len(self.output_layer)
         for nodei in range(temp_am_nodes):
-            if self.output_layer[nodei].intensity > 0:
-                self.output_layer[nodei].sprite.image = image_whiteneuron
-            else:
-                self.output_layer[nodei].sprite.image = image_blackneuron
+            intens = self.output_layer[nodei].intensity
+            intens = min(intens*255, 255)
+            self.output_layer[nodei].sprite.color = (intens,intens,intens)
+            #if self.output_layer[nodei].intensity >= 1:
+            #    self.output_layer[nodei].sprite.image = image_whiteneuron
+            #else:
+            #    self.output_layer[nodei].sprite.image = image_blackneuron
 
         self.updateedgesGFX()
 
@@ -317,7 +318,7 @@ class NeuralNetwork:
         # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
 
 
-image_blackneuron = pyglet.resource.image("resources/" + "blackneuron.png")
+#image_blackneuron = pyglet.resource.image("resources/" + "blackneuron.png")
 image_whiteneuron = pyglet.resource.image("resources/" + "whiteneuron.png")
 
 class Node:
@@ -326,7 +327,7 @@ class Node:
         self.layer = layer
         self.intensity = 0
         if weights is None:
-            self.weights = numpy.random.randint(-1,2,[parent_size,])
+            self.weights = numpy.random.uniform(-2,2,[parent_size,])
         else:
             self.weights=weights
 
