@@ -24,13 +24,14 @@ for i in range(16):
                                                    checkergrid.paterns[i],
                                                    scale=1) )
 
-pops = Population(1000)
+pops = Population(100)
 
 pops.patern = 0
 
 showGraph = False
 perfectBrainFound = False
 patern = 0
+skip_once = False
 
 @window.event
 def on_draw():
@@ -38,54 +39,69 @@ def on_draw():
     global showGraph
     global perfectBrainFound
     global patern
+    global skip_once
 
     window.clear()
 
     if not perfectBrainFound:
         print("startin generation", pops.generation)
 
+        if skip_once:
+            pops.naturalSelection()
+        skip_once = True
+
         #per brain
         for braini in range(len(pops.brains)):
         #for braini in range(1):
             #per patern
-            totalscoresum = 0
+            score_total = 0
+
             for paterni in range(16):
                 pops.brains[braini].set_input(0,checkergrid.paterns[paterni][0,0])
                 pops.brains[braini].set_input(1,checkergrid.paterns[paterni][1,0])
                 pops.brains[braini].set_input(2,checkergrid.paterns[paterni][0,1])
                 pops.brains[braini].set_input(3,checkergrid.paterns[paterni][1,1])
 
-
                 pops.brains[braini].fire_network()
 
-                score = 0
-                for i in range(16):
+                score_patern = 0
+
+                # First test if it can turn on all the correct one.
+                for i in range(16): # Going through all outputs! Not paterns
                     temp = pops.brains[braini].get_output(i)
-                    if paterni == i:
-                        score+=(1-temp)**2
-                    else:
-                        score +=(0-temp)**2
-                totalscoresum+=10/max(score, 0.001)
+                    if paterni == i and temp == 1:
+                        score_patern+=17
 
-            totalscoreavg=totalscoresum/16
-            pops.brains[braini].fitness=10/max(totalscoreavg, 0.001)
+                score_total+= score_patern
+
+            # Second test if it can pass the first test 100%
+            if score_total >= 17*16: #272
+                for paterni in range(16):
+                    pops.brains[braini].set_input(0, checkergrid.paterns[paterni][0, 0])
+                    pops.brains[braini].set_input(1, checkergrid.paterns[paterni][1, 0])
+                    pops.brains[braini].set_input(2, checkergrid.paterns[paterni][0, 1])
+                    pops.brains[braini].set_input(3, checkergrid.paterns[paterni][1, 1])
+
+                    pops.brains[braini].fire_network()
+
+                    score_patern = 0
+
+                    for i in range(16): # Going through all outputs! Not paterns
+                        temp = pops.brains[braini].get_output(i)
+                        if paterni != i and temp == 0:
+                            score_patern+=1
+
+                    score_total+= score_patern
 
 
-                #if pops.brains[braini].get_output(0) == 1 and pops.brains[braini].get_output(1) != 1:
-                #    pops.brains[braini].fitness+=0
-                #    if paterni == 5:
-                #        pops.brains[braini].fitness+=15
-#
-                #elif pops.brains[braini].get_output(0) != 1 and pops.brains[braini].get_output(1) == 1:
-                #    pops.brains[braini].fitness+=0
-                #    if paterni == 10:
-                #        pops.brains[braini].fitness+=15
-#
-                #elif pops.brains[braini].get_output(0) != 1 and pops.brains[braini].get_output(1) != 1:
-                #    if not paterni == 10\
-                #            and not paterni == 5:
-                #        pops.brains[braini].fitness+=1
-                #        pass
+
+
+            #totalscoreavg=totalscoresum/16
+            #pops.brains[braini].fitness=10/max(totalscoreavg, 0.001)
+            pops.brains[braini].fitness=score_total
+
+
+
 
         pops.setBestBrain()
         if pops.brains[pops.bestBraini].fitness == 10/0.00001:
@@ -100,7 +116,7 @@ def on_draw():
         print("Generating new generation")
         #generate new brains
         pops.calculateFitnessSum()
-        pops.naturalSelection()
+        #pops.naturalSelection()
 
     else:
 
