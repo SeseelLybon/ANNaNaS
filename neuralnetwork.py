@@ -8,7 +8,7 @@ from pyglet.gl import *
 
 class NeuralNetwork:
 
-    def __init__(self, input_size=5, hidden_size=5, output_size=2):
+    def __init__(self, input_size=5, hidden_size=5, output_size=2, hollow=False):
         self.pos = (0,0)
         self.dim = (0,0)
         self.batch = pyglet.graphics.Batch()
@@ -17,7 +17,7 @@ class NeuralNetwork:
         #self.input_layer = [None]*input_size
         self.input_layer = np.ndarray([input_size], Node)
         for i in range(input_size):
-            self.input_layer[i] = Node(0, batch=self.batch)
+            self.input_layer[i] = Node(0, batch=self.batch, hollow=hollow)
         #set bias node
         self.input_layer[-1].intensity = 1
 
@@ -27,14 +27,14 @@ class NeuralNetwork:
             self.hidden_layers = np.ndarray([1], np.ndarray)
             self.hidden_layers[0] = np.ndarray([hidden_size], Node)
             for i in range(hidden_size):
-                self.hidden_layers[0][i] = Node(1, input_size, batch=self.batch)
+                self.hidden_layers[0][i] = Node(1, input_size, batch=self.batch, hollow=hollow)
             #set bias node
             self.hidden_layers[0][-1].intensity = 1
 
 
         self.output_layer = np.ndarray([output_size], Node)
         for i in range(output_size):
-            self.output_layer[i] = Node(2, hidden_size, batch=self.batch)
+            self.output_layer[i] = Node(2, hidden_size, batch=self.batch, hollow=hollow)
 
 
 
@@ -106,7 +106,8 @@ class NeuralNetwork:
     def clone(self):
         temp = NeuralNetwork(len(self.input_layer),
                              len(self.hidden_layers[0]),
-                             len(self.output_layer))
+                             len(self.output_layer),
+                             hollow=True)
 
         for i in range(len(self.input_layer)):
             temp.input_layer[i].weights = copy.deepcopy(self.input_layer[i].weights)
@@ -307,12 +308,18 @@ image_whiteneuron = pyglet.resource.image("resources/" + "whiteneuron.png")
 
 class Node:
     ids = [-1]
-    def __init__(self, layer, parent_size=0, weights=None, batch=None):
+    def __init__(self, layer, parent_size=0, batch=None, hollow=False, weights=None):
         self.layer = layer
         self.intensity = 0
-        if weights is None:
+
+        if hollow:
+            #If hollow, innitialize empty weights array
+            self.weights = np.zeros(parent_size, dtype=float)
+        elif weights is None:
+            #If not hollow and no weights are provided, initiallize random weights
             self.weights = np.random.uniform(-2,2,[parent_size,])
         else:
+            #Else use weights provided
             self.weights=weights
 
         self.sprite = pyglet.sprite.Sprite(image_whiteneuron, x=0,
