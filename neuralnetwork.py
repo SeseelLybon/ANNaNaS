@@ -8,33 +8,40 @@ from pyglet.gl import *
 
 class NeuralNetwork:
 
-    def __init__(self, input_size=5, hidden_size=5, output_size=2):
+    def __init__(self, input_size=5, hidden_size=5, output_size=2, hollow=False):
         self.pos = (0,0)
         self.dim = (0,0)
         self.batch = pyglet.graphics.Batch()
         self.fitness = 0
 
-        #self.input_layer = [None]*input_size
-        self.input_layer = np.ndarray([input_size], Node)
-        for i in range(input_size):
-            self.input_layer[i] = Node(0, batch=self.batch)
-        #set bias node
-        self.input_layer[-1].intensity = 1
 
-        if hidden_size == 0:# len(hidden_size) == 0:
-            hidden_size = input_size
+        if not hollow:
+            #self.input_layer = [None]*input_size
+            self.input_layer = np.ndarray([input_size], Node)
+            for i in range(input_size):
+                self.input_layer[i] = Node(0, batch=self.batch)
+            #set bias node
+            self.input_layer[-1].intensity = 1
+
+            if hidden_size == 0:# len(hidden_size) == 0:
+                hidden_size = input_size
+            else:
+                self.hidden_layers = np.ndarray([1], np.ndarray)
+                self.hidden_layers[0] = np.ndarray([hidden_size], Node)
+                for i in range(hidden_size):
+                    self.hidden_layers[0][i] = Node(1, input_size, batch=self.batch)
+                #set bias node
+                self.hidden_layers[0][-1].intensity = 1
+
+
+            self.output_layer = np.ndarray([output_size], Node)
+            for i in range(output_size):
+                self.output_layer[i] = Node(2, hidden_size, batch=self.batch)
         else:
+            self.input_layer = np.ndarray([input_size], Node)
             self.hidden_layers = np.ndarray([1], np.ndarray)
             self.hidden_layers[0] = np.ndarray([hidden_size], Node)
-            for i in range(hidden_size):
-                self.hidden_layers[0][i] = Node(1, input_size, batch=self.batch)
-            #set bias node
-            self.hidden_layers[0][-1].intensity = 1
-
-
-        self.output_layer = np.ndarray([output_size], Node)
-        for i in range(output_size):
-            self.output_layer[i] = Node(2, hidden_size, batch=self.batch)
+            self.output_layer = np.ndarray([output_size], Node)
 
 
 
@@ -104,18 +111,23 @@ class NeuralNetwork:
                     self.output_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
     def clone(self):
-        temp = NeuralNetwork(len(self.input_layer),
-                             len(self.hidden_layers[0]),
-                             len(self.output_layer))
+        input_size          = len(self.input_layer)
+        hidden_layer_size   = len(self.hidden_layers[0])
+        output_size         = len(self.output_layer)
 
-        for i in range(len(self.input_layer)):
-            temp.input_layer[i].weights = copy.deepcopy(self.input_layer[i].weights)
+        temp = NeuralNetwork(input_size,
+                             hidden_layer_size,
+                             output_size,
+                             hollow=True)
 
-        for i in range(len(self.hidden_layers[0])):
-            temp.hidden_layers[0][i].weights = copy.deepcopy(self.hidden_layers[0][i].weights)
+        for i in range(input_size):
+            temp.input_layer[i] = Node(0, input_size, weights=self.input_layer[i].weights, batch=temp.batch)
 
-        for i in range(len(self.output_layer)):
-            temp.output_layer[i].weights = copy.deepcopy(self.output_layer[i].weights)
+        for i in range(hidden_layer_size):
+            temp.hidden_layers[0][i] = Node(1, hidden_layer_size, weights=self.hidden_layers[0][i].weights, batch=temp.batch)
+
+        for i in range(output_size):
+            temp.output_layer[i] = Node(2, output_size, weights=self.output_layer[i].weights, batch=temp.batch)
 
         return temp
 
