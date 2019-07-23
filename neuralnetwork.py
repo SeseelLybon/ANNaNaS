@@ -64,23 +64,23 @@ class NeuralNetwork:
             self.output_layer[nodei].intensity = self.ReLU(temp)
 
     # simplified version to get output intensities
-    def get_output(self, num):
+    def get_output(self, num:int):
         return self.output_layer[num].intensity
 
     # don't set inputs directly! would put them on private, but Python has no privates
-    def set_input(self, num, intense):
+    def set_input(self, num:int, intense:float):
         self.input_layer[num].intensity = intense
 
     @staticmethod
-    def Sigmoid(x):
+    def Sigmoid(x:float):
         return 1 / (1+math.e**-x)
 
     @staticmethod
-    def ReLU(x):
+    def ReLU(x:float):
         return np.maximum(0, np.minimum(x,1 ))
         #return max(0, min(x,1))
     @staticmethod
-    def ReLUd(x):
+    def ReLUd(x:float):
         if x <= 0:
             return 0
         else:
@@ -88,7 +88,7 @@ class NeuralNetwork:
         #return max(0, min(x,1))
 
     @staticmethod
-    def Sigmoidi(x):
+    def Sigmoidi(x:float):
         temp = 1 / (1+math.e**-x)
         if temp > 0.5:
             return 1
@@ -342,7 +342,7 @@ image_whiteneuron = pyglet.resource.image("resources/" + "whiteneuron.png")
 
 class Node:
     ids = [-1]
-    def __init__(self, layer, parent_size=0, batch=None, hollow=False, weights=None):
+    def __init__(self, layer:int, parent_size=0, batch=None, hollow=False, weights=None):
         self.layer = layer
         self.intensity = 0
 
