@@ -8,9 +8,6 @@
 import pyglet
 from pyglet.window import key
 import logging
-import numpy
-import random
-import copy
 logging.basicConfig(level=logging.DEBUG)
 
 import checkergrid
@@ -160,9 +157,62 @@ def on_key_press(symbol, modifiers):
 def falseupdate(dt):
     pass
 
+def cprofiletest():
+    print("startin test", pops.generation)
 
-pyglet.clock.schedule_interval_soft(falseupdate, 1 / 1)
-pyglet.app.run()
+    # per brain
+    for braini in range(len(pops.brains)):
+        # for braini in range(1):
+        # per patern
+        score_total = 0
+        score_total_c = 0
+        score_total_w = 0
+
+        # First test if it can turn on all the correct one.
+        for paterni in range(16):
+            pops.brains[braini].set_input(0, checkergrid.paterns[paterni][0, 0])
+            pops.brains[braini].set_input(1, checkergrid.paterns[paterni][1, 0])
+            pops.brains[braini].set_input(2, checkergrid.paterns[paterni][0, 1])
+            pops.brains[braini].set_input(3, checkergrid.paterns[paterni][1, 1])
+
+            pops.brains[braini].fire_network()
+
+            score_patern_c = 0
+            score_patern_w = 0
+
+            for i in range(16):  # Going through all outputs! Not paterns
+                temp = pops.brains[braini].get_output(i)
+                if paterni == i and temp >= 0.9:
+                    score_patern_c += 17
+                if paterni != i and temp <= 0.1:
+                    score_patern_w += 1
+
+            score_total_c += score_patern_c
+            score_total_w += score_patern_w
+
+        score_total += score_total_c
+        if score_total_c >= 17 * 16:  # 272
+            score_total += score_total_w
+
+        # totalscoreavg=totalscoresum/16
+        # pops.brains[braini].fitness=10/max(totalscoreavg, 0.001)
+        pops.brains[braini].fitness = score_total
+
+
+    print("Best of generation is", pops.bestBraini, pops.brains[pops.bestBraini].fitness)
+    print("Generating new generation")
+    # generate new brains
+    pops.calculateFitnessSum()
+    pops.naturalSelection()
+
+amTesting = True
+if amTesting:
+    import cProfile
+    cProfile.run('cprofiletest()')
+else:
+    pyglet.clock.schedule_interval_soft(falseupdate, 1 / 1)
+    pyglet.app.run()
+
 
 
 logging.critical("End of main")
