@@ -1,6 +1,6 @@
 import logging
 import math
-import numpy
+import numpy as np
 import pyglet
 import copy
 from pyglet.gl import *
@@ -14,7 +14,8 @@ class NeuralNetwork:
         self.batch = pyglet.graphics.Batch()
         self.fitness = 0
 
-        self.input_layer = [None]*input_size
+        #self.input_layer = [None]*input_size
+        self.input_layer = np.ndarray([input_size], Node)
         for i in range(input_size):
             self.input_layer[i] = Node(0, batch=self.batch)
         #set bias node
@@ -23,15 +24,15 @@ class NeuralNetwork:
         if hidden_size == 0:# len(hidden_size) == 0:
             hidden_size = input_size
         else:
-            self.hidden_layers = [None]*1
-            self.hidden_layers[0] = [None]*hidden_size
+            self.hidden_layers = np.ndarray([1], np.ndarray)
+            self.hidden_layers[0] = np.ndarray([hidden_size], Node)
             for i in range(hidden_size):
                 self.hidden_layers[0][i] = Node(1, input_size, batch=self.batch)
             #set bias node
             self.hidden_layers[0][-1].intensity = 1
 
 
-        self.output_layer = [None]*output_size
+        self.output_layer = np.ndarray([output_size], Node)
         for i in range(output_size):
             self.output_layer[i] = Node(2, hidden_size, batch=self.batch)
 
@@ -89,45 +90,18 @@ class NeuralNetwork:
     def mutate(self,mutatechance=1/30):
         for nodei in range(len(self.input_layer)):
             for weighti in range(len(self.input_layer[nodei].weights)):
-                if numpy.random.rand() <= mutatechance:
-                    #temp = self.input_layer[nodei].weights[weighti]
-                    #if temp == 1 or temp == -1:
-                    #    temp = 0
-                    #elif temp == 0:
-                    #    if numpy.random.rand() >= 0.5:
-                    #        temp = 1
-                    #    else:
-                    #        temp = -1
-                    #self.input_layer[nodei].weights[weighti] = temp
-                    self.input_layer[nodei].weights[weighti] = numpy.random.uniform(-2,2)
+                if np.random.rand() <= mutatechance:
+                    self.input_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
         for nodei in range(len(self.hidden_layers[0])):
             for weighti in range(len(self.hidden_layers[0][nodei].weights)):
-                if numpy.random.rand() <= mutatechance:
-                    #temp = self.hidden_layers[0][nodei].weights[weighti]
-                    #if temp == 1 or temp == -1:
-                    #    temp = 0
-                    #elif temp == 0:
-                    #    if numpy.random.rand() >= 0.5:
-                    #        temp = 1
-                    #    else:
-                    #        temp = -1
-                    #self.hidden_layers[0][nodei].weights[weighti] = temp
-                    self.hidden_layers[0][nodei].weights[weighti] = numpy.random.uniform(-2,2)
+                if np.random.rand() <= mutatechance:
+                    self.hidden_layers[0][nodei].weights[weighti] = np.random.uniform(-2,2)
 
         for nodei in range(len(self.output_layer)):
             for weighti in range(len(self.output_layer[nodei].weights)):
-                if numpy.random.rand() <= mutatechance:
-                    #temp = self.output_layer[nodei].weights[weighti]
-                    #if temp == 1 or temp == -1:
-                    #    temp = 0
-                    #elif temp == 0:
-                    #    if numpy.random.rand() >= 0.5:
-                    #        temp = 1
-                    #    else:
-                    #        temp = -1
-                    #self.output_layer[nodei].weights[weighti] = temp
-                    self.output_layer[nodei].weights[weighti] = numpy.random.uniform(-2,2)
+                if np.random.rand() <= mutatechance:
+                    self.output_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
     def clone(self):
         temp = NeuralNetwork(len(self.input_layer),
@@ -257,8 +231,6 @@ class NeuralNetwork:
                                    255, 0, 0)
                             glLineWidth(weight+1)
 
-                        #glVertex2i(self.hidden_layers[layeri-1][inodei].sprite.x + 10, self.hidden_layers[layeri-1][inodei].sprite.y + 10)
-                        #glVertex2i(self.hidden_layers[layeri][hnodei].sprite.x + 10, self.hidden_layers[layeri][hnodei].sprite.y + 10)
                         pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.hidden_layers[layeri-1][inodei].sprite.x + 10,
                                                                    self.hidden_layers[layeri-1][inodei].sprite.y + 10,
                                                                    self.hidden_layers[layeri][hnodei].sprite.x + 10,
@@ -287,8 +259,6 @@ class NeuralNetwork:
                            255, 0, 0)
                     glLineWidth(weight+1)
 
-                #glVertex2i(self.output_layer[inodei].sprite.x+10,self.output_layer[inodei].sprite.y+10)
-                #glVertex2i(self.hidden_layers[0][hnodei].sprite.x+10,self.hidden_layers[0][hnodei].sprite.y+10)
                 pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.output_layer[inodei].sprite.x+10,
                                                            self.output_layer[inodei].sprite.y + 10,
                                                            self.hidden_layers[-1][hnodei].sprite.x + 10,
@@ -341,7 +311,7 @@ class Node:
         self.layer = layer
         self.intensity = 0
         if weights is None:
-            self.weights = numpy.random.uniform(-2,2,[parent_size,])
+            self.weights = np.random.uniform(-2,2,[parent_size,])
         else:
             self.weights=weights
 
