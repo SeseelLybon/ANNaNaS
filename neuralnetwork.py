@@ -49,14 +49,14 @@ class NeuralNetwork:
 
         #for layeri in range(len(self.hidden_layers)):
         #for nodei in range(len(self.hidden_layers[layeri])-1):
-        for nodei in range(len(self.hidden_layers[0])-1):
+        for nodei in range(self.hidden_layers[0].size-1):
             temp=0
             for weight, in_node in zip(self.hidden_layers[0][nodei].weights, self.input_layer):
                 temp+=in_node.intensity*weight
             self.hidden_layers[0][nodei].intensity = self.ReLU(temp)
             #previous_layer = self.hidden_layers[layeri]
 
-        for nodei in range(len(self.output_layer)):
+        for nodei in range(self.output_layer.size):
             temp=0
             # for yadayada in zip(node, self.hidden_layer[-1]):
             for weight, hid_node in zip(self.output_layer[nodei].weights, self.hidden_layers[0]):
@@ -77,7 +77,15 @@ class NeuralNetwork:
 
     @staticmethod
     def ReLU(x):
-        return max(0, min(x,1))
+        return np.maximum(0, np.minimum(x,1 ))
+        #return max(0, min(x,1))
+    @staticmethod
+    def ReLUd(x):
+        if x <= 0:
+            return 0
+        else:
+            return 1
+        #return max(0, min(x,1))
 
     @staticmethod
     def Sigmoidi(x):
@@ -88,18 +96,18 @@ class NeuralNetwork:
             return 0
 
     def mutate(self,mutatechance=1/30):
-        for nodei in range(len(self.input_layer)):
-            for weighti in range(len(self.input_layer[nodei].weights)):
+        for nodei in range(self.input_layer.size):
+            for weighti in range(self.input_layer[nodei].weights.size):
                 if np.random.rand() <= mutatechance:
                     self.input_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
-        for nodei in range(len(self.hidden_layers[0])):
-            for weighti in range(len(self.hidden_layers[0][nodei].weights)):
+        for nodei in range(self.hidden_layers[0].size):
+            for weighti in range(self.hidden_layers[0][nodei].weights.size):
                 if np.random.rand() <= mutatechance:
                     self.hidden_layers[0][nodei].weights[weighti] = np.random.uniform(-2,2)
 
-        for nodei in range(len(self.output_layer)):
-            for weighti in range(len(self.output_layer[nodei].weights)):
+        for nodei in range(self.output_layer.size):
+            for weighti in range(self.output_layer[nodei].weights.size):
                 if np.random.rand() <= mutatechance:
                     self.output_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
@@ -109,20 +117,46 @@ class NeuralNetwork:
                              len(self.output_layer),
                              hollow=True)
 
-        for i in range(len(self.input_layer)):
+        for i in range(self.input_layer.size):
             temp.input_layer[i].weights = copy.deepcopy(self.input_layer[i].weights)
 
-        for i in range(len(self.hidden_layers[0])):
+        for i in range(self.hidden_layers[0].size):
             temp.hidden_layers[0][i].weights = copy.deepcopy(self.hidden_layers[0][i].weights)
 
-        for i in range(len(self.output_layer)):
+        for i in range(self.output_layer.size):
             temp.output_layer[i].weights = copy.deepcopy(self.output_layer[i].weights)
 
         return temp
 
-    def backpropegate(self):
-        pass
-        # TODO: ... something with back propegation. Alternative to Mutate
+    # Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
+    def backpropegate(self, desired_output):
+        # TODO: ... something with back propegation.
+
+
+        #Move through the output layer
+        for nodei in range(self.output_layer.size):
+            Z_j_L0 = 0
+            C_0_d = 0
+            a_j_L0_d = 0
+
+
+            for nodei in range(self.output_layer.size):
+                C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
+                for weighti in range(self.output_layer[nodei].weights.size):
+                    Z_j_L0 += self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
+
+            a_j_L0_d=self.ReLUd(Z_j_L0)
+
+            d1_temp = C_0_d
+            d2_temp = a_j_L0_d
+            d3_temp = 0
+
+
+
+
+
+            #Move through the hidden layers and adjust them.
+
 
 
     def pickle(self):
