@@ -20,7 +20,7 @@ class Population:
         self.fitnessSum = 0
 
         for i in range(self.players.size):
-            self.players[i] = Dart_Player(NeuralNetwork(1+1, 30+1, 60))
+            self.players[i] = Dart_Player(NeuralNetwork(1+1, 10+1, 23))
 
     def update(self):
         for i in range(self.players.size):
