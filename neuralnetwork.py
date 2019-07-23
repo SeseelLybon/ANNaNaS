@@ -12,7 +12,6 @@ class NeuralNetwork:
         self.pos = (0,0)
         self.dim = (0,0)
         self.batch = pyglet.graphics.Batch()
-        self.fitness = 0
 
         #self.input_layer = [None]*input_size
         self.input_layer = np.ndarray([input_size], Node)

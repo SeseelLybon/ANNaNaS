@@ -1,78 +1,79 @@
 from neuralnetwork import NeuralNetwork
 import pyglet
-import numpy
+import numpy as np
 import logging
 #import garbage
-
+from dart_player import Dart_Player
 
 class Population:
 
 
     generation = 1
-    bestBraini = -1
+    bestPlayeri = -1
 
     stagnatedGenerations = 0
     prev_bestFitness = 0
 
-    def __init__(self, size):
-        self.brains = [None]*size
+    def __init__(self, size, x, y, z):
+        self.players = np.ndarray([size], Dart_Player)
         self.size = size
         self.fitnessSum = 0
 
-        for i in range(len(self.brains)):
-            self.brains[i] = NeuralNetwork(4+1,4+1,16)
+        for i in range(self.players.size):
+            self.players[i] = Dart_Player(NeuralNetwork(1+1, 30+1, 60))
 
     def update(self):
-        pass
+        for i in range(self.players.size):
+            self.players[i].update()
 
     def selectParent(self):
-        rand = numpy.random.randint(0, self.fitnessSum)
+        rand = np.random.randint(0, self.fitnessSum)
         runningSum = 0
-        for i in range(len(self.brains)):
-            runningSum +=  self.brains[i].fitness
+        for i in range(self.players.size):
+            runningSum +=  self.players[i].fitness
             if runningSum > rand:
-                return self.brains[i]
+                return self.players[i]
 
     def calculateFitnessSum(self):
         self.fitnessSum = 0
-        for i in range(len(self.brains)):
-            self.fitnessSum += self.brains[i].fitness
+        for i in range(len(self.players)):
+            self.fitnessSum += self.players[i].fitness
 
     def naturalSelection(self):
-        newBrains = [None]*self.size
+        newPlayers = np.ndarray([self.size], Dart_Player)
         self.setBestBrain()
 
         # save the best brain
-        newBrains[0] = self.brains[self.bestBraini].clone()
+        newPlayers[0] = self.players[self.bestPlayeri].clone()
 
         mutatechance=1/40
 
-        if self.brains[self.bestBraini].fitness == self.prev_bestFitness:
+        if self.players[self.bestPlayeri].fitness == self.prev_bestFitness:
             self.stagnatedGenerations += 1
         else:
             self.stagnatedGenerations = 0
 
-        self.prev_bestFitness = self.brains[self.bestBraini].fitness
+        self.prev_bestFitness = self.players[self.bestPlayeri].fitness
 
-        logging.debug(self.stagnatedGenerations)
+        #logging.debug(self.stagnatedGenerations)
 
         # then use select parent and fill the list of new brains with them as parents
-        for i in range(1,len(newBrains)):
-            newBrains[i] = self.selectParent().clone()
-            newBrains[i].mutate(mutatechance)
-            newBrains[i].fitness = 0
+        for i in range(1,newPlayers.size):
+            newPlayers[i] = self.selectParent().clone()
+            newPlayers[i].mutate(mutatechance)
+            newPlayers[i].fitness = 0
 
         #swap out the old brains for the new brains
-        self.brains = newBrains
+        self.players = newPlayers
         self.generation += 1
 
 
     def setBestBrain(self):
         maxFit = 0
-        tempbestBraini = -1
-        for i in range(len(self.brains)):
-            if self.brains[i].fitness >= maxFit:
-                tempbestBraini = i
-                maxFit = self.brains[i].fitness
-        self.bestBraini = tempbestBraini
+        tempbestPlayeri = -1
+        for i in range(self.players.size):
+            if self.players[i].fitness >= maxFit:
+                tempbestPlayeri = i
+                maxFit = self.players[i].fitness
+        self.bestPlayeri = tempbestPlayeri
 
