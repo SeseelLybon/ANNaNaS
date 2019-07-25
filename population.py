@@ -46,7 +46,7 @@ class Population:
         # save the best brain
         newBrains[0] = self.brains[self.bestBraini].clone()
 
-        mutatechance=1/40
+        mutatechance=1/30
 
         if self.brains[self.bestBraini].fitness == self.prev_bestFitness:
             self.stagnatedGenerations += 1
@@ -59,7 +59,9 @@ class Population:
 
         # then use select parent and fill the list of new brains with them as parents
         for i in range(1,newBrains.shape[0]):
-            newBrains[i] = self.selectParent().clone()
+            #newBrains[i] = self.selectParent().clone()
+            newBrains[i] = NeuralNetwork.mix(self.selectParent(), self.selectParent())
+
             newBrains[i].mutate(mutatechance)
             newBrains[i].fitness = 0
 

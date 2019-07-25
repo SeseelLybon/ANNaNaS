@@ -154,6 +154,43 @@ class NeuralNetwork:
 
         return temp
 
+    @classmethod
+    def mix(cls, parent1, parent2):
+        if parent1.hidden_layers:
+            temp = NeuralNetwork(parent1.input_size-1,
+                                 tuple([x-1 for x in parent1.hidden_size]),
+                                 parent1.output_size,
+                                 hollow=True)
+        else:
+            temp = NeuralNetwork(parent1.input_size-1,
+                                 tuple([0]),
+                                 parent1.output_size,
+                                 hollow=True)
+
+        if parent1.hidden_layers:
+            for layeri in range(len(parent1.hidden_layers)):
+                for nodei in range(parent1.hidden_layers[layeri].size):
+                    for weighti in range(temp.hidden_layers[layeri][nodei].weights.shape[0]):
+                        if parent1.hidden_layers[layeri][nodei].weights[weighti] > parent2.hidden_layers[layeri][nodei].weights[weighti]:
+                                temp.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(parent2.hidden_layers[layeri][nodei].weights[weighti],
+                                                                                                       parent1.hidden_layers[layeri][nodei].weights[weighti])
+                        else:
+                                temp.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(parent1.hidden_layers[layeri][nodei].weights[weighti],
+                                                                                                       parent2.hidden_layers[layeri][nodei].weights[weighti])
+        else:
+            temp.hidden_layers = None
+
+        for nodei in range(parent1.output_layer.size):
+            for weighti in range(parent1.output_layer[nodei].weights.shape[0]):
+                if parent1.output_layer[nodei].weights[weighti] > parent2.output_layer[nodei].weights[weighti]:
+                        temp.output_layer[nodei].weights[weighti] = np.random.uniform(parent2.output_layer[nodei].weights[weighti],
+                                                                                      parent1.output_layer[nodei].weights[weighti])
+                else:
+                        temp.output_layer[nodei].weights[weighti] = np.random.uniform(parent1.output_layer[nodei].weights[weighti],
+                                                                                      parent2.output_layer[nodei].weights[weighti])
+
+        return temp
+
     # Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
     def backpropegate(self, desired_output):
         # TODO: ... something with back propegation.
