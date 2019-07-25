@@ -20,13 +20,13 @@ class Population:
         self.fitnessSum = 0
 
         for i in range(self.brains.shape[0]):
-            self.brains[i] = NeuralNetwork(4+1,tuple([4+1]),16)
+            self.brains[i] = NeuralNetwork(4,tuple([0]),16)
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
     def update(self):
         pass
 
-    def selectParent(self):
+    def selectParent(self)->NeuralNetwork:
         rand = np.random.randint(0, self.fitnessSum)
         runningSum = 0
         for i in range(self.brains.shape[0]):
@@ -55,7 +55,7 @@ class Population:
 
         self.prev_bestFitness = self.brains[self.bestBraini].fitness
 
-        logging.debug(self.stagnatedGenerations)
+        print(self.stagnatedGenerations)
 
         # then use select parent and fill the list of new brains with them as parents
         for i in range(1,newBrains.shape[0]):

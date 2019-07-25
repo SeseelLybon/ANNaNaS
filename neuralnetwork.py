@@ -8,10 +8,13 @@ from pyglet.gl import *
 
 class NeuralNetwork:
 
-    def __init__(self, input_size=5, hidden_size:tuple=tuple([5]), output_size=2, hollow=False):
+    def __init__(self, input_size=4, hidden_size:tuple=tuple([4]), output_size=2, hollow=False):
         # TODO: Make it so that the size of nodes + bias node is handled automatically. Now the user has to add a node themselves.
-        self.input_size = input_size
-        self.hidden_size = hidden_size
+        self.input_size = input_size+1
+        if hidden_size[0] > 0:
+            self.hidden_size = tuple([x+1 for x in hidden_size])
+        else:
+            self.hidden_size = hidden_size
         self.output_size = output_size
 
         self.pos = (0,0)
@@ -20,31 +23,31 @@ class NeuralNetwork:
         self.fitness = 0
 
         #self.input_layer = [None]*input_size
-        self.input_layer = np.ndarray([input_size], Node)
-        for i in range(input_size):
+        self.input_layer = np.ndarray([self.input_size], Node)
+        for i in range(self.input_size):
             self.input_layer[i] = Node(0, batch=self.batch, hollow=hollow)
         #set bias node
         self.input_layer[-1].intensity = 1
 
-        if hidden_size[0] == 0: # !!!Can do this, because there is no point in having a hidden layer with 0 nodes!!!
+        if self.hidden_size[0] == 0: # !!!Can do this, because there is no point in having a hidden layer with 0 nodes!!!
             self.hidden_layers = None
-            hidden_size = tuple([input_size])
+            self.hidden_size = tuple([self.input_size])
         else:
             # make the list with layers (np.ndarray)
-            self.hidden_layers = [np.ndarray([x], Node) for x in hidden_size]
+            self.hidden_layers = [np.ndarray([x], Node) for x in self.hidden_size]
             # Go through each layer, then through each Node slot, construct a node and put it in the slot
-            temp_lastlayer_size = input_size
+            temp_lastlayer_size = self.input_size
             for layeri in range(len(self.hidden_layers)):
-                for i in range(hidden_size[layeri]):
+                for i in range(self.hidden_size[layeri]):
                     self.hidden_layers[layeri][i] = Node(1, temp_lastlayer_size, batch=self.batch, hollow=hollow)
                 #set bias node
                 self.hidden_layers[layeri][-1].intensity = 1
-                temp_lastlayer_size = hidden_size[layeri]
+                temp_lastlayer_size = self.hidden_size[layeri]
 
 
-        self.output_layer = np.ndarray([output_size], Node)
-        for i in range(output_size):
-            self.output_layer[i] = Node(2, hidden_size[-1], batch=self.batch, hollow=hollow)
+        self.output_layer = np.ndarray([self.output_size], Node)
+        for i in range(self.output_size):
+            self.output_layer[i] = Node(2, self.hidden_size[-1], batch=self.batch, hollow=hollow)
 
 
 
@@ -124,13 +127,21 @@ class NeuralNetwork:
                     self.output_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
     def clone(self):
-        temp = NeuralNetwork(self.input_size,
-                             self.hidden_size,
-                             self.output_size,
-                             hollow=True)
+        if self.hidden_layers:
+            temp = NeuralNetwork(self.input_size-1,
+                                 tuple([x-1 for x in self.hidden_size]),
+                                 self.output_size,
+                                 hollow=True)
+        else:
+            temp = NeuralNetwork(self.input_size-1,
+                                 self.hidden_size,
+                                 self.output_size,
+                                 hollow=True)
 
-        for nodei in range(self.input_layer.size):
-            temp.input_layer[nodei].weights = copy.deepcopy(self.input_layer[nodei].weights)
+        #clone ... what? the inputlayer has no weights.
+        #for nodei in range(self.input_layer.size):
+        #    temp.input_layer[nodei].weights = copy.deepcopy(self.input_layer[nodei].weights)
+
         if self.hidden_layers:
             for layeri in range(len(self.hidden_layers)):
                 for nodei in range(self.hidden_layers[layeri].size):
@@ -146,30 +157,19 @@ class NeuralNetwork:
     # Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
     def backpropegate(self, desired_output):
         # TODO: ... something with back propegation.
-
-
         #Move through the output layer
         for nodei in range(self.output_layer.size):
             Z_j_L0 = 0
             C_0_d = 0
             a_j_L0_d = 0
-
-
             for nodei in range(self.output_layer.shape[0]):
                 C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
                 for weighti in range(self.output_layer[nodei].weights.shape[0]):
                     Z_j_L0 += self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
-
             a_j_L0_d=self.ReLUd(Z_j_L0)
-
             d1_temp = C_0_d
             d2_temp = a_j_L0_d
             d3_temp = 0
-
-
-
-
-
             #Move through the hidden layers and adjust them.
 
 
@@ -358,7 +358,9 @@ class NeuralNetwork:
         # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
 
 
-#image_blackneuron = pyglet.resource.image("resources/" + "blackneuron.png")
+
+
+
 image_whiteneuron = pyglet.resource.image("resources/" + "whiteneuron.png")
 
 class Node:
