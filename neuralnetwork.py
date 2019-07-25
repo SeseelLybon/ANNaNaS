@@ -134,7 +134,7 @@ class NeuralNetwork:
                                  hollow=True)
         else:
             temp = NeuralNetwork(self.input_size-1,
-                                 self.hidden_size,
+                                 tuple([0]),
                                  self.output_size,
                                  hollow=True)
 
