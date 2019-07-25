@@ -8,7 +8,12 @@ from pyglet.gl import *
 
 class NeuralNetwork:
 
-    def __init__(self, input_size=5, hidden_size:tuple=(5), output_size=2, hollow=False):
+    def __init__(self, input_size=5, hidden_size:tuple=tuple([5]), output_size=2, hollow=False):
+        # TODO: Make it so that the size of nodes + bias node is handled automatically. Now the user has to add a node themselves.
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+
         self.pos = (0,0)
         self.dim = (0,0)
         self.batch = pyglet.graphics.Batch()
@@ -21,23 +26,25 @@ class NeuralNetwork:
         #set bias node
         self.input_layer[-1].intensity = 1
 
-        if hidden_size[0] == 0:
-            hidden_size = tuple(input_size)
+        if hidden_size[0] == 0: # !!!Can do this, because there is no point in having a hidden layer with 0 nodes!!!
+            self.hidden_layers = None
+            hidden_size = tuple([input_size])
         else:
-            #self.hidden_layers = [List[Node] for x in range(1)]
-            self.hidden_layers = [list() for x in range(1)]
-            for i in range(1):
-                self.hidden_layers[i] = hidden_size[0]
-
-            for i in range(hidden_size[0]):
-                self.hidden_layers[0][i] = Node(1, input_size, batch=self.batch, hollow=hollow)
-            #set bias node
-            self.hidden_layers[0][-1].intensity = 1
+            # make the list with layers (np.ndarray)
+            self.hidden_layers = [np.ndarray([x], Node) for x in hidden_size]
+            # Go through each layer, then through each Node slot, construct a node and put it in the slot
+            temp_lastlayer_size = input_size
+            for layeri in range(len(self.hidden_layers)):
+                for i in range(hidden_size[layeri]):
+                    self.hidden_layers[layeri][i] = Node(1, temp_lastlayer_size, batch=self.batch, hollow=hollow)
+                #set bias node
+                self.hidden_layers[layeri][-1].intensity = 1
+                temp_lastlayer_size = hidden_size[layeri]
 
 
         self.output_layer = np.ndarray([output_size], Node)
         for i in range(output_size):
-            self.output_layer[i] = Node(2, hidden_size, batch=self.batch, hollow=hollow)
+            self.output_layer[i] = Node(2, hidden_size[-1], batch=self.batch, hollow=hollow)
 
 
 
@@ -45,25 +52,25 @@ class NeuralNetwork:
 
 
     # Fires all input nodes
-    # TODO: Optimize which nodes are recalculated and which aren't. depth-first
     def fire_network(self):
 
         previous_layer = self.input_layer
 
-        #for layeri in range(len(self.hidden_layers)):
-        #for nodei in range(len(self.hidden_layers[layeri])-1):
-        for nodei in range(self.hidden_layers[0].size):
-            temp=0
-            for weighti in range(self.hidden_layers[0][nodei].weights.shape[0]):
-                temp+=self.input_layer[weighti].intensity*self.hidden_layers[0][nodei].weights[weighti]
-            self.hidden_layers[0][nodei].intensity = self.ReLU(temp)
-            #previous_layer = self.hidden_layers[layeri]
+
+        if self.hidden_layers:
+            for layeri in range(len(self.hidden_layers)):
+                for nodei in range(self.hidden_layers[layeri].size):
+                    temp=0
+                    for weighti in range(self.hidden_layers[layeri][nodei].weights.shape[0]):
+                        temp+=self.input_layer[weighti].intensity*self.hidden_layers[layeri][nodei].weights[weighti]
+                    self.hidden_layers[layeri][nodei].intensity = self.ReLU(temp)
+                previous_layer = self.hidden_layers[layeri]
 
         for nodei in range(self.output_layer.size):
-            temp=0
-            # for yadayada in zip(node, self.hidden_layer[-1]):
+            temp=0 # Sum of weights and intensities
+
             for weighti in range(self.output_layer[nodei].weights.shape[0]):
-                temp+=self.hidden_layers[-1][weighti].intensity*self.output_layer[nodei].weights[weighti]
+                temp+=previous_layer[weighti].intensity*self.output_layer[nodei].weights[weighti]
             self.output_layer[nodei].intensity = self.ReLU(temp)
 
     # simplified version to get output intensities
@@ -104,10 +111,12 @@ class NeuralNetwork:
                 if np.random.rand() <= mutatechance:
                     self.input_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
-        for nodei in range(len(self.hidden_layers[0])):
-            for weighti in range(self.hidden_layers[0][nodei].weights.size):
-                if np.random.rand() <= mutatechance:
-                    self.hidden_layers[0][nodei].weights[weighti] = np.random.uniform(-2,2)
+        if self.hidden_layers:
+            for layeri in range(len(self.hidden_layers)):
+                for nodei in range(self.hidden_layers[layeri].size):
+                    for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
+                        if np.random.rand() <= mutatechance:
+                            self.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(-2,2)
 
         for nodei in range(self.output_layer.size):
             for weighti in range(self.output_layer[nodei].weights.size):
@@ -115,19 +124,22 @@ class NeuralNetwork:
                     self.output_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
     def clone(self):
-        temp = NeuralNetwork(self.input_layer.shape[0],
-                             len(self.hidden_layers[0]),
-                             self.output_layer.shape[0],
+        temp = NeuralNetwork(self.input_size,
+                             self.hidden_size,
+                             self.output_size,
                              hollow=True)
 
-        for i in range(self.input_layer.size):
-            temp.input_layer[i].weights = copy.deepcopy(self.input_layer[i].weights)
+        for nodei in range(self.input_layer.size):
+            temp.input_layer[nodei].weights = copy.deepcopy(self.input_layer[nodei].weights)
+        if self.hidden_layers:
+            for layeri in range(len(self.hidden_layers)):
+                for nodei in range(self.hidden_layers[layeri].size):
+                    temp.hidden_layers[layeri][nodei].weights = copy.deepcopy(self.hidden_layers[layeri][nodei].weights)
+        else:
+            temp.hidden_layers = None
 
-        for i in range(len(self.hidden_layers[0])):
-            temp.hidden_layers[0][i].weights = copy.deepcopy(self.hidden_layers[0][i].weights)
-
-        for i in range(self.output_layer.size):
-            temp.output_layer[i].weights = copy.deepcopy(self.output_layer[i].weights)
+        for nodei in range(self.output_layer.size):
+            temp.output_layer[nodei].weights = copy.deepcopy(self.output_layer[nodei].weights)
 
         return temp
 
@@ -194,14 +206,14 @@ class NeuralNetwork:
         for nodei in range(temp_am_nodes):
             self.input_layer[nodei].sprite.update(int(pos[0]),
                                                   int(pos[1]-(dim[1]/temp_am_nodes)*nodei))
-
-        #position hidden layers' nodes
-        am_layers = len(self.hidden_layers)+1
-        for layeri in range(len(self.hidden_layers)):
-            #position the hidden layer layeri nodes
-            temp_am_nodes = len(self.hidden_layers[0])
-            for nodei in range(temp_am_nodes):
-                self.hidden_layers[layeri][nodei].sprite.update(int(pos[0]+dim[0]/am_layers*(layeri+1)),
+        if self.hidden_layers:
+            #position hidden layers' nodes
+            am_layers = len(self.hidden_layers)+1
+            for layeri in range(len(self.hidden_layers)):
+                #position the hidden layer layeri nodes
+                temp_am_nodes = len(self.hidden_layers[layeri])
+                for nodei in range(temp_am_nodes):
+                    self.hidden_layers[layeri][nodei].sprite.update(int(pos[0]+dim[0]/am_layers*(layeri+1)),
                                                                 int(pos[1]-(dim[1]/temp_am_nodes)*nodei))
 
         #position output nodes
@@ -217,42 +229,13 @@ class NeuralNetwork:
     def updateedgesGFX(self):
 
         # first hidden layer is special as it accesses input layer things
-        for hnodei in range(len(self.hidden_layers[0])-1):
-            #inodei can also be used to get the weights
-            for inodei in range(len(self.input_layer)):
-                weight = self.hidden_layers[0][hnodei].weights[inodei]
-                if weight < 0:
-                    weight*=-1
-                    #RGB
-                    col = (0, 0, 255,
-                           0, 0, 255)
-                    glLineWidth(weight+1)
-                elif weight == 0:
-                    continue
-                    #col = (255, 255, 255,
-                    #       255, 255, 255)
-                    #glLineWidth(1)
-                else: # weight > 0:
-                    col = (255, 0, 0,
-                           255, 0, 0)
-                    glLineWidth(weight+1)
-
-                pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.input_layer[inodei].sprite.x+10,
-                                                           self.input_layer[inodei].sprite.y + 10,
-                                                           self.hidden_layers[0][hnodei].sprite.x + 10,
-                                                           self.hidden_layers[0][hnodei].sprite.y + 10)
-                                                   ),
-                                                   ('c3B',col))
-
-        # second to last hidden layers
-        if len(self.hidden_layers) > 0:
-            for layeri in range(1, len(self.hidden_layers)):
-                for hnodei in range(len(self.hidden_layers[layeri])):
-
-                    # inodei can also be used to get the weights
-                    for inodei in range(len(self.input_layer)):
-
-                        weight =self.hidden_layers[layeri][hnodei].weights[inodei]
+        previous_layer = self.input_layer
+        if self.hidden_layers:
+            for layeri in range(len(self.hidden_layers)):
+                for fromnodei in range(self.hidden_layers[layeri].size-1):
+                    #tonodei can also be used to get the weights
+                    for tonodei in range(previous_layer.size):
+                        weight = self.hidden_layers[layeri][fromnodei].weights[tonodei]
                         if weight < 0:
                             weight*=-1
                             #RGB
@@ -269,40 +252,74 @@ class NeuralNetwork:
                                    255, 0, 0)
                             glLineWidth(weight+1)
 
-                        pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.hidden_layers[layeri-1][inodei].sprite.x + 10,
-                                                                   self.hidden_layers[layeri-1][inodei].sprite.y + 10,
-                                                                   self.hidden_layers[layeri][hnodei].sprite.x + 10,
-                                                                   self.hidden_layers[layeri][hnodei].sprite.y + 10)
+                        pyglet.graphics.draw(2, GL_LINES, ('v2i', (previous_layer[tonodei].sprite.x+10,
+                                                                   previous_layer[tonodei].sprite.y + 10,
+                                                                   self.hidden_layers[layeri][fromnodei].sprite.x + 10,
+                                                                   self.hidden_layers[layeri][fromnodei].sprite.y + 10)
                                                            ),
-                                                          ('c3B', col))
-        # last hidden layer to output layer
-        for hnodei in range(len(self.hidden_layers[-1])):
-            #inodei can also be used to get the weights
-            for inodei in range(len(self.output_layer)):
+                                                           ('c3B',col))
+                previous_layer = self.hidden_layers[layeri]
 
-                weight =self.output_layer[inodei].weights[hnodei]
-                if weight < 0:
-                    weight*=-1
-                    #RGB
-                    col = (0, 0, 255,
-                           0, 0, 255)
-                    glLineWidth(weight+1)
-                elif weight == 0:
-                    continue
-                    #col = (255, 255, 255,
-                    #       255, 255, 255)
-                    #glLineWidth(1)
-                else:# weight > 0:
-                    col = (255, 0, 0,
-                           255, 0, 0)
-                    glLineWidth(weight+1)
 
-                pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.output_layer[inodei].sprite.x+10,
-                                                           self.output_layer[inodei].sprite.y + 10,
-                                                           self.hidden_layers[-1][hnodei].sprite.x + 10,
-                                                           self.hidden_layers[-1][hnodei].sprite.y + 10)
-                                                   ),
-                                                  ('c3B', col))
+        if self.hidden_layers:
+            # last hidden layer to output layer
+            for fromnodei in range(len(self.hidden_layers[-1])):
+                #tonodei can also be used to get the weights
+                for tonodei in range(len(self.output_layer)):
+
+                    weight =self.output_layer[tonodei].weights[fromnodei]
+                    if weight < 0:
+                        weight*=-1
+                        #RGB
+                        col = (0, 0, 255,
+                               0, 0, 255)
+                        glLineWidth(weight+1)
+                    elif weight == 0:
+                        continue
+                        #col = (255, 255, 255,
+                        #       255, 255, 255)
+                        #glLineWidth(1)
+                    else:# weight > 0:
+                        col = (255, 0, 0,
+                               255, 0, 0)
+                        glLineWidth(weight+1)
+
+                    pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.output_layer[tonodei].sprite.x+10,
+                                                               self.output_layer[tonodei].sprite.y + 10,
+                                                               self.hidden_layers[-1][fromnodei].sprite.x + 10,
+                                                               self.hidden_layers[-1][fromnodei].sprite.y + 10)
+                                                       ),
+                                                      ('c3B', col))
+        else:
+            # No hidden layers, so connect from input to output
+            for fromnodei in range(self.input_layer.size):
+                #tonodei can also be used to get the weights
+                for tonodei in range(self.output_layer.size):
+
+                    weight =self.output_layer[tonodei].weights[fromnodei]
+                    if weight < 0:
+                        weight*=-1
+                        #RGB
+                        col = (0, 0, 255,
+                               0, 0, 255)
+                        glLineWidth(weight+1)
+                    elif weight == 0:
+                        continue
+                        #col = (255, 255, 255,
+                        #       255, 255, 255)
+                        #glLineWidth(1)
+                    else:# weight > 0:
+                        col = (255, 0, 0,
+                               255, 0, 0)
+                        glLineWidth(weight+1)
+
+                    pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.output_layer[tonodei].sprite.x+10,
+                                                               self.output_layer[tonodei].sprite.y + 10,
+                                                               self.input_layer[fromnodei].sprite.x + 10,
+                                                               self.input_layer[fromnodei].sprite.y + 10)
+                                                       ),
+                                                      ('c3B', col))
+
 
     def updateintensityGFX(self):
 
@@ -313,12 +330,13 @@ class NeuralNetwork:
             intens = min(intens*255, 255)
             self.input_layer[nodei].sprite.color = (intens,intens,intens)
 
-        # update intensities of hidden layer nodes
-        for layeri in range(len(self.hidden_layers)):
-            for nodei in range(len(self.hidden_layers[layeri])):
-                intens = self.hidden_layers[layeri][nodei].intensity
-                intens = min(intens*255, 255)
-                self.hidden_layers[layeri][nodei].sprite.color = (intens,intens,intens)
+        if self.hidden_layers:
+            # update intensities of hidden layer nodes
+            for layeri in range(len(self.hidden_layers)):
+                for nodei in range(len(self.hidden_layers[layeri])):
+                    intens = self.hidden_layers[layeri][nodei].intensity
+                    intens = min(intens*255, 255)
+                    self.hidden_layers[layeri][nodei].sprite.color = (intens,intens,intens)
 
         # update intensities of output nodes
         temp_am_nodes = len(self.output_layer)
