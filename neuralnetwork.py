@@ -1,14 +1,14 @@
-import logging
 import math
 import numpy as np
 import pyglet
 import copy
+from typing import List
 from pyglet.gl import *
 
 
 class NeuralNetwork:
 
-    def __init__(self, input_size=5, hidden_size=5, output_size=2, hollow=False):
+    def __init__(self, input_size=5, hidden_size:tuple=(5), output_size=2, hollow=False):
         self.pos = (0,0)
         self.dim = (0,0)
         self.batch = pyglet.graphics.Batch()
@@ -21,12 +21,15 @@ class NeuralNetwork:
         #set bias node
         self.input_layer[-1].intensity = 1
 
-        if hidden_size == 0:# len(hidden_size) == 0:
-            hidden_size = input_size
+        if hidden_size[0] == 0:
+            hidden_size = tuple(input_size)
         else:
-            self.hidden_layers = np.ndarray([1], np.ndarray)
-            self.hidden_layers[0] = np.ndarray([hidden_size], Node)
-            for i in range(hidden_size):
+            #self.hidden_layers = [List[Node] for x in range(1)]
+            self.hidden_layers = [list() for x in range(1)]
+            for i in range(1):
+                self.hidden_layers[i] = hidden_size[0]
+
+            for i in range(hidden_size[0]):
                 self.hidden_layers[0][i] = Node(1, input_size, batch=self.batch, hollow=hollow)
             #set bias node
             self.hidden_layers[0][-1].intensity = 1
@@ -49,18 +52,18 @@ class NeuralNetwork:
 
         #for layeri in range(len(self.hidden_layers)):
         #for nodei in range(len(self.hidden_layers[layeri])-1):
-        for nodei in range(self.hidden_layers[0].size-1):
+        for nodei in range(self.hidden_layers[0].size):
             temp=0
-            for weight, in_node in zip(self.hidden_layers[0][nodei].weights, self.input_layer):
-                temp+=in_node.intensity*weight
+            for weighti in range(self.hidden_layers[0][nodei].weights.shape[0]):
+                temp+=self.input_layer[weighti].intensity*self.hidden_layers[0][nodei].weights[weighti]
             self.hidden_layers[0][nodei].intensity = self.ReLU(temp)
             #previous_layer = self.hidden_layers[layeri]
 
         for nodei in range(self.output_layer.size):
             temp=0
             # for yadayada in zip(node, self.hidden_layer[-1]):
-            for weight, hid_node in zip(self.output_layer[nodei].weights, self.hidden_layers[0]):
-                temp+=hid_node.intensity*weight
+            for weighti in range(self.output_layer[nodei].weights.shape[0]):
+                temp+=self.hidden_layers[-1][weighti].intensity*self.output_layer[nodei].weights[weighti]
             self.output_layer[nodei].intensity = self.ReLU(temp)
 
     # simplified version to get output intensities
@@ -101,7 +104,7 @@ class NeuralNetwork:
                 if np.random.rand() <= mutatechance:
                     self.input_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
-        for nodei in range(self.hidden_layers[0].size):
+        for nodei in range(len(self.hidden_layers[0])):
             for weighti in range(self.hidden_layers[0][nodei].weights.size):
                 if np.random.rand() <= mutatechance:
                     self.hidden_layers[0][nodei].weights[weighti] = np.random.uniform(-2,2)
@@ -112,15 +115,15 @@ class NeuralNetwork:
                     self.output_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
     def clone(self):
-        temp = NeuralNetwork(len(self.input_layer),
+        temp = NeuralNetwork(self.input_layer.shape[0],
                              len(self.hidden_layers[0]),
-                             len(self.output_layer),
+                             self.output_layer.shape[0],
                              hollow=True)
 
         for i in range(self.input_layer.size):
             temp.input_layer[i].weights = copy.deepcopy(self.input_layer[i].weights)
 
-        for i in range(self.hidden_layers[0].size):
+        for i in range(len(self.hidden_layers[0])):
             temp.hidden_layers[0][i].weights = copy.deepcopy(self.hidden_layers[0][i].weights)
 
         for i in range(self.output_layer.size):
@@ -140,9 +143,9 @@ class NeuralNetwork:
             a_j_L0_d = 0
 
 
-            for nodei in range(self.output_layer.size):
+            for nodei in range(self.output_layer.shape[0]):
                 C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
-                for weighti in range(self.output_layer[nodei].weights.size):
+                for weighti in range(self.output_layer[nodei].weights.shape[0]):
                     Z_j_L0 += self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
 
             a_j_L0_d=self.ReLUd(Z_j_L0)
@@ -289,7 +292,7 @@ class NeuralNetwork:
                     #col = (255, 255, 255,
                     #       255, 255, 255)
                     #glLineWidth(1)
-                elif weight > 0:
+                else:# weight > 0:
                     col = (255, 0, 0,
                            255, 0, 0)
                     glLineWidth(weight+1)
