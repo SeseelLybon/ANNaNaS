@@ -90,8 +90,9 @@ class NeuralNetwork:
 
     @staticmethod
     def ReLU(x:float):
-        return np.maximum(0, np.minimum(x,1 ))
+        return np.maximum(0, x)
         #return max(0, min(x,1))
+
     @staticmethod
     def ReLUd(x:float):
         if x <= 0:
@@ -154,42 +155,47 @@ class NeuralNetwork:
 
         return temp
 
-    @classmethod
-    def mix(cls, parent1, parent2):
-        if parent1.hidden_layers:
-            temp = NeuralNetwork(parent1.input_size-1,
-                                 tuple([x-1 for x in parent1.hidden_size]),
-                                 parent1.output_size,
+    def crossover(self, parent2):
+        if self.hidden_layers:
+            child = NeuralNetwork(self.input_size - 1,
+                                 tuple([x - 1 for x in self.hidden_size]),
+                                 self.output_size,
                                  hollow=True)
         else:
-            temp = NeuralNetwork(parent1.input_size-1,
+            child = NeuralNetwork(self.input_size - 1,
                                  tuple([0]),
-                                 parent1.output_size,
+                                 self.output_size,
                                  hollow=True)
 
-        if parent1.hidden_layers:
-            for layeri in range(len(parent1.hidden_layers)):
-                for nodei in range(parent1.hidden_layers[layeri].size):
-                    for weighti in range(temp.hidden_layers[layeri][nodei].weights.shape[0]):
-                        if parent1.hidden_layers[layeri][nodei].weights[weighti] > parent2.hidden_layers[layeri][nodei].weights[weighti]:
-                                temp.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(parent2.hidden_layers[layeri][nodei].weights[weighti],
-                                                                                                       parent1.hidden_layers[layeri][nodei].weights[weighti])
-                        else:
-                                temp.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(parent1.hidden_layers[layeri][nodei].weights[weighti],
-                                                                                                       parent2.hidden_layers[layeri][nodei].weights[weighti])
+        if self.hidden_layers:
+            for layeri in range(len(self.hidden_layers)):
+                for nodei in range(self.hidden_layers[layeri].size):
+                    for weighti in range(child.hidden_layers[layeri][nodei].weights.shape[0]):
+                        pass
+                        # TODO: Write some way to mix the two parents
+                        #   Is this even possible, though?
+                        #if self.hidden_layers[layeri][nodei].weights[weighti] > parent2.hidden_layers[layeri][nodei].weights[weighti]:
+                        #        child.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(parent2.hidden_layers[layeri][nodei].weights[weighti],
+                        #                                                                               self.hidden_layers[layeri][nodei].weights[weighti])
+                        #else:
+                        #        child.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(self.hidden_layers[layeri][nodei].weights[weighti],
+                        #                                                                               parent2.hidden_layers[layeri][nodei].weights[weighti])
         else:
-            temp.hidden_layers = None
+            child.hidden_layers = None
 
-        for nodei in range(parent1.output_layer.size):
-            for weighti in range(parent1.output_layer[nodei].weights.shape[0]):
-                if parent1.output_layer[nodei].weights[weighti] > parent2.output_layer[nodei].weights[weighti]:
-                        temp.output_layer[nodei].weights[weighti] = np.random.uniform(parent2.output_layer[nodei].weights[weighti],
-                                                                                      parent1.output_layer[nodei].weights[weighti])
-                else:
-                        temp.output_layer[nodei].weights[weighti] = np.random.uniform(parent1.output_layer[nodei].weights[weighti],
-                                                                                      parent2.output_layer[nodei].weights[weighti])
+        for nodei in range(self.output_layer.size):
+            for weighti in range(self.output_layer[nodei].weights.shape[0]):
+                pass
+                # TODO: Write some way to mix the two parents
+                #   Is this even possible, though?
+                #if self.output_layer[nodei].weights[weighti] > parent2.output_layer[nodei].weights[weighti]:
+                #        child.output_layer[nodei].weights[weighti] = np.random.uniform(parent2.output_layer[nodei].weights[weighti],
+                #                                                                      self.output_layer[nodei].weights[weighti])
+                #else:
+                #        child.output_layer[nodei].weights[weighti] = np.random.uniform(self.output_layer[nodei].weights[weighti],
+                #                                                                      parent2.output_layer[nodei].weights[weighti])
 
-        return temp
+        return child
 
     # Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
     def backpropegate(self, desired_output):

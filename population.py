@@ -60,7 +60,20 @@ class Population:
         # then use select parent and fill the list of new brains with them as parents
         for i in range(1,newBrains.shape[0]):
             #newBrains[i] = self.selectParent().clone()
-            newBrains[i] = NeuralNetwork.mix(self.selectParent(), self.selectParent())
+
+            if np.random.rand() < 0.25:
+                child = self.selectParent().clone()
+            else:
+
+                parent1:NeuralNetwork = self.selectParent()
+                parent2:NeuralNetwork = self.selectParent()
+
+                if parent1.fitness > parent2.fitness:
+                    child:NeuralNetwork = parent1.crossover(parent2)
+                else:
+                    child:NeuralNetwork = parent2.crossover(parent1)
+
+            newBrains[i] = child
 
             newBrains[i].mutate(mutatechance)
             newBrains[i].fitness = 0
