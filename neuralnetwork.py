@@ -65,7 +65,7 @@ class NeuralNetwork:
                 for nodei in range(self.hidden_layers[layeri].size):
                     temp=0
                     for weighti in range(self.hidden_layers[layeri][nodei].weights.shape[0]):
-                        temp+=self.input_layer[weighti].intensity*self.hidden_layers[layeri][nodei].weights[weighti]
+                        temp+=previous_layer[weighti].intensity*self.hidden_layers[layeri][nodei].weights[weighti]
                     self.hidden_layers[layeri][nodei].intensity = self.ReLU(temp)
                 previous_layer = self.hidden_layers[layeri]
 
