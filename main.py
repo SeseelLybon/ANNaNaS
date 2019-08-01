@@ -8,9 +8,6 @@
 import pyglet
 from pyglet.window import key
 import logging
-import numpy
-import random
-import copy
 logging.basicConfig(level=logging.DEBUG)
 
 import checkergrid
@@ -33,7 +30,6 @@ for i in range(16):
 
 pops = Population(1000)
 
-pops.patern = 0
 
 showGraph = False
 perfectBrainFound = False
