@@ -8,7 +8,7 @@ from pyglet.gl import *
 
 class NeuralNetwork:
 
-    def __init__(self, input_size=4, hidden_size:tuple=tuple([4]), output_size=2, hollow=False):
+    def __init__(self, input_size:int, hidden_size:tuple, output_size:int, hollow=False):
         # TODO: Make it so that the size of nodes + bias node is handled automatically. Now the user has to add a node themselves.
         self.input_size = input_size+1
         if hidden_size[0] > 0:
@@ -394,11 +394,11 @@ class NeuralNetwork:
 
         self.updateedgesGFX()
 
-        # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-        # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-        # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-        # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-        # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
+    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
 
 
 
