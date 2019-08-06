@@ -91,28 +91,34 @@ class Item:
             return False
 
 
-class KnapsackBruteForce:
 
-    @classmethod
-    def knapSack(cls, W, wt, val, n):
-
-        if n == 0 or W == 0:
-            return 0
-
-        if (wt[n - 1] > W):
-            return cls.knapSack(W, wt, val, n - 1)
+#temp1set = set()
+#while len(temp1set) < 100:
+#    temp1set.add( Item(np.random.randint(1,30), np.random.randint(1,30)) )
+#
+#items_list = np.array( list(temp1set), Item)
 
 
-        else:
-            return max(val[n - 1] + cls.knapSack(W - wt[n - 1], wt, val, n - 1),
-                       cls.knapSack(W, wt, val, n - 1))
+# Following values are copied from https://developers.google.com/optimization/bin/knapsack
+# to test if my own algoritm works.
 
+values = [
+    360, 83, 59, 130, 431, 67, 230, 52, 93, 125, 670, 892, 600, 38, 48, 147,
+    78, 256, 63, 17, 120, 164, 432, 35, 92, 110, 22, 42, 50, 323, 514, 28,
+    87, 73, 78, 15, 26, 78, 210, 36, 85, 189, 274, 43, 33, 10, 19, 389, 276,
+    312
+]
+weights = [
+    7, 0, 30, 22, 80, 94, 11, 81, 70, 64, 59, 18, 0, 36, 3, 8, 15, 42, 9, 0,
+    42, 47, 52, 32, 26, 48, 55, 6, 29, 84, 2, 4, 18, 56, 7, 29, 93, 44, 71,
+    3, 86, 66, 31, 65, 0, 79, 20, 65, 52, 13
+]
 
-temp1set = set()
-while len(temp1set) < 100:
-    temp1set.add( Item(np.random.randint(1,30), np.random.randint(1,30)) )
+items_list = list()
+for value, weight in zip(values, weights):
+    items_list.append( Item(weight, value) )
 
-items_list = np.array( list(temp1set), Item)
+capacities = 850
 
 
 #items_list = np.array( [Item(1, 1),
@@ -139,11 +145,4 @@ items_total_value = 0
 for item in items_list:
     items_total_size += item.size
     items_total_value += item.value
-
-if __name__ == "__main__":
-    values = [1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]
-    wt = [1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4]
-    weight = 2
-    n = len(values)
-    print(KnapsackBruteForce.knapSack(weight, wt, values, n))
 

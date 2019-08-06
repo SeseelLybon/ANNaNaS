@@ -13,14 +13,14 @@ from population import Population
 from meeple import items_list
 from meeple import items_total_size
 
-sack_size = items_total_size//4
+sack_size = 850
 pops = Population(100, sack_size)
 
 timestart = time.time()
 
 skipped_once = False
 ongoing = True
-for i in range(100):
+for i in range(1000):
 
     print("--------------------------")
     print("Wipping up a new batch")
