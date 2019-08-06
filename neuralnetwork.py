@@ -7,7 +7,7 @@ from pyglet.gl import *
 
 class NeuralNetwork:
 
-    def __init__(self, input_size:int, hidden_size:tuple, output_size:int, hollow=False):
+    def __init__(self, input_size:int, hidden_size:tuple, output_size:int, isHollow=False):
         # TODO: Make it so that the size of nodes + bias node is handled automatically. Now the user has to add a node themselves.
         self.input_size = input_size+1
         if hidden_size[0] > 0:
@@ -24,23 +24,23 @@ class NeuralNetwork:
         #self.input_layer = [None]*input_size
         self.input_layer:np.ndarray = np.ndarray([self.input_size], Node)
         for i in range(self.input_size):
-            self.input_layer[i] = Node(0, batch=self.batch, hollow=hollow)
+            self.input_layer[i] = Node(0, batch=self.batch, isHollow=isHollow)
         #set bias node
         self.input_layer[-1].intensity = 1
 
 
         self.hidden_layers:list
-        if self.hidden_size[0] == 0: # !!!Can do this, because there is no point in having a hidden layer with 0 nodes!!!
-            self.hidden_layers:list = [0]
+        if self.hidden_size[0] == 0: # Can do this, because there is no point in having a hidden layer with 0 nodes!
+            self.hidden_layers = [0]
             self.hidden_size = tuple([self.input_size])
         else:
             # make the list with layers (np.ndarray)
-            self.hidden_layers:list = [np.ndarray([x], Node) for x in self.hidden_size]
+            self.hidden_layers = [np.ndarray([x], Node) for x in self.hidden_size]
             # Go through each layer, then through each Node slot, construct a node and put it in the slot
             temp_lastlayer_size = self.input_size
             for layeri in range(len(self.hidden_layers)):
                 for i in range(self.hidden_size[layeri]):
-                    self.hidden_layers[layeri][i] = Node(1, temp_lastlayer_size, batch=self.batch, hollow=hollow)
+                    self.hidden_layers[layeri][i] = Node(1, temp_lastlayer_size, batch=self.batch, isHollow=isHollow)
                 #set bias node
                 self.hidden_layers[layeri][-1].intensity = 1
                 temp_lastlayer_size = self.hidden_size[layeri]
@@ -48,7 +48,7 @@ class NeuralNetwork:
 
         self.output_layer:np.ndarray = np.ndarray([self.output_size], Node)
         for i in range(self.output_size):
-            self.output_layer[i] = Node(2, self.hidden_size[-1], batch=self.batch, hollow=hollow)
+            self.output_layer[i] = Node(2, self.hidden_size[-1], batch=self.batch, isHollow=isHollow)
 
 
 
@@ -61,7 +61,7 @@ class NeuralNetwork:
         previous_layer = self.input_layer
 
 
-        if self.hidden_layers[0] != 0:
+        if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)):
                 for nodei in range(self.hidden_layers[layeri].size):
                     temp=0
@@ -116,7 +116,7 @@ class NeuralNetwork:
                 if np.random.rand() <= mutatechance:
                     self.input_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
-        if self.hidden_layers[0] != 0:
+        if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)):
                 for nodei in range(self.hidden_layers[layeri].size):
                     for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
@@ -129,7 +129,7 @@ class NeuralNetwork:
                     self.output_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
 
     def clone(self):
-        if self.hidden_layers[0] != 0:
+        if self.hidden_layers[0] is not 0:
             temp = NeuralNetwork(self.input_size-1,
                                  tuple([x-1 for x in self.hidden_size]),
                                  self.output_size,
@@ -144,7 +144,7 @@ class NeuralNetwork:
         #for nodei in range(self.input_layer.size):
         #    temp.input_layer[nodei].weights = copy.deepcopy(self.input_layer[nodei].weights)
 
-        if self.hidden_layers[0] != 0:
+        if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)):
                 for nodei in range(self.hidden_layers[layeri].size):
                     temp.hidden_layers[layeri][nodei].weights = copy.deepcopy(self.hidden_layers[layeri][nodei].weights)
@@ -157,7 +157,7 @@ class NeuralNetwork:
         return temp
 
     def crossover(self, parent2):
-        if self.hidden_layers[0] != 0:
+        if self.hidden_layers[0] is not 0:
             child = NeuralNetwork(self.input_size - 1,
                                  tuple([x - 1 for x in self.hidden_size]),
                                  self.output_size,
@@ -168,7 +168,7 @@ class NeuralNetwork:
                                  self.output_size,
                                  hollow=True)
 
-        if self.hidden_layers[0] != 0:
+        if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)):
                 for nodei in range(self.hidden_layers[layeri].size):
                     for weighti in range(child.hidden_layers[layeri][nodei].weights.shape[0]):
@@ -227,6 +227,25 @@ class NeuralNetwork:
         # TODO: Basically load to put data in this NN
         #   Maybe also a better way than how clone does it?
 
+    def getAmountWeights(self)->int:
+
+        totalWeights = 0
+
+
+        if self.hidden_layers[0] is not 0:
+            n_layers = [ self.input_layer.size ] + list(self.hidden_size) + [self.output_layer.size]
+
+            for lsizei in range(1, len(n_layers)-1):
+                totalWeights += n_layers[lsizei-1]*(n_layers[lsizei]-1)
+
+            totalWeights += n_layers[-2] * n_layers[-1]
+
+
+        else:
+            totalWeights = self.input_layer.size * self.output_layer.size
+
+        return totalWeights
+
 
 
 
@@ -250,7 +269,7 @@ class NeuralNetwork:
         for nodei in range(temp_am_nodes):
             self.input_layer[nodei].sprite.update(int(pos[0]),
                                                   int(pos[1]-(dim[1]/temp_am_nodes)*nodei))
-        if self.hidden_layers[0] != 0:
+        if self.hidden_layers[0] is not 0:
             #position hidden layers' nodes
             am_layers = len(self.hidden_layers)+1
             for layeri in range(len(self.hidden_layers)):
@@ -274,7 +293,7 @@ class NeuralNetwork:
 
         # first hidden layer is special as it accesses input layer things
         previous_layer = self.input_layer
-        if self.hidden_layers[0] != 0:
+        if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)):
                 for fromnodei in range(self.hidden_layers[layeri].size-1):
                     #tonodei can also be used to get the weights
@@ -305,7 +324,7 @@ class NeuralNetwork:
                 previous_layer = self.hidden_layers[layeri]
 
 
-        if self.hidden_layers[0] != 0:
+        if self.hidden_layers[0] is not 0:
             # last hidden layer to output layer
             for fromnodei in range(len(self.hidden_layers[-1])):
                 #tonodei can also be used to get the weights
@@ -374,7 +393,7 @@ class NeuralNetwork:
             intens = min(intens*255, 255)
             self.input_layer[nodei].sprite.color = (intens,intens,intens)
 
-        if self.hidden_layers[0] != 0:
+        if self.hidden_layers[0] is not 0:
             # update intensities of hidden layer nodes
             for layeri in range(len(self.hidden_layers)):
                 for nodei in range(len(self.hidden_layers[layeri])):
@@ -409,11 +428,11 @@ image_whiteneuron = pyglet.resource.image("resources/" + "whiteneuron.png")
 
 class Node:
     ids = [-1]
-    def __init__(self, layer:int, parent_size=0, batch=None, hollow=False, weights=None):
+    def __init__(self, layer:int, parent_size=0, batch=None, isHollow=False, weights=None):
         self.layer = layer
         self.intensity = 0
 
-        if hollow:
+        if isHollow:
             #If hollow, innitialize empty weights array
             self.weights = np.zeros(parent_size, dtype=float)
         elif weights is None:

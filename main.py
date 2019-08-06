@@ -50,11 +50,13 @@ def on_draw():
         print("startin generation", pops.generation)
 
         if skip_once:
+            print("Generating generation", pops.generation)
             pops.naturalSelection()
         skip_once = True
 
+        print("Starting tests")
         #per brain
-        for braini in range(len(pops.brains)):
+        for braini in range(len(pops.meeps)):
         #for braini in range(1):
             #per patern
             score_total = 0
@@ -64,18 +66,18 @@ def on_draw():
 
             # First test if it can turn on all the correct one.
             for paterni in range(16):
-                pops.brains[braini].set_input(0,checkergrid.paterns[paterni][0,0])
-                pops.brains[braini].set_input(1,checkergrid.paterns[paterni][1,0])
-                pops.brains[braini].set_input(2,checkergrid.paterns[paterni][0,1])
-                pops.brains[braini].set_input(3,checkergrid.paterns[paterni][1,1])
+                pops.meeps[braini].set_input(0, checkergrid.paterns[paterni][0, 0])
+                pops.meeps[braini].set_input(1, checkergrid.paterns[paterni][1, 0])
+                pops.meeps[braini].set_input(2, checkergrid.paterns[paterni][0, 1])
+                pops.meeps[braini].set_input(3, checkergrid.paterns[paterni][1, 1])
 
-                pops.brains[braini].fire_network()
+                pops.meeps[braini].fire_network()
 
                 score_patern_c = 0
                 score_patern_w = 0
 
                 for i in range(16): # Going through all outputs! Not paterns
-                    temp = pops.brains[braini].get_output(i)
+                    temp = pops.meeps[braini].get_output(i)
                     if paterni == i and temp >= 0.9:
                         score_patern_c+=17
                     if paterni != i and temp <= 0.1:
@@ -95,21 +97,21 @@ def on_draw():
 
             #totalscoreavg=totalscoresum/16
             #pops.brains[braini].fitness=10/max(totalscoreavg, 0.001)
-            pops.brains[braini].fitness=score_total
+            pops.meeps[braini].fitness=score_total
 
 
 
-
+        print("Done with testing")
         pops.setBestBrain()
-        if pops.brains[pops.bestBraini].fitness == 10/0.00001:
+        if pops.meeps[pops.bestBraini].fitness == 10/0.00001:
             print("found perfect brain")
             pyglet.clock.unschedule(falseupdate)
             showGraph = True
             perfectBrainFound = True
-            print("Best of generation is", pops.bestBraini, pops.brains[pops.bestBraini].fitness)
+            print("Best of generation is", pops.bestBraini, pops.meeps[pops.bestBraini].fitness)
             return
 
-        print("Best of generation is", pops.bestBraini, pops.brains[pops.bestBraini].fitness)
+        print("Best of generation is", pops.bestBraini, pops.meeps[pops.bestBraini].fitness)
         print("Generating new generation")
         #generate new brains
         pops.calculateFitnessSum()
@@ -118,20 +120,20 @@ def on_draw():
     else:
 
         inputchecker = checkergrid.Checker([10,600],checkergrid.paterns[patern], scale=1.5)
-        pops.brains[pops.bestBraini].set_input(0,checkergrid.paterns[patern][0,0])
-        pops.brains[pops.bestBraini].set_input(1,checkergrid.paterns[patern][1,0])
-        pops.brains[pops.bestBraini].set_input(2,checkergrid.paterns[patern][0,1])
-        pops.brains[pops.bestBraini].set_input(3,checkergrid.paterns[patern][1,1])
+        pops.meeps[pops.bestBraini].set_input(0, checkergrid.paterns[patern][0, 0])
+        pops.meeps[pops.bestBraini].set_input(1, checkergrid.paterns[patern][1, 0])
+        pops.meeps[pops.bestBraini].set_input(2, checkergrid.paterns[patern][0, 1])
+        pops.meeps[pops.bestBraini].set_input(3, checkergrid.paterns[patern][1, 1])
 
-        pops.brains[pops.bestBraini].fire_network()
+        pops.meeps[pops.bestBraini].fire_network()
 
         patern+=1
         patern=patern%16
 
     if pops.bestBraini != -1:
-        pops.brains[pops.bestBraini].updateposGFX([90,810],[450,800])
-        pops.brains[pops.bestBraini].updateintensityGFX()
-        pops.brains[pops.bestBraini].draw()
+        pops.meeps[pops.bestBraini].updateposGFX([90, 810], [450, 800])
+        pops.meeps[pops.bestBraini].updateintensityGFX()
+        pops.meeps[pops.bestBraini].draw()
         checkergrid.checkerbatch.draw()
 
 
