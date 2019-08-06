@@ -21,8 +21,8 @@ class Species:
 
 
     def checkSameSpecies(self, meep:Meeple)->bool:
-        temp = self.bestMeeple.brain
-        totalgenes = temp.getAmountWeights()
+        temp = self.bestMeeple
+        totalgenes = len(temp.knapsack)
 
         similair_genes = self.getAmtSimilarGenes(self.bestMeeple, meep)
 
@@ -44,46 +44,18 @@ class Species:
     # Returns the number of weights that are the same between two meeples
     # The weights are the genes
     def getAmtSimilarGenes(self, meep1:Meeple, meep2:Meeple)->float:
-        similairweights:float = 0.0
+        similairweights:float = 0
 
-        # must assume hidden layers are the same.
-        if meep1.brain.hidden_layers[0] is not 0 and meep2.brain.hidden_layers[0] is not 0:
-            #go through all the layers
-            for meep1_layer, meep2_layer in zip(meep1.brain.hidden_layers, meep2.brain.hidden_layers):
-                #go through all the nodes
-                for meep1_node, meep2_node in zip(meep1_layer, meep2_layer):
-                    #go through all the weights
-                    for meep1_weight, meep2_weight in zip(meep1_node.weights, meep2_node.weights):
-                        if (meep1_weight > 0) == (meep2_weight > 0): # test if both variables have the same sign
-                            if abs(meep1_weight - meep2_weight) < self.similairy_threshold_gene:
-                                similairweights += 1
-
-                            #elif (meep1_weight > 0) == (meep2_weight > 0):
-                            #    difweights+=2/(meep1_weight-meep2_weight**1+1)
-                            #    pass
-
-        else:
-            #no hidden layers
-            pass
-
-        for meep1_node, meep2_node in zip(meep1.brain.output_layer, meep2.brain.output_layer):
-            # go through all the weights
-            for meep1_weight, meep2_weight in zip(meep1_node.weights, meep2_node.weights):
-                if (meep1_weight > 0) == (meep2_weight > 0): # test if both variables have the same sign
-                    if abs(meep1_weight - meep2_weight) < self.similairy_threshold_gene:
-                        similairweights += 1
-
+        for item1, item2 in zip(meep1.knapsack, meep2.knapsack):
+            if item1 == item2:
+                similairweights +=1
 
         return similairweights
 
 
-    # Returns the average weight diffirence between meeples.
-    def averageWeightDiff(self, meep1:Meeple, meep2:Meeple):
-        # fakeTODO: not needed at the moment
-        return float("inf")
 
     def selectParent(self)->Meeple:
-        rand = np.random.randint(0, self.fitnessSum)
+        rand = np.random.uniform(0, self.fitnessSum)
         runningSum = 0
         for i in range(len(self.meeples)):
             runningSum +=  self.meeples[i].fitness
@@ -107,7 +79,7 @@ class Species:
             else:
                 child = parent2.crossover(parent1)
 
-        child.brain.mutate()
+        child.mutate()
 
         return child
 

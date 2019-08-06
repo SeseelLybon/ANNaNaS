@@ -12,7 +12,8 @@ class Population:
 
 
 
-    def __init__(self, size):
+    def __init__(self, size, knapsacksize):
+        self.knapsacksize = knapsacksize
         self.pop = np.ndarray([size], dtype=Meeple)
         self.species:List[Species] = []
 
@@ -22,7 +23,7 @@ class Population:
         self.bestMeeple:Meeple = None
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = Meeple(4, tuple([0]), 16)
+            self.pop[i] = Meeple(self.knapsacksize)
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
     #update all the meeps that are currently alive
@@ -39,7 +40,7 @@ class Population:
 
     def naturalSelection(self):
         self.speciate() # seperate the existing population into species for the purpose of natural selection
-        #self.calculateFitness() # calc fitness of each meeple, currently not needed
+        self.calculateFitness() # calc fitness of each meeple, currently not needed
         self.sortSpecies() #sort all the species to the average fitness, best first. In the species sort by meeple's fitness
 
         # Clean the species
@@ -99,8 +100,8 @@ class Population:
 
 
     def calculateFitness(self):
-        # faketodo: Not needed right now
-        pass
+        for meep in self.pop:
+            meep.calcFitness(self.knapsacksize)
 
     #get the sum of averages from each specie
     def getAverageFitnessSum(self)->float:
