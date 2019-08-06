@@ -28,13 +28,15 @@ for i in range(16):
                                                    checkergrid.paterns[i],
                                                    scale=1) )
 
-pops = Population(1000)
+pops = Population(100)
 
 
 showGraph = False
 perfectBrainFound = False
 patern = 0
 skip_once = False
+#prev_best_fitness = -1
+#prev_best_gen = -1
 
 @window.event
 def on_draw():
@@ -43,20 +45,23 @@ def on_draw():
     global perfectBrainFound
     global patern
     global skip_once
+    #global prev_best_fitness
+    #global prev_best_gen
 
     window.clear()
 
     if not perfectBrainFound:
+        print("--------------------------------------------")
         print("startin generation", pops.generation)
 
         if skip_once:
-            print("Generating generation", pops.generation)
+            print("\tGenerating generation", pops.generation)
             pops.naturalSelection()
         skip_once = True
 
-        print("Starting tests")
+        print("\tStarting tests")
         #per brain
-        for braini in range(len(pops.meeps)):
+        for meepi in range(len(pops.pop)):
         #for braini in range(1):
             #per patern
             score_total = 0
@@ -66,18 +71,18 @@ def on_draw():
 
             # First test if it can turn on all the correct one.
             for paterni in range(16):
-                pops.meeps[braini].set_input(0, checkergrid.paterns[paterni][0, 0])
-                pops.meeps[braini].set_input(1, checkergrid.paterns[paterni][1, 0])
-                pops.meeps[braini].set_input(2, checkergrid.paterns[paterni][0, 1])
-                pops.meeps[braini].set_input(3, checkergrid.paterns[paterni][1, 1])
+                pops.pop[meepi].brain.set_input(0, checkergrid.paterns[paterni][0, 0])
+                pops.pop[meepi].brain.set_input(1, checkergrid.paterns[paterni][1, 0])
+                pops.pop[meepi].brain.set_input(2, checkergrid.paterns[paterni][0, 1])
+                pops.pop[meepi].brain.set_input(3, checkergrid.paterns[paterni][1, 1])
 
-                pops.meeps[braini].fire_network()
+                pops.pop[meepi].brain.fire_network()
 
                 score_patern_c = 0
                 score_patern_w = 0
 
                 for i in range(16): # Going through all outputs! Not paterns
-                    temp = pops.meeps[braini].get_output(i)
+                    temp = pops.pop[meepi].brain.get_output(i)
                     if paterni == i and temp >= 0.9:
                         score_patern_c+=17
                     if paterni != i and temp <= 0.1:
@@ -97,43 +102,38 @@ def on_draw():
 
             #totalscoreavg=totalscoresum/16
             #pops.brains[braini].fitness=10/max(totalscoreavg, 0.001)
-            pops.meeps[braini].fitness=score_total
+            pops.pop[meepi].fitness=score_total
 
 
 
-        print("Done with testing")
-        pops.setBestBrain()
-        if pops.meeps[pops.bestBraini].fitness == 10/0.00001:
-            print("found perfect brain")
+        print("\tDone with testing")
+        pops.setBestMeeple()
+        if pops.bestMeeple.fitness == 512:
+            print("\t\tfound perfect brain")
             pyglet.clock.unschedule(falseupdate)
             showGraph = True
             perfectBrainFound = True
-            print("Best of generation is", pops.bestBraini, pops.meeps[pops.bestBraini].fitness)
             return
 
-        print("Best of generation is", pops.bestBraini, pops.meeps[pops.bestBraini].fitness)
-        print("Generating new generation")
-        #generate new brains
-        pops.calculateFitnessSum()
-        #pops.naturalSelection()
+        print("\tBest fitness of this generation is", pops.bestMeeple.fitness)
 
     else:
 
         inputchecker = checkergrid.Checker([10,600],checkergrid.paterns[patern], scale=1.5)
-        pops.meeps[pops.bestBraini].set_input(0, checkergrid.paterns[patern][0, 0])
-        pops.meeps[pops.bestBraini].set_input(1, checkergrid.paterns[patern][1, 0])
-        pops.meeps[pops.bestBraini].set_input(2, checkergrid.paterns[patern][0, 1])
-        pops.meeps[pops.bestBraini].set_input(3, checkergrid.paterns[patern][1, 1])
+        pops.bestMeeple.brain.set_input(0, checkergrid.paterns[patern][0, 0])
+        pops.bestMeeple.brain.set_input(1, checkergrid.paterns[patern][1, 0])
+        pops.bestMeeple.brain.set_input(2, checkergrid.paterns[patern][0, 1])
+        pops.bestMeeple.brain.set_input(3, checkergrid.paterns[patern][1, 1])
 
-        pops.meeps[pops.bestBraini].fire_network()
+        pops.bestMeeple.brain.fire_network()
 
         patern+=1
         patern=patern%16
 
-    if pops.bestBraini != -1:
-        pops.meeps[pops.bestBraini].updateposGFX([90, 810], [450, 800])
-        pops.meeps[pops.bestBraini].updateintensityGFX()
-        pops.meeps[pops.bestBraini].draw()
+    if pops.bestMeeple is not None:
+        pops.bestMeeple.brain.updateposGFX([90, 810], [450, 800])
+        pops.bestMeeple.brain.updateintensityGFX()
+        pops.bestMeeple.brain.draw()
         checkergrid.checkerbatch.draw()
 
 

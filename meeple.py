@@ -24,10 +24,14 @@ class Meeple:
         temp.brain = self.brain.clone()
         return temp
 
-    def crossover(self, parent1, parent2): #parent1:Meeple, parent2:Meeple) -> Meeple:
-        # TODO: Fill this with code to mix the two provided brains
-        pass
-
+    def crossover(self, parent2): #parent1:Meeple, parent2:Meeple) -> Meeple:
+        temp:Meeple = Meeple(self.brain.input_size-1,
+                             tuple([x-1 for x in self.brain.hidden_size]),
+                             self.brain.output_size,
+                             isHallow=True
+                             )
+        temp.brain = self.brain.crossover(parent2.brain)
+        return temp
 
 
 

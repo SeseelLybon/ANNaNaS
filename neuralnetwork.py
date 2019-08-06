@@ -8,7 +8,7 @@ from pyglet.gl import *
 class NeuralNetwork:
 
     def __init__(self, input_size:int, hidden_size:tuple, output_size:int, isHollow=False):
-        # TODO: Make it so that the size of nodes + bias node is handled automatically. Now the user has to add a node themselves.
+
         self.input_size = input_size+1
         if hidden_size[0] > 0:
             self.hidden_size = tuple([x+1 for x in hidden_size])
@@ -133,12 +133,12 @@ class NeuralNetwork:
             temp = NeuralNetwork(self.input_size-1,
                                  tuple([x-1 for x in self.hidden_size]),
                                  self.output_size,
-                                 hollow=True)
+                                 isHollow=True)
         else:
             temp = NeuralNetwork(self.input_size-1,
                                  tuple([0]),
                                  self.output_size,
-                                 hollow=True)
+                                 isHollow=True)
 
         #clone ... what? the inputlayer has no weights.
         #for nodei in range(self.input_layer.size):
@@ -157,74 +157,66 @@ class NeuralNetwork:
         return temp
 
     def crossover(self, parent2):
+        child:NeuralNetwork
+
         if self.hidden_layers[0] is not 0:
             child = NeuralNetwork(self.input_size - 1,
                                  tuple([x - 1 for x in self.hidden_size]),
                                  self.output_size,
-                                 hollow=True)
+                                 isHollow=True)
         else:
             child = NeuralNetwork(self.input_size - 1,
                                  tuple([0]),
                                  self.output_size,
-                                 hollow=True)
+                                 isHollow=True)
 
         if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)):
                 for nodei in range(self.hidden_layers[layeri].size):
                     for weighti in range(child.hidden_layers[layeri][nodei].weights.shape[0]):
-                        pass
-                        # TODO: Write some way to mix the two parents
-                        #   Is this even possible, though?
-                        #if self.hidden_layers[layeri][nodei].weights[weighti] > parent2.hidden_layers[layeri][nodei].weights[weighti]:
-                        #        child.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(parent2.hidden_layers[layeri][nodei].weights[weighti],
-                        #                                                                               self.hidden_layers[layeri][nodei].weights[weighti])
-                        #else:
-                        #        child.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(self.hidden_layers[layeri][nodei].weights[weighti],
-                        #                                                                               parent2.hidden_layers[layeri][nodei].weights[weighti])
+                        if np.random.rand() < 0.50:
+                                child.hidden_layers[layeri][nodei].weights[weighti] = self.hidden_layers[layeri][nodei].weights[weighti]
+                        else:
+                                child.hidden_layers[layeri][nodei].weights[weighti] = parent2.hidden_layers[layeri][nodei].weights[weighti]
         else:
             child.hidden_layers = [0]
 
         for nodei in range(self.output_layer.size):
             for weighti in range(self.output_layer[nodei].weights.shape[0]):
-                pass
-                # TODO: Write some way to mix the two parents
-                #   Is this even possible, though?
-                #if self.output_layer[nodei].weights[weighti] > parent2.output_layer[nodei].weights[weighti]:
-                #        child.output_layer[nodei].weights[weighti] = np.random.uniform(parent2.output_layer[nodei].weights[weighti],
-                #                                                                      self.output_layer[nodei].weights[weighti])
-                #else:
-                #        child.output_layer[nodei].weights[weighti] = np.random.uniform(self.output_layer[nodei].weights[weighti],
-                #                                                                      parent2.output_layer[nodei].weights[weighti])
+                if np.random.rand() < 0.50:
+                        child.output_layer[nodei].weights[weighti] = self.output_layer[nodei].weights[weighti]
+                else:
+                        child.output_layer[nodei].weights[weighti] = parent2.output_layer[nodei].weights[weighti]
 
         return child
 
-    # Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
-    def backpropegate(self, desired_output):
-        # TODO: ... something with back propegation.
-        #Move through the output layer
-        for nodei in range(self.output_layer.size):
-            Z_j_L0 = 0
-            C_0_d = 0
-            a_j_L0_d = 0
-            for nodei in range(self.output_layer.shape[0]):
-                C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
-                for weighti in range(self.output_layer[nodei].weights.shape[0]):
-                    Z_j_L0 += self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
-            a_j_L0_d=self.ReLUd(Z_j_L0)
-            d1_temp = C_0_d
-            d2_temp = a_j_L0_d
-            d3_temp = 0
-            #Move through the hidden layers and adjust them.
+    ##Disabled as of now as the top layer of this network isn't used for detecting, but for optimizing
+    ## Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
+    #def backpropegate(self, desired_output):
+    #    #Move through the output layer
+    #    for nodei in range(self.output_layer.size):
+    #        Z_j_L0 = 0
+    #        C_0_d = 0
+    #        a_j_L0_d = 0
+    #        for nodei in range(self.output_layer.shape[0]):
+    #            C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
+    #            for weighti in range(self.output_layer[nodei].weights.shape[0]):
+    #                Z_j_L0 += self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
+    #        a_j_L0_d=self.ReLUd(Z_j_L0)
+    #        d1_temp = C_0_d
+    #        d2_temp = a_j_L0_d
+    #        d3_temp = 0
+    #        #Move through the hidden layers and adjust them.
 
 
 
     def pickle(self):
         pass
-        # TODO: Basically save this NN for later use.
+        # TODO: Save this NN for later use.
 
     def unpickle(self):
         pass
-        # TODO: Basically load to put data in this NN
+        # TODO: Load to put data in this NN
         #   Maybe also a better way than how clone does it?
 
     def getAmountWeights(self)->int:
@@ -256,6 +248,8 @@ class NeuralNetwork:
     #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
     #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
 
+
+    # Draw the neural network on a window
     def draw(self):
         self.batch.draw()
 
@@ -288,7 +282,7 @@ class NeuralNetwork:
             self.output_layer[nodei].sprite.update(int(pos[0]+dim[0]),
                                                    new_y)
 
-
+    # Draws the edges (weights) of the neural network
     def updateedgesGFX(self):
 
         # first hidden layer is special as it accesses input layer things
@@ -383,7 +377,7 @@ class NeuralNetwork:
                                                        ),
                                                       ('c3B', col))
 
-
+    # Update the graphical intensities of the neurons
     def updateintensityGFX(self):
 
         # update intensities of input nodes

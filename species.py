@@ -13,6 +13,7 @@ class Species:
 
         self.staleness = 0 # stagnation
         self.fitnessSum = 0
+        self.averageFitness = 0
 
 
     def addToSpecies(self, meep:Meeple):
@@ -31,9 +32,11 @@ class Species:
             return False
 
     def sortSpecie(self):
-        self.meeples = self.meeples.sort(key=lambda meep: meep.fitness)
+        self.meeples.sort(key=lambda meep: meep.fitness, reverse=True)
 
-        if self.bestMeeple.fitness > self.meeples[0].fitness:
+        if self.bestMeeple is not Meeple:
+            self.bestMeeple = self.meeples[0].clone()
+        elif self.bestMeeple.fitness > self.meeples[0].fitness:
             self.bestMeeple = self.meeples[0].clone()
         else: self.staleness+=1
 
@@ -42,9 +45,6 @@ class Species:
     # The weights are the genes
     def getAmtSimilarGenes(self, meep1:Meeple, meep2:Meeple)->float:
         similairweights:float = 0.0
-
-        # TODO: Currently returns the nodes that match, not the amount that doesn't.
-        #   Does this matter though?
 
         # must assume hidden layers are the same.
         if meep1.brain.hidden_layers[0] is not 0 and meep2.brain.hidden_layers[0] is not 0:
@@ -78,9 +78,8 @@ class Species:
 
 
     # Returns the average weight diffirence between meeples.
-    @staticmethod
-    def averageWeightDiff(meep1:Meeple, meep2:Meeple):
-        # TODO: Finish code
+    def averageWeightDiff(self, meep1:Meeple, meep2:Meeple):
+        # fakeTODO: not needed at the moment
         return float("inf")
 
     def selectParent(self)->Meeple:
@@ -96,7 +95,6 @@ class Species:
         #return self.meeples[0]
 
     def generateChild(self)->Meeple:
-        # TODO: generate a child from 1 or 2 parents
         child:Meeple
 
         if np.random.rand() < 0.25:
@@ -104,15 +102,30 @@ class Species:
         else:
             parent1:Meeple = self.selectParent()
             parent2:Meeple = self.selectParent()
-            child = parent1.crossover(parent2)
-        pass
+            if parent1.fitness > parent2.fitness:
+                child = parent1.crossover(parent2)
+            else:
+                child = parent2.crossover(parent1)
+
+        child.brain.mutate()
 
         return child
 
 
 
+    def calculateFitnessSum(self):
+        self.fitnessSum = 0
+        for i in range(len(self.meeples)):
+            self.fitnessSum += self.meeples[i].fitness
 
+    def generateAverage(self):
+        self.calculateFitnessSum()
+        self.averageFitness = self.fitnessSum/len(self.meeples)
 
+    def cull(self):
+        #self.sortSpecie()
+        if len(self.meeples) > 2:
+            self.meeples = self.meeples[0:len(self.meeples)//2]
 
 
 
@@ -126,7 +139,8 @@ if __name__ == "__main__":
 
     genes1 = meep1.brain.getAmountWeights()
     genes2 = meep2.brain.getAmountWeights()
-    similar_genes = Species.getAmtSimilarGenes(meep1, meep2)
+    specie1 = Species(meep1)
+    similar_genes = specie1.getAmtSimilarGenes(meep1, meep2)
 
     print( "genes =", genes1, "|genes =", genes2, "| similar genes = ", similar_genes )
     print( "similarity =", round((similar_genes/genes1)*100, 2), "%" )
