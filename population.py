@@ -129,10 +129,7 @@ class Population:
             if specie.staleness >= 15:
                 markedForRemoval.append(specie)
 
-        # TODO: This doesn't actually work!
-        #   Needs to be rewritten
-        for mark in markedForRemoval:
-            self.species.remove(mark)
+        self.species[:] = [ x for x in self.species if x not in markedForRemoval ]
 
 
     def killBadSpecies(self):
@@ -150,10 +147,7 @@ class Population:
             if specie.averageFitness/averageSum * len(self.pop) < 1:
                 markedForRemoval.append(specie)
 
-        # TODO: This doesn't actually work!
-        #   Needs to be rewritten
-        for mark in markedForRemoval:
-            self.species.remove(mark)
+        self.species[:] = [ x for x in self.species if x not in markedForRemoval ]
 
 
     def cullSpecies(self):

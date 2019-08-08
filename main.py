@@ -55,7 +55,7 @@ def on_draw():
         print("startin generation", pops.generation)
 
         if skip_once:
-            print("\tGenerating generation", pops.generation)
+            print("\tSelecting Naturally (NaturalSelection())")
             pops.naturalSelection()
         skip_once = True
 
