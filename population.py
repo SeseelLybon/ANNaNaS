@@ -19,7 +19,7 @@ class Population:
         self.size = size
         self.generation = 0
 
-        self.bestMeeple:Meeple = None
+        self.bestMeeple:Meeple
 
         for i in range(self.pop.shape[0]):
             self.pop[i] = Meeple(4, tuple([0]), 16)
