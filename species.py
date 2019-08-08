@@ -8,7 +8,7 @@ class Species:
         self.bestMeeple:Meeple = meep
         self.meeples:list = [meep]
 
-        self.similairy_threshold_total = 0.1 # 1 = 100%
+        self.similairy_threshold_total = 0.25 # 1 = 100%
         self.similairy_threshold_gene = 0.1 # 1 = 100%
 
         self.staleness = 0 # stagnation

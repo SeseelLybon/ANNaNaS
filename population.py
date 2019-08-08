@@ -39,6 +39,7 @@ class Population:
 
     def naturalSelection(self):
         self.speciate() # seperate the existing population into species for the purpose of natural selection
+        species_pre_cull = len(self.species)
         #self.calculateFitness() # calc fitness of each meeple, currently not needed
         self.sortSpecies() #sort all the species to the average fitness, best first. In the species sort by meeple's fitness
 
@@ -47,6 +48,9 @@ class Population:
         self.setBestMeeple()
         self.killStaleSpecies()
         self.killBadSpecies()
+
+
+        print("Species pre/post culling", species_pre_cull, len(self.species))
 
 
         children:List[Meeple] = []
@@ -125,6 +129,8 @@ class Population:
             if specie.staleness >= 15:
                 markedForRemoval.append(specie)
 
+        # TODO: This doesn't actually work!
+        #   Needs to be rewritten
         for mark in markedForRemoval:
             self.species.remove(mark)
 
@@ -144,6 +150,8 @@ class Population:
             if specie.averageFitness/averageSum * len(self.pop) < 1:
                 markedForRemoval.append(specie)
 
+        # TODO: This doesn't actually work!
+        #   Needs to be rewritten
         for mark in markedForRemoval:
             self.species.remove(mark)
 
