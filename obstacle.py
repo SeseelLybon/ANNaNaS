@@ -1,5 +1,8 @@
 import numpy as np
+import pyglet
 
+
+main_batch = pyglet.graphics.Batch()
 
 class Vector2f:
     def __init__(self, x:float, y:float):
@@ -8,7 +11,7 @@ class Vector2f:
 
 
     def __add__(self, other):
-        if isinstance(Vector2f, other):
+        if isinstance(other, Vector2f):
             self.x+=other.x
             self.y+=other.y
             return
@@ -16,7 +19,7 @@ class Vector2f:
 
 
     def __sub__(self, other):
-        if isinstance(Vector2f, other):
+        if isinstance(other, Vector2f):
             self.x-=other.x
             self.y-=other.y
             return
@@ -28,18 +31,25 @@ class Vector1f:
         self.x:float = x
 
     def __add__(self, other):
-        if isinstance(Vector1f, other):
+        if isinstance(other, Vector2f):
             self.x+=other.x
             return
         raise ValueError
 
 
+image_dino = pyglet.resource.image("resources/dino.png")
+image_ground = pyglet.resource.image("resources/ground.png")
+# image for the sprite of the dino-bird
+# image for the sprite of the short cactus
+# image for the sprite of the high cactus
+# image for the sprite of the long cactus
+
 
 
 class obstacle:
-    def __init__(self, pos:Vector2f, size:Vector2f):
+    def __init__(self, pos:Vector2f, dim:Vector2f):
         self.pos:Vector2f = pos
-        self.size:Vector2f = size
+        self.dim:Vector2f = dim
 
     def isOnScreen(self, leftbound, rightbound):
         if leftbound < self.pos.x < rightbound:
@@ -49,38 +59,44 @@ class obstacle:
 
 
 class dino:
-    def __init__(self, pos:Vector2f, size:Vector2f):
+    def __init__(self, pos:Vector2f, dim:Vector2f):
         self.pos:Vector2f = pos
-        self.size:Vector2f = size
+        self.dim:Vector2f = dim
         self.velocity:Vector2f = Vector2f(0,0)
+        self.sprite = pyglet.sprite.Sprite(image_dino, x=pos.x, y=pos.y, batch=main_batch)
 
     def update(self):
 
         #apply gravity
-        if self.pos.y > 40:
-            self.velocity -= 2
-
-
+        if self.pos.y > 41:
+            self.velocity.y -= 1
 
         self.pos.y += self.velocity.y
+
+        if self.pos.y <= 40:
+            self.velocity.y = 0
 
         #stop the dino from falling through the 'floor'
         self.pos.y = max(40, self.pos.y)
 
+        self.sprite.update(x=self.pos.x, y=self.pos.y)
+
     def jump(self):
-        self.velocity.y += 10
+        if self.pos.y <= 40:
+            self.velocity.y += 20
+
+class platform:
+    def __init__(self, pos:Vector2f, dim:Vector2f):
+        self.pos:Vector2f = pos
+        self.dim:Vector2f = dim
+        self.sprite = pyglet.sprite.Sprite(image_ground, x=pos.x, y=pos.y, batch=main_batch)
+
 
 obstacle_set = {"smol_cacti": obstacle(pos=Vector2f(0,0),
-                                       size=Vector2f(10,10))
+                                       dim=Vector2f(10,10))
                 }
 
+ground = platform(Vector2f(0,10),Vector2f(1800,60))
 
+dino1 = dino(Vector2f(100,100),Vector2f(40,60))
 
-
-
-if __name__ == "__main__":
-    vec1 = Vector2f([2,2])
-
-    print(vec1)
-    vec1[0] = 3
-    print(vec1)
