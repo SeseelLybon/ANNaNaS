@@ -284,7 +284,7 @@ class NeuralNetwork:
 
     # Draws the edges (weights) of the neural network
     def updateedgesGFX(self):
-
+        edgebatch = pyglet.graphics.Batch()
         # first hidden layer is special as it accesses input layer things
         previous_layer = self.input_layer
         if self.hidden_layers[0] is not 0:
@@ -309,12 +309,13 @@ class NeuralNetwork:
                                    255, 0, 0)
                             glLineWidth(weight+1)
 
-                        pyglet.graphics.draw(2, GL_LINES, ('v2i', (previous_layer[tonodei].sprite.x+10,
-                                                                   previous_layer[tonodei].sprite.y + 10,
-                                                                   self.hidden_layers[layeri][fromnodei].sprite.x + 10,
-                                                                   self.hidden_layers[layeri][fromnodei].sprite.y + 10)
-                                                           ),
-                                                           ('c3B',col))
+                        edgebatch.add(2, GL_LINES, None, ('v2i', (previous_layer[tonodei].sprite.x+10,
+                                                            previous_layer[tonodei].sprite.y + 10,
+                                                            self.hidden_layers[layeri][fromnodei].sprite.x + 10,
+                                                            self.hidden_layers[layeri][fromnodei].sprite.y + 10)
+                                                    ),
+                                                    ('c3B',col)
+                                      )
                 previous_layer = self.hidden_layers[layeri]
 
 
@@ -341,12 +342,13 @@ class NeuralNetwork:
                                255, 0, 0)
                         glLineWidth(weight+1)
 
-                    pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.output_layer[tonodei].sprite.x+10,
-                                                               self.output_layer[tonodei].sprite.y + 10,
-                                                               self.hidden_layers[-1][fromnodei].sprite.x + 10,
-                                                               self.hidden_layers[-1][fromnodei].sprite.y + 10)
-                                                       ),
-                                                      ('c3B', col))
+                    edgebatch.add(2, GL_LINES, None, ('v2i', (self.output_layer[tonodei].sprite.x+10,
+                                                        self.output_layer[tonodei].sprite.y + 10,
+                                                        self.hidden_layers[-1][fromnodei].sprite.x + 10,
+                                                        self.hidden_layers[-1][fromnodei].sprite.y + 10)
+                                                ),
+                                               ('c3B', col)
+                                  )
         else:
             # No hidden layers, so connect from input to output
             for fromnodei in range(self.input_layer.size):
@@ -370,12 +372,14 @@ class NeuralNetwork:
                                255, 0, 0)
                         glLineWidth(weight+1)
 
-                    pyglet.graphics.draw(2, GL_LINES, ('v2i', (self.output_layer[tonodei].sprite.x+10,
-                                                               self.output_layer[tonodei].sprite.y + 10,
-                                                               self.input_layer[fromnodei].sprite.x + 10,
-                                                               self.input_layer[fromnodei].sprite.y + 10)
-                                                       ),
-                                                      ('c3B', col))
+                    edgebatch.add(2, GL_LINES, None, ('v2i', (self.output_layer[tonodei].sprite.x+10,
+                                                        self.output_layer[tonodei].sprite.y + 10,
+                                                        self.input_layer[fromnodei].sprite.x + 10,
+                                                        self.input_layer[fromnodei].sprite.y + 10)
+                                                ),
+                                               ('c3B', col)
+                                  )
+        edgebatch.draw()
 
     # Update the graphical intensities of the neurons
     def updateintensityGFX(self):
