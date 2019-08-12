@@ -49,7 +49,8 @@ def on_draw():
 
     obstacle.dino1.update()
 
-    obstacle.main_batch.draw()
+    obstacle.ground.draw()
+    obstacle.dino1.draw()
 
 
 
