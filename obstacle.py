@@ -50,12 +50,18 @@ class obstacle:
         self.pos:Vector2f = pos
         self.dim:Vector2f = dim
         self.sprite = pyglet.sprite.Sprite(image_dino, x=pos.x, y=pos.y)
+        self.sprite.update(scale_x=dim.x/image_dino_size.x, scale_y=dim.x/image_dino_size.x)
 
-    def isOnScreen(self, leftbound, rightbound):
-        if leftbound < self.pos.x < rightbound:
+    def isLeftofScreen(self, leftbound):
+        if leftbound > self.pos.x:
             return True
         else:
             return False
+
+    def update(self, cur_score=5):
+        new_pos_x = self.pos.x-cur_score/100-5
+        self.sprite.update(x=new_pos_x)
+        self.pos.x = new_pos_x
 
     def draw(self):
         self.sprite.draw()
@@ -69,7 +75,13 @@ class dino:
         self.sprite = pyglet.sprite.Sprite(image_dino, x=pos.x, y=pos.y)
         self.sprite.update(scale_x=dim.x/image_dino_size.x, scale_y=dim.x/image_dino_size.x)
 
+        self.jumping = False
+        self.ducking = False
+
+
     def update(self):
+
+
 
         #apply gravity
         if self.pos.y > 41:
@@ -89,6 +101,19 @@ class dino:
         if self.pos.y <= 40:
             self.velocity.y += 20
 
+    def duck(self):
+        if self.pos.y > 40:
+            print("Falling faster")
+            self.velocity.y -= 20
+        elif self.pos.y == 40:
+            #TODO: Morph dino shape
+            print("Morph")
+            pass
+        else:
+            # TODO: Unmorph dino shape
+            print("Unmorph")
+            pass
+
     def draw(self):
         self.sprite.draw()
 
@@ -107,8 +132,6 @@ obstacle_set = {"smol_cacti": obstacle(pos=Vector2f(0,0),
                 }
 
 
-dino1 = dino(Vector2f(100,100),Vector2f(40,60))
+dino1 = dino(Vector2f(100,100),Vector2f(50,60))
 ground = platform(Vector2f(0,10),Vector2f(1800,60))
 
-large_cacti = obstacle(Vector2f(100,100),Vector2f(40,60))
-small_cacti = obstacle(Vector2f(100,100),Vector2f(20,30))
