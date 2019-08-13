@@ -50,7 +50,7 @@ class obstacle:
         self.pos:Vector2f = pos
         self.dim:Vector2f = dim
         self.sprite = pyglet.sprite.Sprite(image_dino, x=pos.x, y=pos.y)
-        self.sprite.update(scale_x=dim.x/image_dino_size.x, scale_y=dim.x/image_dino_size.x)
+        self.sprite.update(scale_x=dim.x/image_dino_size.x, scale_y=dim.y/image_dino_size.y)
 
     def isLeftofScreen(self, leftbound):
         if leftbound > self.pos.x:
@@ -67,6 +67,8 @@ class obstacle:
         self.sprite.draw()
 
 
+
+
 class dino:
     def __init__(self, pos:Vector2f, dim:Vector2f):
         self.pos:Vector2f = pos
@@ -80,8 +82,6 @@ class dino:
 
 
     def update(self):
-
-
 
         #apply gravity
         if self.pos.y > 41:
@@ -106,6 +106,7 @@ class dino:
             print("Falling faster")
             self.velocity.y -= 20
         elif self.pos.y == 40:
+            self.ducking= True
             #TODO: Morph dino shape
             print("Morph")
             pass
@@ -127,9 +128,18 @@ class platform:
         self.sprite.draw()
 
 
-obstacle_set = {"smol_cacti": obstacle(pos=Vector2f(0,0),
-                                       dim=Vector2f(10,10))
-                }
+def isColliding(dinner:dino, stacle:obstacle):
+    # TODO: Collision detection
+
+
+
+
+
+
+    pass
+obstacle_set = dict()
+obstacle_set["smol_cacti"] : obstacle(pos=Vector2f(0,0),
+                                      dim=Vector2f(10,10))
 
 
 dino1 = dino(Vector2f(100,100),Vector2f(50,60))
