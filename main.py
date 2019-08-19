@@ -18,7 +18,9 @@ window = pyglet.window.Window(1200,500)
 pyglet.gl.glClearColor(0.7,0.7,0.7,1)
 
 import obstacle as obt
-from obstacle import Vector2f
+from obstacle import isColliding
+
+from pymunk import Vec2d
 
 
 
@@ -28,9 +30,7 @@ showGraph = False
 skip_once = False
 score = 0
 
-obstacle_drawlist = [obt.obstacle(Vector2f(1200,40),Vector2f(40,60)),
-                     obt.obstacle(Vector2f(1700,40),Vector2f(20,30)),
-                     obt.obstacle(Vector2f(2200,40),Vector2f(40,60))]
+obstacle_drawlist = []
 
 score_label = pyglet.text.Label('score: ' + str(score),
                   font_name='Times New Roman',
@@ -67,6 +67,13 @@ def on_draw():
 
     obt.ground.draw()
 
+    obt.dino1.update()
+
+    # Collision detection
+    #for obst in obstacle_drawlist:
+    #    if isColliding( obt.dino1, obst ):
+    #        print("Dino collided with something")
+
 
 
     markforremoval = list()
@@ -81,7 +88,6 @@ def on_draw():
     obstacle_drawlist[:] = [x for x in obstacle_drawlist if x not in markforremoval]
 
 
-    obt.dino1.update()
     obt.dino1.draw()
 
 
@@ -95,7 +101,8 @@ def on_key_press(symbol, modifiers):
         obt.dino1.jump()
 
     if symbol == key.DOWN:
-        obt.dino1.duck()
+        #obt.dino1.duck()
+        pass
 
 
 def falseupdate(dt):
@@ -107,20 +114,20 @@ def scoreupdate(dt):
 
 def spawnupdater(dt):
     # TODO: This doesn't work. as it'll still doesn't space the objects out evenly as the game speeds up
-    if len(obstacle_drawlist) < 1:
+    if len(obstacle_drawlist) < 2:
         dice_throw = np.random.rand()
         pos_adjust = 1200 + np.random.rand() * 300 // 1
 
         if dice_throw < 0.20:  # spawn large cacti
-            obstacle_drawlist.append(obt.obstacle(Vector2f(pos_adjust, 40), Vector2f(40, 60)))
+            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(40, 60)))
         elif dice_throw < 0.40:  # Spawn smol cacti
-            obstacle_drawlist.append(obt.obstacle(Vector2f(pos_adjust, 40), Vector2f(20, 30)))
-        elif dice_throw < 0.60:  # spawn low flying dino
-            obstacle_drawlist.append(obt.obstacle(Vector2f(pos_adjust, 80), Vector2f(80, 20)))
-        elif dice_throw < 0.80:  # spawn mid flying dino
-            obstacle_drawlist.append(obt.obstacle(Vector2f(pos_adjust, 160), Vector2f(80, 20)))
-        elif dice_throw < 1:  # spawn high flying dino
-            obstacle_drawlist.append(obt.obstacle(Vector2f(pos_adjust, 240), Vector2f(80, 20)))
+            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(20, 30)))
+        #elif dice_throw < 0.60:  # spawn low flying dino
+        #    obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 80), Vec2d(80, 20)))
+        elif dice_throw < 0.60:  # spawn mid flying dino
+            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 160), Vec2d(80, 20)))
+        elif dice_throw < 0.80:  # spawn high flying dino
+            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 240), Vec2d(80, 20)))
 
 
 pyglet.clock.schedule_interval_soft(falseupdate, 1 / 60)
