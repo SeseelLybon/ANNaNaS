@@ -29,13 +29,19 @@ pops = Population(100)
 showGraph = False
 skip_once = False
 score = 0
+best_score = 0
 
 obstacle_drawlist:List[obt.obstacle] = []
 
 score_label = pyglet.text.Label('score: ' + str(score),
                   font_name='Times New Roman',
                   font_size=12,
-                  x=50, y=500 - 50,
+                  x=50, y=450,
+                  anchor_x='left', anchor_y='center')
+score_best_label = pyglet.text.Label('best score: ' + str(best_score),
+                  font_name='Times New Roman',
+                  font_size=12,
+                  x=50, y=400,
                   anchor_x='left', anchor_y='center')
 
 @window.event
@@ -51,6 +57,7 @@ def on_draw():
 
 
     if pops.bestMeeple is not None:
+        score_best_label.text = 'best score: ' + str(pops.bestMeeple.fitness)
         pops.bestMeeple.brain.updateposGFX([800, 500], [350, 300])
         pops.bestMeeple.brain.updateintensityGFX()
         pops.bestMeeple.brain.draw()
@@ -61,20 +68,23 @@ def on_draw():
 
     score_label.text = 'score: ' + str(score)
     score_label.draw()
+    score_best_label.draw()
 
     obt.ground.draw()
 
 
     # -----------------
     # getting data to set the inputs of the brain
-    no_distance = float("-inf")
-    no_height = float("-inf")
+    no_distance = -1
+    no_height = -1
+    no_len = -1
+    no_size = Vec2d(-1,-1)
 
-    if obstacle_drawlist:
+    if len(obstacle_drawlist) > 0:
         next_obst = obstacle_drawlist[-1]
 
         for obst in obstacle_drawlist:
-            if obst.pos.x > 125:
+            if obst.pos.x > 10:
                 if obst.pos.x < next_obst.pos.x:
                     next_obst = obst
             else:
@@ -83,11 +93,13 @@ def on_draw():
 
         no_distance = next_obst.pos.x - 125
         no_height = next_obst.pos.y
+        no_size = next_obst.dim
 
     inputs = (no_distance,
               no_height,
-              0,
-              0)
+              no_size.x,
+              no_size.y,
+              score / 100 - 5)
     # -----------------
 
     pops.updateAlive(obstacle_drawlist, score, inputs)
@@ -112,8 +124,8 @@ def on_draw():
             continue
 
         obst.draw()
-
-    obstacle_drawlist[:] = [x for x in obstacle_drawlist if x not in markforremoval]
+    if len(markforremoval) > 0:
+        obstacle_drawlist[:] = [x for x in obstacle_drawlist if x not in markforremoval]
 
 
 
@@ -141,19 +153,20 @@ def scoreupdate(dt):
 
 def spawnupdater(dt):
     # TODO: This doesn't work. as it'll still doesn't space the objects out evenly as the game speeds up
-    dice_throw = np.random.rand()
-    pos_adjust = 1200 + np.random.rand() * 300 // 1
+    if len(obstacle_drawlist) < 3:
+        dice_throw = np.random.rand()
+        pos_adjust = 1200 + np.random.rand() * 300 // 1
 
-    if dice_throw < 0.20:  # spawn large cacti
-        obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(40, 60)))
-    elif dice_throw < 0.40:  # Spawn smol cacti
-        obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(20, 30)))
-    elif dice_throw < 0.60:  # spawn low flying dino
-        obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 80), Vec2d(80, 20)))
-    elif dice_throw < 0.80:  # spawn mid flying dino
-        obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 160), Vec2d(80, 20)))
-    elif dice_throw < 1.00:  # spawn high flying dino
-        obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 240), Vec2d(80, 20)))
+        if dice_throw < 0.20:  # spawn large cacti
+            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(40, 60)))
+        elif dice_throw < 0.40:  # Spawn smol cacti
+            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(20, 30)))
+        elif dice_throw < 0.60:  # spawn low flying dino
+            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 80), Vec2d(80, 20)))
+        elif dice_throw < 0.80:  # spawn mid flying dino
+            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 160), Vec2d(80, 20)))
+        elif dice_throw < 1.00:  # spawn high flying dino
+            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 240), Vec2d(80, 20)))
 
 
 pyglet.clock.schedule_interval_soft(falseupdate, 1 / 60)

@@ -23,7 +23,7 @@ class Population:
         self.bestMeeple:dino = None
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = dino(2, tuple([4]), 1)
+            self.pop[i] = dino(4, tuple([4]), 1)
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
     #update all the meeps that are currently alive
@@ -34,6 +34,8 @@ class Population:
         for dinner in self.pop:
             dinner.brain.set_input(0, inputs[0])
             dinner.brain.set_input(1, inputs[1])
+            dinner.brain.set_input(2, inputs[2])
+            dinner.brain.set_input(3, inputs[3])
 
             dinner.brain.fire_network()
 
@@ -66,6 +68,7 @@ class Population:
         # Clean the species
         self.cullSpecies()
         self.setBestMeeple()
+        print("Best fitness", self.bestMeeple.fitness)
         self.killStaleSpecies()
         self.killBadSpecies()
 
@@ -94,14 +97,25 @@ class Population:
 
 
     def setBestMeeple(self):
-        maxFit = 0
-        tempbestMeeplei = -1
+        maxfit:float
+        if self.bestMeeple:
+            maxFit = self.bestMeeple.fitness
+        else:
+            maxFit = 0
+
+        tempnewbestMeeplei = -1
+
         #go through all meeples in the population
         for i in range(self.pop.shape[0]):
             if self.pop[i].fitness >= maxFit:
-                tempbestMeeplei = i
+                tempnewbestMeeplei = i
                 maxFit = self.pop[i].fitness
-        self.bestMeeple = self.pop[tempbestMeeplei]
+
+        if self.bestMeeple:
+            if self.bestMeeple.fitness < self.pop[tempnewbestMeeplei].fitness:
+                self.bestMeeple = self.pop[tempnewbestMeeplei]
+        else:
+            self.bestMeeple = self.pop[tempnewbestMeeplei]
 
 
     def speciate(self):

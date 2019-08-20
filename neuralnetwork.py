@@ -114,14 +114,14 @@ class NeuralNetwork:
         for nodei in range(self.input_layer.size):
             for weighti in range(self.input_layer[nodei].weights.size):
                 if np.random.rand() <= mutatechance:
-                    self.input_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
+                    self.input_layer[nodei].weights[weighti] = np.random.uniform(-5,5)
 
         if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)):
                 for nodei in range(self.hidden_layers[layeri].size):
                     for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
                         if np.random.rand() <= mutatechance:
-                            self.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(-2,2)
+                            self.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(-5,5)
 
         for nodei in range(self.output_layer.size):
             for weighti in range(self.output_layer[nodei].weights.size):
@@ -435,7 +435,7 @@ class Node:
             self.weights = np.zeros(parent_size, dtype=float)
         elif weights is None:
             #If not hollow and no weights are provided, initiallize random weights
-            self.weights = np.random.uniform(-2,2,[parent_size,])
+            self.weights = np.random.uniform(-5,5,[parent_size,])
         else:
             #Else use weights provided
             self.weights=weights
