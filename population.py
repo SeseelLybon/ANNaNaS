@@ -7,40 +7,60 @@ from math import floor
 
 from meeple import Meeple
 
+from obstacle import dino
 
 class Population:
 
 
 
     def __init__(self, size):
-        self.pop = np.ndarray([size], dtype=Meeple)
+        self.pop = np.ndarray([size], dtype=dino)
         self.species:List[Species] = []
 
         self.size = size
         self.generation = 0
 
-        self.bestMeeple:Meeple
+        self.bestMeeple:dino = None
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = Meeple(4, tuple([0]), 16)
+            self.pop[i] = dino(2, tuple([4]), 1)
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
     #update all the meeps that are currently alive
-    def updateAlive(self):
-        # faketodo: Not needed right now
-        pass
+    def updateAlive(self, obstacle_drawlist, score, inputs):
+
+
+
+        for dinner in self.pop:
+            dinner.brain.set_input(0, inputs[0])
+            dinner.brain.set_input(1, inputs[1])
+
+            dinner.brain.fire_network()
+
+            if dinner.brain.get_output(0) > 0.8:
+                dinner.jump()
+
+            dinner.update(score)
+            for obst in obstacle_drawlist:
+                if dinner.isColliding( obst ):
+                    dinner.isAlive = False
+            dinner.draw()
+
+        # Collision detection
 
 
     #returns bool if all the players are dead or done
     def isDone(self)-> bool:
-        # faketodo: Not needed right now
+        for dinner in self.pop:
+            if dinner.isAlive:
+                return False
         return True
 
 
     def naturalSelection(self):
         self.speciate() # seperate the existing population into species for the purpose of natural selection
         species_pre_cull = len(self.species)
-        #self.calculateFitness() # calc fitness of each meeple, currently not needed
+        self.calculateFitness() # calc fitness of each meeple, currently not needed
         self.sortSpecies() #sort all the species to the average fitness, best first. In the species sort by meeple's fitness
 
         # Clean the species
@@ -53,7 +73,7 @@ class Population:
         print("Species pre/post culling", species_pre_cull, len(self.species))
 
 
-        children:List[Meeple] = []
+        children:List[dino] = []
 
         for specie in self.species:
             #add the best meeple of a specie to the new generation list
@@ -69,7 +89,7 @@ class Population:
         while len(children) < self.size:
             children.append(self.species[0].generateChild())
 
-        self.pop = np.array(children, dtype=Meeple)
+        self.pop = np.array(children, dtype=dino)
         self.generation += 1
 
 
@@ -103,8 +123,8 @@ class Population:
 
 
     def calculateFitness(self):
-        # faketodo: Not needed right now
-        pass
+        for dinner in self.pop:
+            dinner.fitness = dinner.score
 
     #get the sum of averages from each specie
     def getAverageFitnessSum(self)->float:

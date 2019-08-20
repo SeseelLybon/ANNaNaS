@@ -4,7 +4,7 @@ import math
 from neuralnetwork import NeuralNetwork
 
 class Meeple:
-    def __init__(self,input_size:int, hidden_size:tuple, output_size:int, isHallow=False):
+    def __init__(self, input_size:int, hidden_size:tuple, output_size:int, isHallow=False):
         self.fitness = float("-inf")
         self.brain: NeuralNetwork
         self.isAlive = True
