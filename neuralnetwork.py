@@ -114,19 +114,31 @@ class NeuralNetwork:
         for nodei in range(self.input_layer.size):
             for weighti in range(self.input_layer[nodei].weights.size):
                 if np.random.rand() <= mutatechance:
-                    self.input_layer[nodei].weights[weighti] = np.random.uniform(-5,5)
+                    #self.input_layer[nodei].weights[weighti] = np.random.uniform(-5,5)
+                    if np.random.rand() < 0.5:
+                        self.input_layer[nodei].weights[weighti] += np.random.rand()
+                    else:
+                        self.input_layer[nodei].weights[weighti] -= np.random.rand()
 
         if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)):
                 for nodei in range(self.hidden_layers[layeri].size):
                     for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
                         if np.random.rand() <= mutatechance:
-                            self.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(-5,5)
+                            #self.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(-5,5)
+                            if np.random.rand() < 0.5:
+                                self.hidden_layers[layeri][nodei].weights[weighti] += np.random.rand()
+                            else:
+                                self.hidden_layers[layeri][nodei].weights[weighti] -= np.random.rand()
 
         for nodei in range(self.output_layer.size):
             for weighti in range(self.output_layer[nodei].weights.size):
                 if np.random.rand() <= mutatechance:
-                    self.output_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
+                    #self.output_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
+                    if np.random.rand() < 0.5:
+                        self.output_layer[nodei].weights[weighti] += np.random.rand()
+                    else:
+                        self.output_layer[nodei].weights[weighti] -= np.random.rand()
 
     def clone(self):
         if self.hidden_layers[0] is not 0:
@@ -382,13 +394,21 @@ class NeuralNetwork:
         edgebatch.draw()
 
     # Update the graphical intensities of the neurons
-    def updateintensityGFX(self):
+    def updateintensityGFX(self, intensmods:tuple=None):
+
+        if intensmods is None:
+            intensmods = tuple([255]*self.input_layer.size)
+        else:
+            intensmods = tuple( list(intensmods) + [255] )
+
+        if len(intensmods) != self.input_layer.size:
+            raise ValueError
 
         # update intensities of input nodes
         temp_am_nodes = len(self.input_layer)
         for nodei in range(temp_am_nodes):
             intens = self.input_layer[nodei].intensity
-            intens = min(intens*255, 255)
+            intens = min(intens*intensmods[nodei], 255)
             self.input_layer[nodei].sprite.color = (intens,intens,intens)
 
         if self.hidden_layers[0] is not 0:

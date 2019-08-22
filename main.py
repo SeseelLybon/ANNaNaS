@@ -59,7 +59,7 @@ def on_draw():
     if pops.bestMeeple is not None:
         score_best_label.text = 'best score: ' + str(pops.bestMeeple.fitness)
         pops.bestMeeple.brain.updateposGFX([800, 500], [350, 300])
-        pops.bestMeeple.brain.updateintensityGFX()
+        pops.bestMeeple.brain.updateintensityGFX([0.5,2,3,3])
         pops.bestMeeple.brain.draw()
 
     # Run the game here

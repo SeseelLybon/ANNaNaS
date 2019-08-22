@@ -20,11 +20,12 @@ class Population:
         self.size = size
         self.generation = 0
 
-        self.bestMeeple:dino = None
 
         for i in range(self.pop.shape[0]):
             self.pop[i] = dino(4, tuple([4]), 1)
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
+
+        self.bestMeeple:dino = self.pop[0]
 
     #update all the meeps that are currently alive
     def updateAlive(self, obstacle_drawlist, score, inputs):
@@ -76,7 +77,7 @@ class Population:
         print("Species pre/post culling", species_pre_cull, len(self.species))
 
 
-        children:List[dino] = []
+        children:List[dino] = [self.bestMeeple]
 
         for specie in self.species:
             #add the best meeple of a specie to the new generation list
@@ -116,6 +117,8 @@ class Population:
                 self.bestMeeple = self.pop[tempnewbestMeeplei]
         else:
             self.bestMeeple = self.pop[tempnewbestMeeplei]
+
+        self.bestMeeple.sprite.color = (0,0,0)
 
 
     def speciate(self):
