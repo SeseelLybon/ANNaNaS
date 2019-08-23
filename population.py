@@ -22,10 +22,11 @@ class Population:
 
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = dino(4, tuple([4]), 1)
+            self.pop[i] = dino(4, tuple([8,8]), 1)
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
         self.bestMeeple:dino = self.pop[0]
+        self.highestScore:int = 0
 
     #update all the meeps that are currently alive
     def updateAlive(self, obstacle_drawlist, score, inputs):
@@ -47,9 +48,10 @@ class Population:
             for obst in obstacle_drawlist:
                 if dinner.isColliding( obst ):
                     dinner.isAlive = False
-            dinner.draw()
 
-        # Collision detection
+    def drawAlife(self):
+        for dinner in self.pop:
+            dinner.draw()
 
 
     #returns bool if all the players are dead or done
@@ -58,6 +60,13 @@ class Population:
             if dinner.isAlive:
                 return False
         return True
+
+    def countAlive(self)->int:
+        tot = 0
+        for dinner in self.pop:
+            if dinner.isAlive:
+                tot+=1
+        return tot
 
 
     def naturalSelection(self):
@@ -76,7 +85,7 @@ class Population:
 
         print("Species pre/post culling", species_pre_cull, len(self.species))
 
-
+        self.bestMeeple.isAlive = True
         children:List[dino] = [self.bestMeeple]
 
         for specie in self.species:
@@ -119,6 +128,7 @@ class Population:
             self.bestMeeple = self.pop[tempnewbestMeeplei]
 
         self.bestMeeple.sprite.color = (0,0,0)
+        self.highestScore = self.bestMeeple.score
 
 
     def speciate(self):

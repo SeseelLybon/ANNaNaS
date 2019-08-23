@@ -30,6 +30,7 @@ showGraph = False
 skip_once = False
 score = 0
 best_score = 0
+lastspawnscore = 0
 
 obstacle_drawlist:List[obt.obstacle] = []
 
@@ -41,23 +42,24 @@ score_label = pyglet.text.Label('score: ' + str(score),
 score_best_label = pyglet.text.Label('best score: ' + str(best_score),
                   font_name='Times New Roman',
                   font_size=12,
-                  x=50, y=400,
+                  x=50, y=425,
                   anchor_x='left', anchor_y='center')
+dinos_live_label = pyglet.text.Label("Dino's alive: " + str(best_score) + " of " + str(100),
+                   font_name='Times New Roman',
+                   font_size=12,
+                   x=50, y=400,
+                   anchor_x='left', anchor_y='center')
 
 @window.event
 def on_draw():
     global window
     global score
+    global lastspawnscore
 
     window.clear()
 
-
-
-
-
-
     if pops.bestMeeple is not None:
-        score_best_label.text = 'best score: ' + str(pops.bestMeeple.fitness)
+        score_best_label.text = 'best score: ' + str(pops.highestScore)
         pops.bestMeeple.brain.updateposGFX([800, 500], [350, 300])
         pops.bestMeeple.brain.updateintensityGFX([0.5,2,3,3])
         pops.bestMeeple.brain.draw()
@@ -69,13 +71,38 @@ def on_draw():
     score_label.text = 'score: ' + str(score)
     score_label.draw()
     score_best_label.draw()
+    dinos_live_label.text = "Dino's alive: " + str(pops.countAlive()) + " of " + str(100)
+    dinos_live_label.draw()
 
     obt.ground.draw()
 
+    pops.drawAlife()
 
+    for obst in obstacle_drawlist:
+        obst.draw()
+    pops.bestMeeple.draw()
+
+
+@window.event
+def on_key_press(symbol, modifiers):
+    if symbol == key.SPACE:
+        print("jumping")
+        pops.pop[-1].jump()
+
+    if symbol == key.DOWN:
+        #obt.dino1.duck()
+        pass
+
+
+def update(dt):
+    global score
+    global lastspawnscore
+
+    global_inputs  = []
     # -----------------
     # getting data to set the inputs of the brain
     no_distance = -1
+    no_distance_next = -1
     no_height = -1
     no_len = -1
     no_size = Vec2d(-1,-1)
@@ -89,6 +116,7 @@ def on_draw():
                     next_obst = obst
             else:
                 obst.sprite.color = (255,0,0)
+
         next_obst.sprite.color = (0,0,255)
 
         no_distance = next_obst.pos.x - 125
@@ -108,11 +136,17 @@ def on_draw():
     if pops.isDone():
         print("--------------------------------------------")
         print("All dino's are dead. Time for a new batch!")
+        print("Best score this generation:", score)
         print("startin generation", pops.generation)
         pops.naturalSelection()
         obstacle_drawlist[:] = []
         score = 0
+        lastspawnscore = 0
 
+    score = round(score+0.3, 1)
+    if score - lastspawnscore > 30:
+        spawnupdater(1)
+        lastspawnscore = score
 
 
     # Obstacle garbage projection
@@ -123,29 +157,10 @@ def on_draw():
             markforremoval.append(obst)
             continue
 
-        obst.draw()
     if len(markforremoval) > 0:
         obstacle_drawlist[:] = [x for x in obstacle_drawlist if x not in markforremoval]
 
 
-
-
-
-
-
-@window.event
-def on_key_press(symbol, modifiers):
-    if symbol == key.SPACE:
-        print("jumping")
-        pops.pop[-1].jump()
-
-    if symbol == key.DOWN:
-        #obt.dino1.duck()
-        pass
-
-
-def falseupdate(dt):
-    pass
 
 def scoreupdate(dt):
     global score
@@ -169,8 +184,8 @@ def spawnupdater(dt):
             obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 240), Vec2d(80, 20)))
 
 
-pyglet.clock.schedule_interval_soft(falseupdate, 1 / 60)
-pyglet.clock.schedule_interval_soft(spawnupdater, 1.5)
+pyglet.clock.schedule_interval_soft(update, 1 / 60)
+#pyglet.clock.schedule_interval_soft(spawnupdater, 1.5)
 pyglet.clock.schedule_interval_soft(scoreupdate, 1 / 10)
 pyglet.app.run()
 
