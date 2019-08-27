@@ -22,26 +22,26 @@ class Population:
 
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = dino(4, tuple([8,8]), 1)
+            self.pop[i] = dino(15, tuple([8,8]), 1)
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
         self.bestMeeple:dino = self.pop[0]
-        self.highestScore:int = 0
+        self.highestFitness:int = 0
 
     #update all the meeps that are currently alive
-    def updateAlive(self, obstacle_drawlist, score, inputs):
-
-
+    def updateAlive(self, obstacle_drawlist, score, global_inputs):
 
         for dinner in self.pop:
-            dinner.brain.set_input(0, inputs[0])
-            dinner.brain.set_input(1, inputs[1])
-            dinner.brain.set_input(2, inputs[2])
-            dinner.brain.set_input(3, inputs[3])
+            dinner.brain.set_input(0, dinner.pos.x)
+            dinner.brain.set_input(1, dinner.pos.y)
+
+            for i in range(len(global_inputs)):
+                i2=i+2
+                dinner.brain.set_input(i2, global_inputs[i])
 
             dinner.brain.fire_network()
 
-            if dinner.brain.get_output(0) > 0.8:
+            if dinner.brain.get_output(0) > 0.9:
                 dinner.jump()
 
             dinner.update(score)
@@ -50,8 +50,13 @@ class Population:
                     dinner.isAlive = False
 
     def drawAlife(self):
+        aliveBatch = pyglet.graphics.Batch()
         for dinner in self.pop:
-            dinner.draw()
+            if dinner.isAlive:
+                dinner.sprite.batch = aliveBatch
+            else:
+                dinner.sprite.batch = None
+        aliveBatch.draw()
 
 
     #returns bool if all the players are dead or done
@@ -78,14 +83,15 @@ class Population:
         # Clean the species
         self.cullSpecies()
         self.setBestMeeple()
-        print("Best fitness", self.bestMeeple.fitness)
+        print("heighest fitness", self.highestFitness)
         self.killStaleSpecies()
         self.killBadSpecies()
 
 
         print("Species pre/post culling", species_pre_cull, len(self.species))
 
-        self.bestMeeple.isAlive = True
+        self.bestMeeple = self.bestMeeple.clone()
+        self.bestMeeple.sprite.color = (0,200,100)
         children:List[dino] = [self.bestMeeple]
 
         for specie in self.species:
@@ -107,28 +113,28 @@ class Population:
 
 
     def setBestMeeple(self):
-        maxfit:float
-        if self.bestMeeple:
-            maxFit = self.bestMeeple.fitness
-        else:
-            maxFit = 0
+
+        maxFit = self.highestFitness
 
         tempnewbestMeeplei = -1
 
-        #go through all meeples in the population
+        #go through all meeples in the population and test if their fitness is higher than the previous one
         for i in range(self.pop.shape[0]):
-            if self.pop[i].fitness >= maxFit:
+            if self.pop[i].fitness > maxFit:
                 tempnewbestMeeplei = i
                 maxFit = self.pop[i].fitness
 
+        # make sure that the new fitness is actually higher than the previous one.
         if self.bestMeeple:
-            if self.bestMeeple.fitness < self.pop[tempnewbestMeeplei].fitness:
+            if self.highestFitness < self.pop[tempnewbestMeeplei].fitness:
                 self.bestMeeple = self.pop[tempnewbestMeeplei]
+                self.highestFitness = self.bestMeeple.fitness
+                print("New best meeple")
         else:
             self.bestMeeple = self.pop[tempnewbestMeeplei]
+            self.highestFitness = self.bestMeeple.fitness
+            print("New best meeple")
 
-        self.bestMeeple.sprite.color = (0,0,0)
-        self.highestScore = self.bestMeeple.score
 
 
     def speciate(self):

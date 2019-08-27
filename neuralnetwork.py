@@ -296,6 +296,7 @@ class NeuralNetwork:
 
     # Draws the edges (weights) of the neural network
     def updateedgesGFX(self):
+        glLineWidth(2)
         edgebatch = pyglet.graphics.Batch()
         # first hidden layer is special as it accesses input layer things
         previous_layer = self.input_layer
@@ -310,7 +311,7 @@ class NeuralNetwork:
                             #RGB
                             col = (0, 0, 255,
                                    0, 0, 255)
-                            glLineWidth(weight+1)
+                            #glLineWidth(weight)
                         elif weight == 0:
                             continue
                             #col = (255, 255, 255,
@@ -319,7 +320,7 @@ class NeuralNetwork:
                         else: # weight > 0:
                             col = (255, 0, 0,
                                    255, 0, 0)
-                            glLineWidth(weight+1)
+                            #glLineWidth(weight)
 
                         edgebatch.add(2, GL_LINES, None, ('v2i', (previous_layer[tonodei].sprite.x+10,
                                                             previous_layer[tonodei].sprite.y + 10,
@@ -343,7 +344,7 @@ class NeuralNetwork:
                         #RGB
                         col = (0, 0, 255,
                                0, 0, 255)
-                        glLineWidth(weight+1)
+                        #glLineWidth(weight)
                     elif weight == 0:
                         continue
                         #col = (255, 255, 255,
@@ -352,7 +353,7 @@ class NeuralNetwork:
                     else:# weight > 0:
                         col = (255, 0, 0,
                                255, 0, 0)
-                        glLineWidth(weight+1)
+                        #glLineWidth(weight)
 
                     edgebatch.add(2, GL_LINES, None, ('v2i', (self.output_layer[tonodei].sprite.x+10,
                                                         self.output_layer[tonodei].sprite.y + 10,
@@ -373,7 +374,7 @@ class NeuralNetwork:
                         #RGB
                         col = (0, 0, 255,
                                0, 0, 255)
-                        glLineWidth(weight+1)
+                        #glLineWidth(weight+1)
                     elif weight == 0:
                         continue
                         #col = (255, 255, 255,
@@ -382,7 +383,7 @@ class NeuralNetwork:
                     else:# weight > 0:
                         col = (255, 0, 0,
                                255, 0, 0)
-                        glLineWidth(weight+1)
+                        #glLineWidth(weight+1)
 
                     edgebatch.add(2, GL_LINES, None, ('v2i', (self.output_layer[tonodei].sprite.x+10,
                                                         self.output_layer[tonodei].sprite.y + 10,
@@ -397,9 +398,9 @@ class NeuralNetwork:
     def updateintensityGFX(self, intensmods:tuple=None):
 
         if intensmods is None:
-            intensmods = tuple([255]*self.input_layer.size)
+            intensmods = tuple([1]*self.input_layer.size)
         else:
-            intensmods = tuple( list(intensmods) + [255] )
+            intensmods = tuple( list(intensmods) + [1] )
 
         if len(intensmods) != self.input_layer.size:
             raise ValueError
