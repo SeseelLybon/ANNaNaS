@@ -60,14 +60,12 @@ def on_draw():
 
     window.clear()
 
-    #if pops.bestMeeple is not None:
-    #    pops.bestMeeple.brain.updateposGFX([600, 750], [550, 500])
-    #    pops.bestMeeple.brain.updateintensityGFX([2,2,      # dinner pos
-    #                                              0.5,2,3,3,  # first object
-    #                                              0.5,2,3,3,  # second object
-    #                                              0.5,2,3,3,  # third object
-    #                                              0.1])       # score
-    #    pops.bestMeeple.brain.draw()
+    if pops.bestMeeple is not None:
+        pops.bestMeeple.brain.updateposGFX([600, 750], [550, 500])
+        pops.bestMeeple.brain.updateintensityGFX([2,2,      # dinner pos
+                                                  0.5,2,3,3,  # first object
+                                                  0.1])       # score
+        pops.bestMeeple.brain.draw()
 
     # Run the game here
     # Move the objects/obstacles on the platform, not the dino or the platform
@@ -111,25 +109,21 @@ def update(dt):
     # getting data to set the inputs of the brain
 
     #go through each obstacle and append inputs
-    closestobst = None
-
-    for obst in obstacle_drawlist:
-        if obst.pos.x+obst.dim.x < 100:
-            continue
-
-        closestobstdis = obst
-        break
-
-    if closestobst is not None:
-        obst_distance = closestobst.pos.x
-        obst_height = closestobst.pos.y
-        obst_x = closestobst.dim.x
-        obst_y = closestobst.dim.y
+    if len(obstacle_drawlist) > 0:
+        closestobst = obstacle_drawlist[0]
     else:
+        closestobst = None
+
+    if closestobst is None:
         obst_distance = 1200
         obst_height = 0
         obst_x = 0
         obst_y = 0
+    else:
+        obst_distance = closestobst.pos.x
+        obst_height = closestobst.pos.y
+        obst_x = closestobst.dim.x
+        obst_y = closestobst.dim.y
 
 
     global_inputs += [obst_distance,
