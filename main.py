@@ -30,6 +30,7 @@ showGraph = False
 skip_once = False
 score = 0
 best_score = 0
+bestfitness = 0
 lastspawnscore = 0
 max_obstacles = 3
 
@@ -74,7 +75,7 @@ def on_draw():
 
     score_label.text = 'score: ' + str(score)
     score_label.draw()
-    score_best_label.text = 'best score: ' + str(pops.highestFitness)
+    score_best_label.text = 'best score: ' + str(pops.highestScore)
     score_best_label.draw()
     dinos_live_label.text = "Dino's alive: " + str(pops.countAlive()) + " of " + str(100)
     dinos_live_label.draw()
@@ -85,7 +86,7 @@ def on_draw():
 
     for obst in obstacle_drawlist:
         obst.draw()
-    pops.bestMeeple.draw()
+    #pops.bestMeeple.draw()
 
 
 @window.event
@@ -101,6 +102,7 @@ def on_key_press(symbol, modifiers):
 
 def update(dt):
     global score
+    global bestfitness
     global lastspawnscore
 
     global_inputs  = []
@@ -116,11 +118,16 @@ def update(dt):
             obst_x = obst.dim.x
             obst_y = obst.dim.y
 
+        obst_distance = obst.pos.x
+        obst_height = obst.pos.y
+        obst_x = obst.dim.x
+        obst_y = obst.dim.y
 
-            global_inputs += [obst_distance,
-                              obst_height,
-                              obst_x,
-                              obst_y]
+
+        global_inputs += [obst_distance,
+                          obst_height,
+                          obst_x,
+                          obst_y]
 
     #generate fake data for the obstacles that are missing
     if len(obstacle_drawlist) < max_obstacles:
@@ -145,6 +152,7 @@ def update(dt):
         pops.naturalSelection()
         obstacle_drawlist[:] = []
         score = 0
+        bestfitness = 0
         lastspawnscore = 0
 
     score = round(score+0.3, 1)

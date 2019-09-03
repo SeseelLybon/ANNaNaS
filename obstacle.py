@@ -79,7 +79,7 @@ class dino(Meeple):
 
     def duck(self):
         if self.pos.y <= 40:
-            self.velocity.y -= 20
+            self.velocity.y -= 10
 
     def draw(self):
         if self.isAlive:
@@ -92,9 +92,9 @@ class dino(Meeple):
         elif self.pos.x > other.pos.x + other.dim.x:
             return False  # dinner is to the right of stacle
 
-        if self.pos.y + self.dim.y < other.pos.y + other.dim.y:
+        if self.pos.y + self.dim.y < other.pos.y:
             return False  # dinner is above the stacle
-        elif self.pos.y > other.pos.y:
+        elif self.pos.y > other.pos.y + other.dim.y:
             return False  # dinner is below the stacle
 
         return True

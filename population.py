@@ -42,8 +42,10 @@ class Population:
 
                 dinner.brain.fire_network()
 
-                if dinner.brain.get_output(0) > 0.9:
-                    dinner.jump()
+            if dinner.brain.get_output(0) > 0.9:
+                dinner.jump()
+            if dinner.brain.get_output(1) > 0.9:
+                dinner.duck()
 
                 if dinner.brain.get_output(1) > 0.9:
                     dinner.duck()
@@ -133,11 +135,16 @@ class Population:
             if self.highestFitness < self.pop[tempnewbestMeeplei].fitness:
                 self.bestMeeple = self.pop[tempnewbestMeeplei]
                 self.highestFitness = self.bestMeeple.fitness
+                self.highestScore = self.bestMeeple.score
                 print("New best meeple")
+            else:
+                print("Best fitness this generation:", self.pop[tempnewbestMeeplei].fitness)
         else:
             self.bestMeeple = self.pop[tempnewbestMeeplei]
             self.highestFitness = self.bestMeeple.fitness
+            self.highestScore = self.bestMeeple.score
             print("New best meeple")
+            print("Best fitness this generation:", self.pop[tempnewbestMeeplei].fitness)
 
 
 
@@ -161,7 +168,7 @@ class Population:
 
     def calculateFitness(self):
         for dinner in self.pop:
-            dinner.fitness = dinner.score
+            dinner.fitness = dinner.score*2
 
     #get the sum of averages from each specie
     def getAverageFitnessSum(self)->float:
