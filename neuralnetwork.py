@@ -202,23 +202,38 @@ class NeuralNetwork:
 
         return child
 
-    ##Disabled as of now as the top layer of this network isn't used for detecting, but for optimizing
-    ## Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
-    #def backpropegate(self, desired_output):
-    #    #Move through the output layer
-    #    for nodei in range(self.output_layer.size):
-    #        Z_j_L0 = 0
-    #        C_0_d = 0
-    #        a_j_L0_d = 0
-    #        for nodei in range(self.output_layer.shape[0]):
-    #            C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
-    #            for weighti in range(self.output_layer[nodei].weights.shape[0]):
-    #                Z_j_L0 += self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
-    #        a_j_L0_d=self.ReLUd(Z_j_L0)
-    #        d1_temp = C_0_d
-    #        d2_temp = a_j_L0_d
-    #        d3_temp = 0
-    #        #Move through the hidden layers and adjust them.
+
+    def errorscore(self, correct_output:np.array):
+        if len(correct_output) != self.output_layer.size:
+            raise ValueError
+            # can't test error score if the 2 node arrays don't match in lenght
+        total=0
+        for cor_val, output_node in zip(correct_output, self.output_layer):
+            total+= (output_node.intensity - cor_val)**2
+
+        return total
+
+
+    # Can only be used if there is a desired output in that moment.
+    # Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
+    def backpropegate(self, desired_output):
+        #Move through the output layer
+        for nodei in range(self.output_layer.size):
+            C_0_d = 0     #Derivitive between output and desired output
+            Z_j_L0 = 0    #Derivitive of the activation function (ReLU)
+            a_j_L0_d = 0  #Derivitive of activation
+
+            for nodei in range(self.output_layer.shape[0]):
+                C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
+                for weighti in range(self.output_layer[nodei].weights.shape[0]):
+                    Z_j_L0 += self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
+            a_j_L0_d = self.ReLUd(Z_j_L0)
+
+            d1_temp = C_0_d
+            d2_temp = a_j_L0_d
+            d3_temp = 0
+
+            #Move through the hidden layers and adjust them.
 
 
 
