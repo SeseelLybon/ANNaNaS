@@ -22,7 +22,7 @@ class Population:
 
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = dino(15, tuple([16, 8]), 2)
+            self.pop[i] = dino(7, tuple([14, 7]), 2)
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
         self.bestMeeple:dino = self.pop[0]
@@ -47,13 +47,10 @@ class Population:
             if dinner.brain.get_output(1) > 0.9:
                 dinner.duck()
 
-                if dinner.brain.get_output(1) > 0.9:
-                    dinner.duck()
-
-                dinner.update(score)
-                for obst in obstacle_drawlist:
-                    if dinner.isColliding( obst ):
-                        dinner.isAlive = False
+            dinner.update(score)
+            for obst in obstacle_drawlist:
+                if dinner.isColliding( obst ):
+                    dinner.isAlive = False
 
     def drawAlife(self):
         aliveBatch = pyglet.graphics.Batch()

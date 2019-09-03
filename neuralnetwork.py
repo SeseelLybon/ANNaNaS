@@ -114,31 +114,31 @@ class NeuralNetwork:
         for nodei in range(self.input_layer.size):
             for weighti in range(self.input_layer[nodei].weights.size):
                 if np.random.rand() <= mutatechance:
-                    #self.input_layer[nodei].weights[weighti] = np.random.uniform(-5,5)
-                    if np.random.rand() < 0.5:
-                        self.input_layer[nodei].weights[weighti] += np.random.uniform(0,4)
-                    else:
-                        self.input_layer[nodei].weights[weighti] -= np.random.uniform(0,4)
+                    self.input_layer[nodei].weights[weighti] = np.random.uniform(-5,5)
+                    #if np.random.rand() < 0.5:
+                    #    self.input_layer[nodei].weights[weighti] += np.random.uniform(0,4)
+                    #else:
+                    #    self.input_layer[nodei].weights[weighti] -= np.random.uniform(0,4)
 
         if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)):
                 for nodei in range(self.hidden_layers[layeri].size):
                     for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
                         if np.random.rand() <= mutatechance:
-                            #self.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(-5,5)
-                            if np.random.rand() < 0.5:
-                                self.hidden_layers[layeri][nodei].weights[weighti] += np.random.uniform(0,4)
-                            else:
-                                self.hidden_layers[layeri][nodei].weights[weighti] -= np.random.uniform(0,4)
+                            self.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(-5,5)
+                            #if np.random.rand() < 0.5:
+                            #    self.hidden_layers[layeri][nodei].weights[weighti] += np.random.uniform(0,4)
+                            #else:
+                            #    self.hidden_layers[layeri][nodei].weights[weighti] -= np.random.uniform(0,4)
 
         for nodei in range(self.output_layer.size):
             for weighti in range(self.output_layer[nodei].weights.size):
                 if np.random.rand() <= mutatechance:
-                    #self.output_layer[nodei].weights[weighti] = np.random.uniform(-2,2)
-                    if np.random.rand() < 0.5:
-                        self.output_layer[nodei].weights[weighti] += np.random.uniform(0,4)
-                    else:
-                        self.output_layer[nodei].weights[weighti] -= np.random.uniform(0,4)
+                    self.output_layer[nodei].weights[weighti] = np.random.uniform(-5,5)
+                    #if np.random.rand() < 0.5:
+                    #    self.output_layer[nodei].weights[weighti] += np.random.uniform(0,4)
+                    #else:
+                    #    self.output_layer[nodei].weights[weighti] -= np.random.uniform(0,4)
 
     def clone(self):
         if self.hidden_layers[0] is not 0:
