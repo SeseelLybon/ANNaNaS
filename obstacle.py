@@ -77,6 +77,10 @@ class dino(Meeple):
         if self.pos.y <= 40:
             self.velocity.y += 20
 
+    def duck(self):
+        if self.pos.y <= 40:
+            self.velocity.y -= 20
+
     def draw(self):
         if self.isAlive:
             self.sprite.draw()

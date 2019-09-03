@@ -110,8 +110,8 @@ def update(dt):
 
     #go through each obstacle and append inputs
     for obst in obstacle_drawlist:
-        if obst.pos.x > 100:
-            obst_distance = obst.pos.x - 100
+        if obst.pos.x > 50:
+            obst_distance = obst.pos.x
             obst_height = obst.pos.y
             obst_x = obst.dim.x
             obst_y = obst.dim.y

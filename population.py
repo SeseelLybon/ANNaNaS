@@ -22,7 +22,7 @@ class Population:
 
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = dino(15, tuple([8,8]), 1)
+            self.pop[i] = dino(15, tuple([16, 8]), 2)
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
         self.bestMeeple:dino = self.pop[0]
@@ -32,22 +32,26 @@ class Population:
     def updateAlive(self, obstacle_drawlist, score, global_inputs):
 
         for dinner in self.pop:
-            dinner.brain.set_input(0, dinner.pos.x)
-            dinner.brain.set_input(1, dinner.pos.y)
+            if dinner.isAlive:
+                dinner.brain.set_input(0, dinner.pos.x)
+                dinner.brain.set_input(1, dinner.pos.y)
 
-            for i in range(len(global_inputs)):
-                i2=i+2
-                dinner.brain.set_input(i2, global_inputs[i])
+                for i in range(len(global_inputs)):
+                    i2=i+2
+                    dinner.brain.set_input(i2, global_inputs[i])
 
-            dinner.brain.fire_network()
+                dinner.brain.fire_network()
 
-            if dinner.brain.get_output(0) > 0.9:
-                dinner.jump()
+                if dinner.brain.get_output(0) > 0.9:
+                    dinner.jump()
 
-            dinner.update(score)
-            for obst in obstacle_drawlist:
-                if dinner.isColliding( obst ):
-                    dinner.isAlive = False
+                if dinner.brain.get_output(1) > 0.9:
+                    dinner.duck()
+
+                dinner.update(score)
+                for obst in obstacle_drawlist:
+                    if dinner.isColliding( obst ):
+                        dinner.isAlive = False
 
     def drawAlife(self):
         aliveBatch = pyglet.graphics.Batch()
