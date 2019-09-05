@@ -64,7 +64,7 @@ def on_draw():
         pops.bestMeeple.brain.updateposGFX([600, 750], [550, 500])
         pops.bestMeeple.brain.updateintensityGFX([2,2,      # dinner pos
                                                   0.5,2,3,3,  # first object
-                                                  0.1])       # score
+                                                  1.5])       # score
         pops.bestMeeple.brain.draw()
 
     # Run the game here

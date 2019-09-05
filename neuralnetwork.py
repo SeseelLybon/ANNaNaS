@@ -63,7 +63,7 @@ class NeuralNetwork:
 
         if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)):
-                for nodei in range(self.hidden_layers[layeri].size):
+                for nodei in range(self.hidden_layers[layeri].size-1):
                     temp=0
                     for weighti in range(self.hidden_layers[layeri][nodei].weights.shape[0]):
                         temp+=previous_layer[weighti].intensity*self.hidden_layers[layeri][nodei].weights[weighti]
@@ -400,14 +400,14 @@ class NeuralNetwork:
         if intensmods is None:
             intensmods = tuple([1]*self.input_layer.size)
         else:
-            intensmods = tuple( list(intensmods) + [1] )
+            intensmods = tuple( list(intensmods))
 
-        if len(intensmods) != self.input_layer.size:
+        if len(intensmods) != self.input_layer.size-1:
             raise ValueError
 
         # update intensities of input nodes
         temp_am_nodes = len(self.input_layer)
-        for nodei in range(temp_am_nodes):
+        for nodei in range(temp_am_nodes-1):
             intens = self.input_layer[nodei].intensity
             intens = min(intens*intensmods[nodei], 255)
             self.input_layer[nodei].sprite.color = (intens,intens,intens)
