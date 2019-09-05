@@ -219,15 +219,15 @@ class NeuralNetwork:
     def backpropegate(self, desired_output):
         #Move through the output layer
         for nodei in range(self.output_layer.size):
-            C_0_d = 0     #Derivitive between output and desired output
-            Z_j_L0 = 0    #Derivitive of the activation function (ReLU)
-            a_j_L0_d = 0  #Derivitive of activation
+            C_0_d = 0     #Derivitive of output and desired output      #2*(self.output_layer[nodei].intensity - desired_output[nodei] )
+            Z_j_L0 = 0    #Derivitive of the activation function (ReLU) #self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
+            a_j_L0_d = 0  #Derivitive of activation                     #self.ReLUd(Z_j_L0)
 
             for nodei in range(self.output_layer.shape[0]):
                 C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
                 for weighti in range(self.output_layer[nodei].weights.shape[0]):
-                    Z_j_L0 += self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
-            a_j_L0_d = self.ReLUd(Z_j_L0)
+                    Z_j_L0 +=
+            a_j_L0_d =
 
             d1_temp = C_0_d
             d2_temp = a_j_L0_d
