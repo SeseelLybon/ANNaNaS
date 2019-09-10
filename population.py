@@ -16,6 +16,7 @@ class Population:
     def __init__(self, size):
         self.pop = np.ndarray([size], dtype=dino)
         self.species:List[Species] = []
+        self.speciesCreated = 0
 
         self.size = size
         self.generation = 0
@@ -98,8 +99,9 @@ class Population:
 
         id_s = []
         for spec in self.species:
-            id_s.append(spec.speciesID)
-        print("Species ID's", id_s)
+            id_s.append((spec.speciesID,spec.staleness,spec.bestMeeple.fitness))
+        id_s.reverse()
+        print("Species ID's", id_s )
 
         self.bestMeeple = self.bestMeeple.clone()
         self.bestMeeple.sprite.color = (0,200,100)

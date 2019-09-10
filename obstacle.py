@@ -108,6 +108,16 @@ class dino(Meeple):
         temp.brain = self.brain.clone()
         return temp
 
+    def cloneinto(self, other):
+        #This is for dealing with python's soft pointers.
+        self.brain = other.brain
+        self.fitness = other.fitness
+        self.isAlive = True
+        self.score = other.score
+        self.pos:Vec2d = Vec2d(100, 100)
+        self.dim:Vec2d = Vec2d(50, 60)
+        self.velocity:Vec2d = Vec2d(0, 0)
+
     def crossover(self, parent2): #parent1:dino, parent2:dino) -> dino:
         temp:dino = dino(self.brain.input_size-1,
                          tuple([x-1 for x in self.brain.hidden_size]),

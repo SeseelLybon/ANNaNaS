@@ -24,6 +24,13 @@ class Meeple:
         temp.brain = self.brain.clone()
         return temp
 
+    def cloneinto(self, other):
+        #This is for dealing with python's soft pointers.
+        self.brain = other.brain
+        self.fitness = other.fitness
+        self.isAlive = True
+        self.score = other.score
+
     def crossover(self, parent2): #parent1:Meeple, parent2:Meeple) -> Meeple:
         temp:Meeple = Meeple(self.brain.input_size-1,
                              tuple([x-1 for x in self.brain.hidden_size]),
