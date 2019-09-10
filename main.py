@@ -73,7 +73,7 @@ def on_draw():
 
     score_label.text = 'score: ' + str(score)
     score_label.draw()
-    score_best_label.text = 'best score: ' + str(pops.highestFitness)
+    score_best_label.text = 'best score: ' + str(pops.highestScore)
     score_best_label.draw()
     dinos_live_label.text = "Dino's alive: " + str(pops.countAlive()) + " of " + str(100)
     dinos_live_label.draw()

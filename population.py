@@ -26,7 +26,9 @@ class Population:
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
         self.bestMeeple:dino = self.pop[0]
-        self.highestFitness:int = 0
+        self.highestFitness = 0
+        self.highestScore = 0
+
 
     #update all the meeps that are currently alive
     def updateAlive(self, obstacle_drawlist, score, global_inputs):
@@ -86,12 +88,18 @@ class Population:
         # Clean the species
         self.cullSpecies()
         self.setBestMeeple()
-        print("heighest fitness", self.highestFitness)
+        print("highest score", self.highestScore)
+        print("highest fitness", self.highestFitness)
         self.killStaleSpecies()
         self.killBadSpecies()
 
 
         print("Species pre/post culling", species_pre_cull, len(self.species))
+
+        id_s = []
+        for spec in self.species:
+            id_s.append(spec.speciesID)
+        print("Species ID's", id_s)
 
         self.bestMeeple = self.bestMeeple.clone()
         self.bestMeeple.sprite.color = (0,200,100)
@@ -212,5 +220,6 @@ class Population:
 
 
     def cullSpecies(self):
+        # remove the bottom half of all species.
         for specie in self.species:
             specie.cull()
