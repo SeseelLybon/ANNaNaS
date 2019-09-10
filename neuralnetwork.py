@@ -203,7 +203,7 @@ class NeuralNetwork:
         return child
 
 
-    def errorscore(self, correct_output:np.array):
+    def costfunction(self, correct_output:np.array):
         if len(correct_output) != self.output_layer.size:
             raise ValueError
             # can't test error score if the 2 node arrays don't match in lenght
@@ -226,8 +226,11 @@ class NeuralNetwork:
             for nodei in range(self.output_layer.shape[0]):
                 C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
                 for weighti in range(self.output_layer[nodei].weights.shape[0]):
-                    Z_j_L0 +=
-            a_j_L0_d =
+                    Z_j_L0 += 0  # previous node's intensity
+            a_j_L0_d = #
+
+            # The amount that a weight needs to change is delta_cost/delta_weight = delta_intensity/delta_weight * delta_activation/delta_intensity * delta_activation/delta_cost
+            # This goes from right to left and can be 'easily' chained.
 
             d1_temp = C_0_d
             d2_temp = a_j_L0_d
