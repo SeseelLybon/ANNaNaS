@@ -91,8 +91,8 @@ class Population:
         self.setBestMeeple()
         print("highest score", self.highestScore)
         print("highest fitness", self.highestFitness)
-        self.killStaleSpecies()
         self.killBadSpecies()
+        self.killStaleSpecies()
 
 
         print("Species pre/post culling", species_pre_cull, len(self.species))
@@ -109,7 +109,7 @@ class Population:
 
         for specie in self.species:
             #add the best meeple of a specie to the new generation list
-            children.append(specie.bestMeeple)
+            children.append(specie.bestMeeple.clone())
 
             #generate number of children based on how well the species is soing compared to the rest; the better the bigger.
             newChildrenAmount = floor((specie.averageFitness/self.getAverageFitnessSum()) *self.pop.size) -1
@@ -132,25 +132,18 @@ class Population:
         tempnewbestMeeplei = -1
 
         #go through all meeples in the population and test if their fitness is higher than the previous one
-        for i in range(self.pop.shape[0]):
+        for i in range(self.pop.size):
             if self.pop[i].fitness > maxFit:
                 tempnewbestMeeplei = i
                 maxFit = self.pop[i].fitness
 
         # make sure that the new fitness is actually higher than the previous one.
-        if self.bestMeeple:
-            if self.highestFitness < self.pop[tempnewbestMeeplei].fitness:
-                self.bestMeeple = self.pop[tempnewbestMeeplei]
-                self.highestFitness = self.bestMeeple.fitness
-                self.highestScore = self.bestMeeple.score
-                print("New best meeple")
-            else:
-                print("Best fitness this generation:", self.pop[tempnewbestMeeplei].fitness)
-        else:
+        if self.highestFitness < self.pop[tempnewbestMeeplei].fitness:
             self.bestMeeple = self.pop[tempnewbestMeeplei]
             self.highestFitness = self.bestMeeple.fitness
             self.highestScore = self.bestMeeple.score
             print("New best meeple")
+        else:
             print("Best fitness this generation:", self.pop[tempnewbestMeeplei].fitness)
 
 
@@ -159,18 +152,19 @@ class Population:
 
         #clear all exising species
         #champion is saved, so they're not useless
-        for specie in self.species:
-            self.species:List[Species] = []
+        #for specie in self.species:
+        #    specie.meeples.clear()
 
         for meep in self.pop:
             speciesfound = False
             for specie in self.species:
-                if specie.checkSameSpecies(meep):
+                if specie.checkSimilarSpecies(meep):
                     specie.addToSpecies(meep)
                     speciesfound = True
                     break
             if not speciesfound:
-                self.species.append(Species(meep=meep))
+                self.species.append(Species(meep=meep, speciesID=self.speciesCreated))
+                self.speciesCreated+=1
 
 
     def calculateFitness(self):
@@ -207,7 +201,7 @@ class Population:
 
         averageSum = 0
         for specie in self.species:
-            specie.generateAverage()
+            specie.generateAverageFitness()
             averageSum += specie.averageFitness
 
         markedForRemoval = list()

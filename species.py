@@ -36,11 +36,11 @@ class Species:
     def sortSpecie(self):
         self.meeples.sort(key=lambda meep: meep.fitness, reverse=True)
 
-        if self.bestMeeple is not Meeple:
+        if self.bestMeeple.fitness < self.meeples[0].fitness:
             self.bestMeeple = self.meeples[0].clone()
-        elif self.bestMeeple.fitness > self.meeples[0].fitness:
-            self.bestMeeple = self.meeples[0].clone()
-        else: self.staleness+=1
+            self.staleness=0
+        else:
+            self.staleness+=1
 
 
     # Returns the number of weights that are the same between two meeples
