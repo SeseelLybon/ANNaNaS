@@ -52,7 +52,7 @@ class dino(Meeple):
         self.jumping = False
         self.ducking = False
         self.isAlive = True
-        self.score = 0
+        self.score = float("-inf")
 
     def update(self, score):
         if self.isAlive:

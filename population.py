@@ -99,7 +99,7 @@ class Population:
 
         id_s = []
         for spec in self.species:
-            id_s.append((spec.speciesID,spec.staleness,spec.bestMeeple.fitness))
+            id_s.append((spec.speciesID,spec.staleness,spec.bestFitness, spec.averageFitness))
         id_s.reverse()
         print("Species ID's", id_s )
 
@@ -178,12 +178,13 @@ class Population:
             tempsum+= specie.averageFitness
         return tempsum
 
-    #sort the species by fitness of their champion
+    #sort the population of a species by fitness
+    #sort the species by the average of the species
     def sortSpecies(self):
         for specie in self.species:
             specie.sortSpecie()
 
-        self.species.sort(key=lambda specie: specie.bestMeeple.fitness)
+        self.species.sort(key=lambda specie: specie.averageFitness)
 
 
     def killStaleSpecies(self):
@@ -194,6 +195,8 @@ class Population:
             if specie.staleness >= 15:
                 markedForRemoval.append(specie)
 
+        if len(markedForRemoval) > 0:
+            print("Killing", len(markedForRemoval), "stale species")
         self.species[:] = [ x for x in self.species if x not in markedForRemoval ]
 
 
@@ -212,6 +215,8 @@ class Population:
             if specie.averageFitness/averageSum * len(self.pop) < 1:
                 markedForRemoval.append(specie)
 
+        if len(markedForRemoval) > 0:
+            print("Killing", len(markedForRemoval), "bad species")
         self.species[:] = [ x for x in self.species if x not in markedForRemoval ]
 
 
