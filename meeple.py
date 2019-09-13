@@ -5,7 +5,7 @@ from neuralnetwork import NeuralNetwork
 
 class Meeple:
     def __init__(self, input_size:int, hidden_size:tuple, output_size:int, isHallow=False):
-        self.fitness = float("-inf")
+        self.fitness = 0
         self.brain: NeuralNetwork
         self.isAlive = True
 
@@ -23,6 +23,13 @@ class Meeple:
                              )
         temp.brain = self.brain.clone()
         return temp
+
+    def cloneinto(self, other):
+        #This is for dealing with python's soft pointers.
+        self.brain = other.brain
+        self.fitness = other.fitness
+        self.isAlive = True
+        self.score = other.score
 
     def crossover(self, parent2): #parent1:Meeple, parent2:Meeple) -> Meeple:
         temp:Meeple = Meeple(self.brain.input_size-1,

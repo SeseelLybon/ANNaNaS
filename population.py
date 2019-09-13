@@ -16,6 +16,7 @@ class Population:
     def __init__(self, size):
         self.pop = np.ndarray([size], dtype=dino)
         self.species:List[Species] = []
+        self.speciesCreated = 0
 
         self.size = size
         self.generation = 0
@@ -26,7 +27,9 @@ class Population:
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
         self.bestMeeple:dino = self.pop[0]
-        self.highestFitness:int = 0
+        self.highestFitness = 0
+        self.highestScore = 0
+
 
     #update all the meeps that are currently alive
     def updateAlive(self, obstacle_drawlist, score, global_inputs):
@@ -78,6 +81,7 @@ class Population:
 
 
     def naturalSelection(self):
+        species_pre_speciate = len(self.species)
         self.speciate() # seperate the existing population into species for the purpose of natural selection
         species_pre_cull = len(self.species)
         self.calculateFitness() # calc fitness of each meeple, currently not needed
@@ -86,12 +90,23 @@ class Population:
         # Clean the species
         self.cullSpecies()
         self.setBestMeeple()
-        print("heighest fitness", self.highestFitness)
-        self.killStaleSpecies()
+        print("highest score", self.highestScore)
+        print("highest fitness", self.highestFitness)
+
+        if species_pre_cull-species_pre_speciate > 0:
+            print("Added", species_pre_cull-species_pre_speciate, "new species")
+
         self.killBadSpecies()
+        self.killStaleSpecies()
 
 
-        print("Species pre/post culling", species_pre_cull, len(self.species))
+        print("Species prespeciate:precull:postcull", species_pre_speciate, species_pre_cull, len(self.species))
+
+        id_s = []
+        for spec in self.species:
+            id_s.append((spec.speciesID,spec.staleness,spec.bestFitness, spec.averageFitness))
+        id_s.reverse()
+        print("Species ID's", id_s )
 
         self.bestMeeple = self.bestMeeple.clone()
         self.bestMeeple.sprite.color = (0,200,100)
@@ -99,7 +114,7 @@ class Population:
 
         for specie in self.species:
             #add the best meeple of a specie to the new generation list
-            children.append(specie.bestMeeple)
+            children.append(specie.bestMeeple.clone())
 
             #generate number of children based on how well the species is soing compared to the rest; the better the bigger.
             newChildrenAmount = floor((specie.averageFitness/self.getAverageFitnessSum()) *self.pop.size) -1
@@ -122,25 +137,18 @@ class Population:
         tempnewbestMeeplei = -1
 
         #go through all meeples in the population and test if their fitness is higher than the previous one
-        for i in range(self.pop.shape[0]):
+        for i in range(self.pop.size):
             if self.pop[i].fitness > maxFit:
                 tempnewbestMeeplei = i
                 maxFit = self.pop[i].fitness
 
         # make sure that the new fitness is actually higher than the previous one.
-        if self.bestMeeple:
-            if self.highestFitness < self.pop[tempnewbestMeeplei].fitness:
-                self.bestMeeple = self.pop[tempnewbestMeeplei]
-                self.highestFitness = self.bestMeeple.fitness
-                self.highestScore = self.bestMeeple.score
-                print("New best meeple")
-            else:
-                print("Best fitness this generation:", self.pop[tempnewbestMeeplei].fitness)
-        else:
+        if self.highestFitness < self.pop[tempnewbestMeeplei].fitness:
             self.bestMeeple = self.pop[tempnewbestMeeplei]
             self.highestFitness = self.bestMeeple.fitness
             self.highestScore = self.bestMeeple.score
             print("New best meeple")
+        else:
             print("Best fitness this generation:", self.pop[tempnewbestMeeplei].fitness)
 
 
@@ -149,18 +157,19 @@ class Population:
 
         #clear all exising species
         #champion is saved, so they're not useless
-        for specie in self.species:
-            self.species:List[Species] = []
+        #for specie in self.species:
+        #    specie.meeples.clear()
 
         for meep in self.pop:
             speciesfound = False
             for specie in self.species:
-                if specie.checkSameSpecies(meep):
+                if specie.checkSimilarSpecies(meep):
                     specie.addToSpecies(meep)
                     speciesfound = True
                     break
             if not speciesfound:
-                self.species.append(Species(meep=meep))
+                self.species.append(Species(meep=meep, speciesID=self.speciesCreated))
+                self.speciesCreated+=1
 
 
     def calculateFitness(self):
@@ -174,12 +183,13 @@ class Population:
             tempsum+= specie.averageFitness
         return tempsum
 
-    #sort the species by fitness of their champion
+    #sort the population of a species by fitness
+    #sort the species by the average of the species
     def sortSpecies(self):
         for specie in self.species:
             specie.sortSpecie()
 
-        self.species.sort(key=lambda specie: specie.bestMeeple.fitness)
+        self.species.sort(key=lambda specie: specie.averageFitness)
 
 
     def killStaleSpecies(self):
@@ -190,6 +200,8 @@ class Population:
             if specie.staleness >= 15:
                 markedForRemoval.append(specie)
 
+        if len(markedForRemoval) > 0:
+            print("Killing", len(markedForRemoval), "stale species")
         self.species[:] = [ x for x in self.species if x not in markedForRemoval ]
 
 
@@ -197,7 +209,7 @@ class Population:
 
         averageSum = 0
         for specie in self.species:
-            specie.generateAverage()
+            specie.generateAverageFitness()
             averageSum += specie.averageFitness
 
         markedForRemoval = list()
@@ -208,9 +220,12 @@ class Population:
             if specie.averageFitness/averageSum * len(self.pop) < 1:
                 markedForRemoval.append(specie)
 
+        if len(markedForRemoval) > 0:
+            print("Killing", len(markedForRemoval), "bad species")
         self.species[:] = [ x for x in self.species if x not in markedForRemoval ]
 
 
     def cullSpecies(self):
+        # remove the bottom half of all species.
         for specie in self.species:
             specie.cull()

@@ -4,29 +4,33 @@ import numpy as np
 
 
 class Species:
-    def __init__(self, meep:Meeple ):
+    def __init__(self, speciesID, meep:Meeple  ):
+        self.speciesID = speciesID
         self.bestMeeple:Meeple = meep
         self.meeples:list = [meep]
+        self.sizeChromosome = meep.brain.getAmountWeights()
 
-        self.similairy_threshold_total = 0.50 # 1 = 100%
-        self.similairy_threshold_gene = 0.5 # 1 = 1
+        self.similairy_threshold_total = 0.90 # 1 = 100%
+        self.similairy_threshold_gene = 1 # 1 = 1
+        self.mutateChance = 1/10    # 1 = 100%
+        self.mutateStrength = 2
 
         self.staleness = 0 # stagnation
         self.fitnessSum = 0
         self.averageFitness = 0
+        self.bestFitness = 0
 
 
     def addToSpecies(self, meep:Meeple):
         self.meeples.append(meep)
 
 
-    def checkSameSpecies(self, meep:Meeple)->bool:
+    def checkSimilarSpecies(self, meep:Meeple)->bool:
         temp = self.bestMeeple.brain
-        totalgenes = temp.getAmountWeights()
 
         similair_genes = self.getAmtSimilarGenes(self.bestMeeple, meep)
 
-        if (similair_genes/totalgenes) >= self.similairy_threshold_total:
+        if (similair_genes/self.sizeChromosome) >= self.similairy_threshold_total:
             return True
         else:
             return False
@@ -34,11 +38,12 @@ class Species:
     def sortSpecie(self):
         self.meeples.sort(key=lambda meep: meep.fitness, reverse=True)
 
-        if self.bestMeeple is not Meeple:
+        if self.bestFitness < self.meeples[0].fitness:
+            self.bestFitness = self.meeples[0].fitness
             self.bestMeeple = self.meeples[0].clone()
-        elif self.bestMeeple.fitness > self.meeples[0].fitness:
-            self.bestMeeple = self.meeples[0].clone()
-        else: self.staleness+=1
+            self.staleness=0
+        else:
+            self.staleness+=1
 
 
     # Returns the number of weights that are the same between two meeples
@@ -107,7 +112,7 @@ class Species:
             else:
                 child = parent2.crossover(parent1)
 
-        child.brain.mutate()
+        child.brain.mutate(self.mutateChance, self.mutateStrength)
 
         return child
 
@@ -118,14 +123,14 @@ class Species:
         for i in range(len(self.meeples)):
             self.fitnessSum += self.meeples[i].fitness
 
-    def generateAverage(self):
+    def generateAverageFitness(self):
         self.calculateFitnessSum()
-        self.averageFitness = self.fitnessSum/len(self.meeples)
+        self.averageFitness = round(self.fitnessSum/len(self.meeples), 1)
 
     def cull(self):
         #self.sortSpecie()
         if len(self.meeples) > 2:
-            self.meeples = self.meeples[0:len(self.meeples)//2]
+            self.meeples[:] = self.meeples[0:len(self.meeples)//2]
 
 
 
