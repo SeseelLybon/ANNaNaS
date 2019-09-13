@@ -81,6 +81,7 @@ class Population:
 
 
     def naturalSelection(self):
+        species_pre_speciate = len(self.species)
         self.speciate() # seperate the existing population into species for the purpose of natural selection
         species_pre_cull = len(self.species)
         self.calculateFitness() # calc fitness of each meeple, currently not needed
@@ -91,11 +92,15 @@ class Population:
         self.setBestMeeple()
         print("highest score", self.highestScore)
         print("highest fitness", self.highestFitness)
+
+        if species_pre_cull-species_pre_speciate > 0:
+            print("Added", species_pre_cull-species_pre_speciate, "new species")
+
         self.killBadSpecies()
         self.killStaleSpecies()
 
 
-        print("Species pre/post culling", species_pre_cull, len(self.species))
+        print("Species prespeciate:precull:postcull", species_pre_speciate, species_pre_cull, len(self.species))
 
         id_s = []
         for spec in self.species:
