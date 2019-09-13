@@ -203,10 +203,10 @@ class NeuralNetwork:
         return child
 
 
-    def costfunction(self, correct_output:np.array):
+    def costfunction(self, correct_output:np.array)->float:
         if len(correct_output) != self.output_layer.size:
             raise ValueError
-            # can't test error score if the 2 node arrays don't match in lenght
+            # can't test error score if the 2 node arrays don't match in length
         total=0
         for cor_val, output_node in zip(correct_output, self.output_layer):
             total+= (output_node.intensity - cor_val)**2
@@ -227,14 +227,13 @@ class NeuralNetwork:
                 C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
                 for weighti in range(self.output_layer[nodei].weights.shape[0]):
                     Z_j_L0 += 0  # previous node's intensity
-            a_j_L0_d = #
+            a_j_L0_d = 0#
 
             # The amount that a weight needs to change is delta_cost/delta_weight = delta_intensity/delta_weight * delta_activation/delta_intensity * delta_activation/delta_cost
             # This goes from right to left and can be 'easily' chained.
 
-            d1_temp = C_0_d
-            d2_temp = a_j_L0_d
-            d3_temp = 0
+            d1_temp = C_0_d * Z_j_L0 * a_j_L0_d
+            print(d1_temp)
 
             #Move through the hidden layers and adjust them.
 
