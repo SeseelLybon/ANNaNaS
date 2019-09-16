@@ -13,7 +13,7 @@ class Population:
 
 
 
-    def __init__(self, size):
+    def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int,):
         self.pop = np.ndarray([size], dtype=dino)
         self.species:List[Species] = []
         self.speciesCreated = 0
@@ -23,7 +23,7 @@ class Population:
 
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = dino(7, tuple([14, 7]), 2)
+            self.pop[i] = dino(input_size, hidden_size, output_size)
             #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
 
         self.bestMeeple:dino = self.pop[0]

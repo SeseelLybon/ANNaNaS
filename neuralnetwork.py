@@ -81,9 +81,25 @@ class NeuralNetwork:
     def get_output(self, num:int):
         return self.output_layer[num].intensity
 
+    # get all values of all output nodes in order
+    def get_outputs(self) -> np.array:
+        return np.array([node.intensity for node in self.output_layer])
+
     # don't set inputs directly! would put them on private, but Python has no privates
     def set_input(self, num:int, intense:float):
         self.input_layer[num].intensity = intense
+
+    # set all values of all output nodes in order
+    # if the list is shorter than the input layer, last nodes won't be updated
+    # if the list is longer than the input layer, crash?
+    def set_inputs(self, inputlist):
+        if len(inputlist) != self.input_layer.size-1:
+            print("Neuralnetwork.set_inputs: inputlist is diffirent size than self.input_layer.size!")
+
+        for node_i in range(len(inputlist)):
+            self.input_layer[node_i].intensity = inputlist[node_i]
+
+
 
     @staticmethod
     def Sigmoid(x:float):
