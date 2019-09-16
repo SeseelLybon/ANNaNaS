@@ -230,29 +230,38 @@ class NeuralNetwork:
         return total
 
 
-    # Can only be used if there is a desired output in that moment.
+    # Can only be used if there is a new output in that moment.
     # Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
     def backpropegate(self, desired_output):
         #Move through the output layer
         for nodei in range(self.output_layer.size):
-            C_0_d = 0     #Derivitive of output and desired output      #2*(self.output_layer[nodei].intensity - desired_output[nodei] )
-            Z_j_L0 = 0    #Derivitive of the activation function (ReLU) #self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
-            a_j_L0_d = 0  #Derivitive of activation                     #self.ReLUd(Z_j_L0)
+            C_0_d = 0       #Derivitive of output and desired output      #2*(self.output_layer[nodei].intensity - desired_output[nodei] )
+            Z_j_L0_d = 0    #Derivitive of the weights                    #self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
+            Z_j_L0 = 0      #The intensity of node - needed for a_j_L0_d
+            a_j_L0_d = 0    #Derivitive of activation                     #self.ReLUd(Z_j_L0) 0 if x < 0, 1 if x > 0
 
-            for nodei in range(self.output_layer.shape[0]):
-                C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
-                for weighti in range(self.output_layer[nodei].weights.shape[0]):
-                    Z_j_L0 += 0  # previous node's intensity
-            a_j_L0_d = 0#
+
+            C_0_d = 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
+
+            Z_j_L0 = self.output_layer[0].intensity
+            Z_j_L0_d = self.output_layer[0].weights[0] # the weight
+
+            if Z_j_L0 <= 0:
+                a_j_L0_d = 0
+            else:
+                a_j_L0_d = 1
 
             # The amount that a weight needs to change is delta_cost/delta_weight = delta_intensity/delta_weight * delta_activation/delta_intensity * delta_activation/delta_cost
             # This goes from right to left and can be 'easily' chained.
 
-            d1_temp = C_0_d * Z_j_L0 * a_j_L0_d
+            d1_temp =  C_0_d * Z_j_L0_d * a_j_L0_d * -1
             print(d1_temp)
 
-            #Move through the hidden layers and adjust them.
+            self.output_layer[0].weights[0] += d1_temp
+            pass
 
+
+            #Move through the hidden layers and adjust them.
 
 
     def pickle(self):
