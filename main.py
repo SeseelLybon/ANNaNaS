@@ -17,30 +17,51 @@ from meeple import Meeple
 print("\n\nStart of main code\n\n")
 
 
-meeple_1 = Meeple( 1, tuple([1]), 1)
+meeple_1 = Meeple( 2, tuple([0]), 4)
 
-epochs = 10
-for i in range(epochs):
-    print("\nEpoch", i, "\n")
-    desiredoutput = np.array([0])
-    meeple_1.brain.set_inputs([1])
+epochs = 100
+for i in range(1,epochs+1):
+    print("\nEpoch", i)
+
+    errorlist = np.ndarray([4], dtype=float)
+
+    desiredoutput = np.array([1,0,0,0])
+    meeple_1.brain.set_inputs([0,0])
     meeple_1.brain.fire_network()
-    print( "Desired:", desiredoutput)
+    print( "\nDesired:", desiredoutput)
     print( "Brain says:", meeple_1.brain.get_outputs())
-    print( "Error:", meeple_1.brain.costfunction(desiredoutput))
-    meeple_1.brain.backpropegate(desiredoutput)
+    errorlist[0] = meeple_1.brain.costfunction(desiredoutput)
+    print( "Error:", errorlist[0])
+    meeple_1.brain.backpropegateOnline(desiredoutput, 0.05)
 
+    desiredoutput = np.array([0,1,0,0])
+    meeple_1.brain.set_inputs([1,0])
+    meeple_1.brain.fire_network()
+    print( "\nDesired:", desiredoutput)
+    print( "Brain says:", meeple_1.brain.get_outputs())
+    errorlist[1] = meeple_1.brain.costfunction(desiredoutput)
+    print( "Error:", errorlist[1])
+    meeple_1.brain.backpropegateOnline(desiredoutput, 0.05)
 
-    #desiredoutput = np.array([1])
-    #meeple_1.brain.set_inputs([0])
-    #meeple_1.brain.fire_network()
-    #print( "Desired:", desiredoutput)
-    #print( "Brain says:", meeple_1.brain.get_outputs())
-    #print( "Error:", meeple_1.brain.costfunction(desiredoutput))
-    #meeple_1.brain.backpropegate(desiredoutput)
+    desiredoutput = np.array([0,0,1,0])
+    meeple_1.brain.set_inputs([0,1])
+    meeple_1.brain.fire_network()
+    print( "\nDesired:", desiredoutput)
+    print( "Brain says:", meeple_1.brain.get_outputs())
+    errorlist[2] = meeple_1.brain.costfunction(desiredoutput)
+    print( "Error:", errorlist[2])
+    meeple_1.brain.backpropegateOnline(desiredoutput, 0.05)
 
+    desiredoutput = np.array([0,0,0,1])
+    meeple_1.brain.set_inputs([1,1])
+    meeple_1.brain.fire_network()
+    print( "\nDesired:", desiredoutput)
+    print( "Brain says:", meeple_1.brain.get_outputs())
+    errorlist[3] = meeple_1.brain.costfunction(desiredoutput)
+    print( "Error:", errorlist[3])
+    meeple_1.brain.backpropegateOnline(desiredoutput, 0.05)
 
-
+    print("\nAverage error:", sum(errorlist)/4)
 
 
 

@@ -82,8 +82,8 @@ class NeuralNetwork:
         return self.output_layer[num].intensity
 
     # get all values of all output nodes in order
-    def get_outputs(self) -> np.array:
-        return np.array([node.intensity for node in self.output_layer])
+    def get_outputs(self):
+        return [node.intensity for node in self.output_layer]
 
     # don't set inputs directly! would put them on private, but Python has no privates
     def set_input(self, num:int, intense:float):
@@ -232,36 +232,95 @@ class NeuralNetwork:
 
     # Can only be used if there is a new output in that moment.
     # Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
-    def backpropegate(self, desired_output):
+        # The amount that a weight needs to change is delta_cost/delta_weight = delta_intensity/delta_weight * delta_activation/delta_intensity * delta_activation/delta_cost
+        # This goes from right to left and can be 'easily' chained.
+    def backpropegateOnline(self, desired_output, learnrate):
+
+
+        if self.hidden_layers[0] is not 0:
+            precedinglayer = self.hidden_layers[-1]
+        else:
+            precedinglayer = self.input_layer
+
+
+        DeltaOutputWeights:np.array = np.ndarray([self.output_layer.size, precedinglayer.size], dtype=float)
+
+        if self.hidden_layers[0] is not 0:
+            DeltaHiddenLayersWeights:np.array = [np.ndarray([layer.size, layer[0].weights.size],float) for layer in self.hidden_layers]
+            DeltaHiddenLayersIdealIntensities:np.array = [np.ndarray([layer.size],float) for layer in self.hidden_layers]
+
+        # Making the delta image ----------
+
         #Move through the output layer
         for nodei in range(self.output_layer.size):
-            C_0_d = 0       #Derivitive of output and desired output      #2*(self.output_layer[nodei].intensity - desired_output[nodei] )
-            Z_j_L0_d = 0    #Derivitive of the weights                    #self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
-            Z_j_L0 = 0      #The intensity of node - needed for a_j_L0_d
-            a_j_L0_d = 0    #Derivitive of activation                     #self.ReLUd(Z_j_L0) 0 if x < 0, 1 if x > 0
-
-
-            C_0_d = 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
-
-            Z_j_L0 = self.output_layer[0].intensity
-            Z_j_L0_d = self.output_layer[0].weights[0] # the weight
-
-            if Z_j_L0 <= 0:
-                a_j_L0_d = 0
+            dCost = 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
+            Intensity = self.output_layer[nodei].intensity
+            if Intensity <= 0:
+                dActivation = 0
             else:
-                a_j_L0_d = 1
+                dActivation = 1
 
-            # The amount that a weight needs to change is delta_cost/delta_weight = delta_intensity/delta_weight * delta_activation/delta_intensity * delta_activation/delta_cost
-            # This goes from right to left and can be 'easily' chained.
+            for weighti in range(precedinglayer.size):
 
-            d1_temp =  C_0_d * Z_j_L0_d * a_j_L0_d * -1
-            print(d1_temp)
+                dIntensity = precedinglayer[weighti].intensity # intensity of node of previous layer
 
-            self.output_layer[0].weights[0] += d1_temp
-            pass
+                d1_temp =   dIntensity * dCost * -1 #* dActivation
+                #newbrain.output_layer[0].weights[0] += d1_temp * learnrate
+                DeltaOutputWeights[nodei, weighti] = d1_temp * learnrate
+
+                if self.hidden_layers[0] is not 0:
+                    dIntensityL1 = self.output_layer[nodei].weights[weighti]
+                    d2_temp = dIntensityL1 * dCost * -1# * dActivation
+                    DeltaHiddenLayersIdealIntensities = d2_temp * learnrate
+
+        #Move through the hidden layers
+        for precedinglayeri in range(len(self.hidden_layers)-1, 0):
+            if precedinglayeri == 0:
+                precedinglayer = self.output_layer
+            else:
+                precedinglayer = self.hidden_layers[precedinglayeri-1]
+
+            for nodei in range(self.output_layer.size):
+                dCost = 2*(self.output_layer[nodei].intensity - desired_output[0] )
+                Intensity = self.output_layer[nodei].intensity
+                if Intensity <= 0:
+                    dActivation = 0
+                else:
+                    dActivation = 1
+
+                for weighti in range(precedinglayer.size):
+
+                    dIntensity = precedinglayer[weighti].intensity # intensity of node of previous layer
+
+                    d1_temp =   dIntensity * dActivation * dCost * -1
+                    #newbrain.output_layer[0].weights[0] += d1_temp * learnrate
+                    DeltaOutputWeights[nodei, weighti] = d1_temp * learnrate
+
+                    if self.hidden_layers[0] is not 0:
+                        dIntensityL1 = self.output_layer[nodei].weights[weighti]
+                        d2_temp = dIntensityL1 * dActivation * dCost * -1
+                        DeltaHiddenLayersIdealIntensities = d2_temp * learnrate
 
 
-            #Move through the hidden layers and adjust them.
+
+
+        # Applying the delta image ----------
+
+
+        if self.hidden_layers[0] is not 0:
+            precedinglayer = self.hidden_layers[-1]
+        else:
+            precedinglayer = self.input_layer
+
+        for nodei in range(self.output_layer.size):
+            for weighti in range(precedinglayer.size):
+                self.output_layer[nodei].weights[weighti] += DeltaOutputWeights[nodei, weighti]
+
+        if self.hidden_layers[0] is not 0:
+            for layeri in range(len(self.hidden_layers)):
+                for nodei in range(self.hidden_layers[layeri].size):
+                    for weighti in range(self.hidden_layers[layeri][nodei].weights):
+                        self.output_layer[nodei].weights[weighti] += DeltaOutputWeights[nodei, weighti]
 
 
     def pickle(self):
