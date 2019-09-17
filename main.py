@@ -17,12 +17,13 @@ from meeple import Meeple
 print("\n\nStart of main code\n\n")
 
 
-meeple_1 = Meeple( 2, tuple([4]), 4)
-learnrate = 0.10
+meeple_1 = Meeple( 2, tuple([8,8]), 4)
+learnrate = 0.03
 errorrounding = 3
 outputrounding = 3
+avgerrors = []
 
-epochs = 20
+epochs = 200
 for i in range(1,epochs+1):
     print("\nEpoch", i)
 
@@ -68,10 +69,11 @@ for i in range(1,epochs+1):
     print( "Error:", errorlist[3])
     meeple_1.brain.backpropegateOnline(desiredoutput, learnrate)
 
-    print("\nAverage error:", sum(errorlist)/4)
+    avgerrors.append( round(sum(errorlist)/4, 3) )
+    print("\nAverage error:", avgerrors[-1])
 
 
 
 
-
+print("\n\n",avgerrors)
 print("\n\nEnd of main")
