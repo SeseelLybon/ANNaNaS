@@ -13,13 +13,16 @@ from meeple import Meeple
 
 class Population:
 
-    def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int):
+    def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int, training_data, training_answers):
         self.pop = np.ndarray([size], dtype=Meeple)
         self.species:List[Species] = []
         self.speciesCreated = 0
 
         self.size = size
         self.generation = 0
+
+        self.training_data = training_data
+        self.training_answers = training_answers
 
 
         for i in range(self.pop.shape[0]):
@@ -37,16 +40,16 @@ class Population:
 
             if meep.isAlive and not meep.isDone:
 
-                meep.brain.train(training_data=training_data, training_answers=training_answers, learnrate=0.05)
+                meep.brain.train(training_data=self.training_data, training_answers=self.training_answers, learnrate=0.05)
 
                 errorsum = 0
-                for testi in range(training_data.shape[0]):
-                    meep.brain.set_inputs(training_data[testi])
+                for testi in range(self.training_data.shape[0]):
+                    meep.brain.set_inputs(self.training_data[testi])
                     meep.brain.fire_network()
-                    errorsum += round(meep.brain.costfunction(training_answers[testi]), 3)
-                meep.score = errorsum/len(training_data)
+                    errorsum += round(meep.brain.costfunction(self.training_answers[testi]), 3)
+                meep.score = errorsum/len(self.training_data)
 
-            if meep.score == 0:
+            if meep.score <= 0.000001:
                 meep.isDone = True
                 return meep
 
@@ -60,8 +63,6 @@ class Population:
                 meep.epochs -= 1
 
             #return None
-
-
 
 
     def drawAlife(self):
@@ -229,21 +230,3 @@ class Population:
             specie.cull()
 
 
-
-training_data = np.array([[0,0,0],
-                          [1,0,0],
-                          [0,1,0],
-                          [1,1,0],
-                          [0,0,1],
-                          [1,0,1],
-                          [0,1,1],
-                          [1,1,1]])
-
-training_answers = np.array([[1,0,0,0,0,0,0,0],
-                             [0,1,0,0,0,0,0,0],
-                             [0,0,1,0,0,0,0,0],
-                             [0,0,0,1,0,0,0,0],
-                             [0,0,0,0,1,0,0,0],
-                             [0,0,0,0,0,1,0,0],
-                             [0,0,0,0,0,0,1,0],
-                             [0,0,0,0,0,0,0,1]])

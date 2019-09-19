@@ -13,10 +13,27 @@ import numpy as np
 import math
 
 from population import Population
-from population import training_data
-from population import training_answers
 
 from meeple import Meeple
+
+training_data = np.array([[0,0,0],
+                          [1,0,0],
+                          [0,1,0],
+                          [1,1,0],
+                          [0,0,1],
+                          [1,0,1],
+                          [0,1,1],
+                          [1,1,1]])
+
+training_answers = np.array([[1,0,0,0,0,0,0,0],
+                             [0,1,0,0,0,0,0,0],
+                             [0,0,1,0,0,0,0,0],
+                             [0,0,0,1,0,0,0,0],
+                             [0,0,0,0,1,0,0,0],
+                             [0,0,0,0,0,1,0,0],
+                             [0,0,0,0,0,0,1,0],
+                             [0,0,0,0,0,0,0,1]])
+
 
 print("\n\nStart of main code\n\n")
 
@@ -29,12 +46,12 @@ learnrate = 0.10
 
 bestmeep:Meeple
 
-pop = Population(10, 3, tuple([16]), 8)
+pop = Population(10, 3, tuple([4]), 8, training_data, training_answers)
 
 counter = 0
 
 running = True
-print("-------------------|")
+print("-----------|")
 while running:
     if counter % 10 == 0:
         print("-", end="")
@@ -49,9 +66,14 @@ while running:
             print("Best score this generation:", pop.bestMeeple.score)
             print("startin generation", pop.generation)
             pop.naturalSelection()
+            print("-----------|")
+            continue
     else:
         running=False
         bestmeep=meep
+
+print("\n\nFound a meep with 0 error (probably something like > 0.0001.")
+print("I present: the perfect meep")
 
 errorlist = np.ndarray([len(training_data)], dtype=float)
 
@@ -61,10 +83,12 @@ for testi in range(len(training_data)):
     bestmeep.brain.fire_network()
     print( "Desired:", training_answers[testi])
     print( "Brain says:", [ round(x, outputrounding) for x in bestmeep.brain.get_outputs()])
-    errorlist[testi] = round( bestmeep.brain.costfunction(training_answers[testi]), 3)
+    errorlist[testi] = bestmeep.brain.costfunction(training_answers[testi])
     print( "Error:", errorlist[testi])
 
-print( "avg error:", round(sum(errorlist)/8, 3) )
+print("\navg error:", round(sum(errorlist)/8, 3) )
+
+print("\nfinished in", pop.generation, "generations")
 
 
 
