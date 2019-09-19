@@ -9,6 +9,8 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 import numpy as np
+np.random.seed(2)
+import math
 
 #from population import Population
 
@@ -17,19 +19,24 @@ from meeple import Meeple
 print("\n\nStart of main code\n\n")
 
 
-meeple_1 = Meeple( 2, tuple([4]), 4)
-learnrate = 0.10
+learnrate = 0.01
 errorrounding = 3
 outputrounding = 3
-avgerrors = []
 
-epochs = 200
+epochs = 400
 
 desiredoutput = np.array([[1,0,0,0],
                          [0,1,0,0],
                          [0,0,1,0],
                          [0,0,0,1]])
 
+meeple_1 = Meeple(2, tuple([16]), 4)
+avgerrors = []
+
+#for nan_test_attempt in range(4000):
+#    print("Testing, hoping to spawn a NaN:", nan_test_attempt)
+#    meeple_1 = Meeple( 2, tuple([4]), 4)
+#    avgerrors = []
 for i in range(1,epochs+1):
     print("\nEpoch", i)
 
@@ -71,14 +78,21 @@ for i in range(1,epochs+1):
     print( "Error:", errorlist[3])
     meeple_1.brain.backpropegateOnline(desiredoutput[3], learnrate)
 
+
     avgerrors.append( round(sum(errorlist)/4, 3) )
+    #avgerrors.append( round(errorlist[0], 3) )
     print("\nAverage error:", avgerrors[-1])
-    if avgerrors == float("inf"):
+
+    if math.isnan(avgerrors[-1]):
         print("Average explodes to NaN and is going nowhere")
         break
 
+    #if math.isnan(avgerrors[-1]):
+    #    break
+print("\n\n", avgerrors)
+    #print(avgerrors, "\n\n")
 
 
 
-print("\n\n",avgerrors)
+
 print("\n\nEnd of main")
