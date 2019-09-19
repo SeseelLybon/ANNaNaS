@@ -126,7 +126,7 @@ class NeuralNetwork:
         else:
             return 0
 
-    def mutate(self,mutatechance=1/30, mutatestrength=2):
+    def mutate(self,mutatechance=1/30, mutatestrength=1):
         for nodei in range(self.input_layer.size):
             for weighti in range(self.input_layer[nodei].weights.size):
                 if np.random.rand() <= mutatechance:
@@ -237,6 +237,7 @@ class NeuralNetwork:
     def backpropegateOnline(self, desired_output, learnrate):
 
         DeltaHiddenLayersWeights: np.array = np.ndarray([1])
+        DeltaNodeWeightsSums: np.array = np.ndarray([1])
 
         if self.hidden_layers[0] is not 0:
             layer_next = self.hidden_layers[-1]
@@ -247,7 +248,9 @@ class NeuralNetwork:
         DeltaOutputWeights:np.array = np.ndarray([self.output_layer.size, layer_next.size], dtype=float)
 
         if self.hidden_layers[0] is not 0:
-            DeltaHiddenLayersWeights:np.array = [np.ndarray([layer.size, layer[0].weights.size],float) for layer in self.hidden_layers]
+            DeltaHiddenLayersWeights = [np.ndarray([layer.size, layer[0].weights.size],float) for layer in self.hidden_layers]
+
+            DeltaNodeWeightsSums = np.array([np.ndarray([layer.size],float) for layer in self.hidden_layers])
 
         # Making the delta image ----------
 
@@ -272,13 +275,18 @@ class NeuralNetwork:
                 d1_temp =   dIntensity * dCost * -1# * dActivation
                 DeltaOutputWeights[nodei, weighti] = d1_temp
 
+                if self.hidden_layers[0] is not 0:
+                    DeltaNodeWeightsSums[-1][weighti] += self.output_layer[nodei].weights[weighti] * dCost
+
+        #--------------
+
         # Move through the hidden layers to make its delta image
         if self.hidden_layers[0] is not 0:
 
 
-            #dCost_sum = 0
-            #for nodei in range(self.output_layer.size):
-            #    dCost_sum += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
+            dCost_sum = 0
+            for nodei in range(self.output_layer.size):
+                dCost_sum += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
 
             for layer_cur_i in range(len(self.hidden_layers)-1, -1, -1): #move in reverse. 'last' layer has already been handled above.
                 if layer_cur_i == 0:
@@ -287,33 +295,22 @@ class NeuralNetwork:
                     layer_prev = self.hidden_layers[layer_cur_i-1]
 
                 for nodei in range(self.hidden_layers[layer_cur_i].size-1):
-                    Intensity = self.hidden_layers[layer_cur_i][nodei].intensity
-                    # TODO dcost useing chain rule; ask for the weights of all the *next* after this node...
-                    #   Lets start with asuming there's only 1 hidden layer
-
-                    dWeights = 0
-
-                    # Start at the output layer
-                    # sum the weights from nodei in the current layer to the nodes in the output layer
-                    for intern_nodei in range(len(self.output_layer)):
-                        dCost = 2 * (self.output_layer[intern_nodei].intensity - desired_output[intern_nodei])
-                        dWeight = self.output_layer[intern_nodei].weights[nodei]
-                        dWeights += dCost * dWeight
-
-                    #for intern_layeri in range(len(self.hidden_layers), -1, -1):
-                    #   pass
 
 
                     # Placeholder line for using the activation derivative
+                    Intensity = self.hidden_layers[layer_cur_i][nodei].intensity
+                    if Intensity <= 0:
+                        dActivation = 0
+                    else:
+                        dActivation = 1
 
                     for weighti in range(layer_prev.size):
 
                         dIntensity = layer_prev[weighti].intensity # intensity of node of preceding layer
 
-                        d1_temp = dIntensity * dWeights * -1
+                        # delta_cost
+                        d1_temp = DeltaNodeWeightsSums[-1][nodei] * dIntensity * -1
                         DeltaHiddenLayersWeights[layer_cur_i][nodei, weighti] = d1_temp
-
-
 
 
         # Applying the delta image ----------
@@ -367,10 +364,6 @@ class NeuralNetwork:
 
 
 
-    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
     #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
 
 
@@ -547,10 +540,6 @@ class NeuralNetwork:
         self.updateedgesGFX()
 
     # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
 
 
 
@@ -569,7 +558,7 @@ class Node:
             self.weights = np.zeros(parent_size, dtype=float)
         elif weights is None:
             #If not hollow and no weights are provided, initiallize random weights
-            self.weights = np.random.uniform(-5,5,[parent_size,])
+            self.weights = np.random.uniform(-1,1,[parent_size,])
         else:
             #Else use weights provided
             self.weights=weights
