@@ -1,13 +1,15 @@
 
-import numpy as np
-import math
+
 from neuralnetwork import NeuralNetwork
 
 class Meeple:
     def __init__(self, input_size:int, hidden_size:tuple, output_size:int, isHallow=False):
         self.fitness = 0
+        self.score = float("-inf")
+        self.epochs = 100
         self.brain: NeuralNetwork
         self.isAlive = True
+        self.isDone = False
 
         if isHallow:
             self.brain = NeuralNetwork(input_size,hidden_size,output_size, isHollow=True)

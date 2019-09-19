@@ -9,11 +9,12 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 import numpy as np
-#np.random.seed(2)
 
 import math
 
-#from population import Population
+from population import Population
+from population import training_data
+from population import training_answers
 
 from meeple import Meeple
 
@@ -23,68 +24,47 @@ print("\n\nStart of main code\n\n")
 errorrounding = 3
 outputrounding = 3
 
-epochs = 800
-learnrate = 0.01
+epochs = 200
+learnrate = 0.10
 
-#inputs = np.array([[0,0,0],
-#                   [1,0,0],
-#                   [0,1,0],
-#                   [1,1,0],
-#                   [0,0,1],
-#                   [1,0,1],
-#                   [0,1,1],
-#                   [1,1,1]])
-#
-#desiredoutput = np.array([[1,0,0,0,0,0,0,0],
-#                          [0,1,0,0,0,0,0,0],
-#                          [0,0,1,0,0,0,0,0],
-#                          [0,0,0,1,0,0,0,0],
-#                          [0,0,0,0,1,0,0,0],
-#                          [0,0,0,0,0,1,0,0],
-#                          [0,0,0,0,0,0,1,0],
-#                          [0,0,0,0,0,0,0,1]])
+bestmeep:Meeple
 
-inputs = np.array([[1,1,1]])
-desiredoutput = np.array([[0,0,0,0,0,0,0,1]])
+pop = Population(10, 3, tuple([16]), 8)
 
-meeple_1 = Meeple(3, tuple([16]), 8)
-avgerrors = []
+counter = 0
 
-#for nan_test_attempt in range(4000):
-#    print("Testing, hoping to spawn a NaN:", nan_test_attempt)
-#    meeple_1 = Meeple( 2, tuple([4]), 4)
-#    avgerrors = []
-for i in range(1,epochs+1):
-    print("\nEpoch", i)
+running = True
+print("-------------------|")
+while running:
+    if counter % 10 == 0:
+        print("-", end="")
+    counter+=1
 
-    errorlist = np.ndarray([len(inputs)], dtype=float)
+    meep = pop.updateAlive()
 
-    for testi in range(len(inputs)):
-        print("\nInput:", inputs[testi])
-        meeple_1.brain.set_inputs(inputs[testi])
-        meeple_1.brain.fire_network()
-        print( "Desired:", desiredoutput[testi])
-        print( "Brain says:", [ round(x, outputrounding) for x in meeple_1.brain.get_outputs()])
-        errorlist[testi] = round( meeple_1.brain.costfunction(desiredoutput[testi]), errorrounding)
-        print( "Error:", errorlist[testi])
-        meeple_1.brain.backpropegateOnline(desiredoutput[testi], learnrate)
+    if meep is None:
+        if pop.isDone():
+            print("\n--------------------------------------------")
+            print("All meeps's are dead but not done yet. Time for a new batch!")
+            print("Best score this generation:", pop.bestMeeple.score)
+            print("startin generation", pop.generation)
+            pop.naturalSelection()
+    else:
+        running=False
+        bestmeep=meep
 
+errorlist = np.ndarray([len(training_data)], dtype=float)
 
-    avgerrors.append( round(sum(errorlist)/4, 3) )
-    #avgerrors.append( round(errorlist[0], 3) )
-    print("\nAverage error:", avgerrors[-1])
+for testi in range(len(training_data)):
+    print("\nInput:", training_data[testi])
+    bestmeep.brain.set_inputs(training_data[testi])
+    bestmeep.brain.fire_network()
+    print( "Desired:", training_answers[testi])
+    print( "Brain says:", [ round(x, outputrounding) for x in bestmeep.brain.get_outputs()])
+    errorlist[testi] = round( bestmeep.brain.costfunction(training_answers[testi]), 3)
+    print( "Error:", errorlist[testi])
 
-    if math.isnan(avgerrors[-1]):
-        print("Average explodes to NaN and is going nowhere")
-        break
-
-
-
-
-print("\n\nAverage Error List", avgerrors)
-print("Lowest Avg. Error", min(avgerrors))
-print("Highset Avg. Error", max(avgerrors))
-
+print( "avg error:", round(sum(errorlist)/8, 3) )
 
 
 

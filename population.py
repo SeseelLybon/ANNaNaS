@@ -1,5 +1,5 @@
-from neuralnetwork import NeuralNetwork
-import pyglet
+
+
 import numpy as np
 from typing import List
 from species import Species
@@ -7,14 +7,14 @@ from math import floor
 
 from meeple import Meeple
 
-from obstacle import dino
+
+
+
 
 class Population:
 
-
-
-    def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int,):
-        self.pop = np.ndarray([size], dtype=dino)
+    def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int):
+        self.pop = np.ndarray([size], dtype=Meeple)
         self.species:List[Species] = []
         self.speciesCreated = 0
 
@@ -23,61 +23,57 @@ class Population:
 
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = dino(input_size, hidden_size, output_size)
-            #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
+            self.pop[i] = Meeple(input_size, hidden_size, output_size)
 
-        self.bestMeeple:dino = self.pop[0]
+        self.bestMeeple:Meeple = self.pop[0]
         self.highestFitness = 0
         self.highestScore = 0
 
 
     #update all the meeps that are currently alive
-    def updateAlive(self, obstacle_drawlist, score, global_inputs):
+    def updateAlive(self):
 
-        for dinner in self.pop:
-            if dinner.isAlive:
-                dinner.brain.set_input(0, dinner.pos.x)
-                dinner.brain.set_input(1, dinner.pos.y)
+        for meep in self.pop:
 
-                for i in range(len(global_inputs)):
-                    i2=i+2
-                    dinner.brain.set_input(i2, global_inputs[i])
+            if meep.isAlive and not meep.isDone:
 
-                dinner.brain.fire_network()
+                meep.brain.train(training_data=training_data, training_answers=training_answers, learnrate=0.05)
 
-            if dinner.brain.get_output(0) > 0.9:
-                dinner.jump()
-            if dinner.brain.get_output(1) > 0.9:
-                dinner.duck()
+                errorsum = 0
+                for testi in range(training_data.shape[0]):
+                    meep.brain.set_inputs(training_data[testi])
+                    meep.brain.fire_network()
+                    errorsum += round(meep.brain.costfunction(training_answers[testi]), 3)
+                meep.score = errorsum/len(training_data)
 
-            dinner.update(score)
-            for obst in obstacle_drawlist:
-                if dinner.isColliding( obst ):
-                    dinner.isAlive = False
+            if meep.score == 0:
+                meep.isDone = True
+                return meep
+
+            if np.isnan(meep.score) or (np.isinf(meep.score) and meep.score > 0) or meep.score >= 10 ** 100:
+                meep.isAlive = False
+                break
+
+            if meep.epochs == 0:
+                meep.isAlive = False
+            else:
+                meep.epochs -= 1
+
+            #return None
+
+
+
 
     def drawAlife(self):
-        aliveBatch = pyglet.graphics.Batch()
-        for dinner in self.pop:
-            if dinner.isAlive:
-                dinner.sprite.batch = aliveBatch
-            else:
-                dinner.sprite.batch = None
-        aliveBatch.draw()
+        pass
 
 
     #returns bool if all the players are dead or done
     def isDone(self)-> bool:
-        for dinner in self.pop:
-            if dinner.isAlive:
+        for meep in self.pop:
+            if meep.isAlive or meep.isDone:
                 return False
         return True
-
-    def countAlive(self)->int:
-        tot = 0
-        for dinner in self.pop:
-            if dinner.isAlive:
-                tot+=1
-        return tot
 
 
     def naturalSelection(self):
@@ -109,8 +105,7 @@ class Population:
         print("Species ID's", id_s )
 
         self.bestMeeple = self.bestMeeple.clone()
-        self.bestMeeple.sprite.color = (0,200,100)
-        children:List[dino] = [self.bestMeeple]
+        children:List[Meeple] = [self.bestMeeple]
 
         for specie in self.species:
             #add the best meeple of a specie to the new generation list
@@ -126,7 +121,7 @@ class Population:
         while len(children) < self.size:
             children.append(self.species[0].generateChild())
 
-        self.pop = np.array(children, dtype=dino)
+        self.pop = np.array(children, dtype=Meeple)
         self.generation += 1
 
 
@@ -173,8 +168,11 @@ class Population:
 
 
     def calculateFitness(self):
-        for dinner in self.pop:
-            dinner.fitness = dinner.score*2
+        for meep in self.pop:
+            if meep.score == 0:
+                meep.fitness = np.inf
+            else:
+                meep.fitness = (1/meep.score)
 
     #get the sum of averages from each specie
     def getAverageFitnessSum(self)->float:
@@ -229,3 +227,23 @@ class Population:
         # remove the bottom half of all species.
         for specie in self.species:
             specie.cull()
+
+
+
+training_data = np.array([[0,0,0],
+                          [1,0,0],
+                          [0,1,0],
+                          [1,1,0],
+                          [0,0,1],
+                          [1,0,1],
+                          [0,1,1],
+                          [1,1,1]])
+
+training_answers = np.array([[1,0,0,0,0,0,0,0],
+                             [0,1,0,0,0,0,0,0],
+                             [0,0,1,0,0,0,0,0],
+                             [0,0,0,1,0,0,0,0],
+                             [0,0,0,0,1,0,0,0],
+                             [0,0,0,0,0,1,0,0],
+                             [0,0,0,0,0,0,1,0],
+                             [0,0,0,0,0,0,0,1]])
