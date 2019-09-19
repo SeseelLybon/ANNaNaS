@@ -231,11 +231,28 @@ class NeuralNetwork:
         return total
 
 
+    def train(self, training_data, training_answers, learnrate):
+
+
+        for data, answer in zip(training_data, training_answers):
+
+            deltaimages = self.GradientDecentDelta(training_input=data, desired_output=answer, learnrate=learnrate)
+
+
+        if len(deltaimagess) == 1:
+            self.ApplyGradientDecentDelta(learnrate, deltaimagess[0])
+        elif len(deltaimagess) == 2:
+            self.ApplyGradientDecentDelta(learnrate, deltaimagess[0], deltaimagess[1])
+
+
     # Can only be used if there is a new output in that moment.
     # Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
         # The amount that a weight needs to change is delta_cost/delta_weight = delta_intensity/delta_weight * delta_activation/delta_intensity * delta_activation/delta_cost
         # This goes from right to left and can be 'easily' chained.
-    def backpropegateOnline(self, desired_output, learnrate):
+    def GradientDecentDelta(self, training_input, desired_output, learnrate):
+
+        self.set_inputs(training_input)
+        self.fire_network()
 
         DeltaHiddenLayersWeights: np.array = np.ndarray([1])
         DeltaNodeWeightsSums: np.array = np.ndarray([1])
@@ -261,16 +278,6 @@ class NeuralNetwork:
         for nodei in range(self.output_layer.size):
             dCost = 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
 
-            # Using the derivative of the activation prevents outputs that are 0 from becoming greater than 0.
-            # This is probably a quirk from ReLU and in tests hasn't caused issues when dropped,
-            # therefore doesn't need to be enforced untill further notice.
-            # If we were using Sigmoid, then this should be updated.
-            #Intensity = self.output_layer[nodei].intensity
-            #if Intensity <= 0:
-            #    dActivation = 0
-            #else:
-            #    dActivation = 1
-
             for weighti in range(layer_next.size):
 
                 dIntensity = layer_next[weighti].intensity # intensity of node of preceding layer
@@ -287,60 +294,44 @@ class NeuralNetwork:
         if self.hidden_layers[0] is not 0:
 
 
-            #dCost_sum = 0
-            #for nodei in range(self.output_layer.size):
-            #    dCost_sum += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
 
-            #for layer_cur_i in range(len(self.hidden_layers)-1, -1, -1): #move in reverse. 'last' layer has already been handled above.
-            #if layer_cur_i == 0:
-            #    layer_prev = self.input_layer
-            #else:
-            #    layer_prev = self.hidden_layers[layer_cur_i-1]
-            layer_prev = self.input_layer
+            for layer_cur_i in range(len(self.hidden_layers)-1, -1, -1): #move in reverse. 'last' layer has already been handled above.
+                if layer_cur_i == 0:
+                    layer_prev = self.input_layer
+                else:
+                    layer_prev = self.hidden_layers[layer_cur_i-1]
 
-            #for nodei in range(self.hidden_layers[layer_cur_i].size-1):
-            for nodei in range(self.hidden_layers[0].size-1):
+                for nodei in range(self.hidden_layers[layer_cur_i].size-1):
 
+                    for weighti in range(layer_prev.size):
 
-                # Placeholder line for using the activation derivative
-                #Intensity = self.hidden_layers[layer_cur_i][nodei].intensity
-                #if Intensity <= 0:
-                #    dActivation = 0
-                #else:
-                #    dActivation = 1
+                        dIntensity = layer_prev[weighti].intensity # intensity of node of preceding layer
 
-                for weighti in range(layer_prev.size):
+                        # delta_cost
+                        d1_temp = DeltaNodeWeightsSums[layer_cur_i][nodei] * dIntensity * -1# * dActivation
+                        DeltaHiddenLayersWeights[layer_cur_i][nodei, weighti] = d1_temp
 
-                    dIntensity = layer_prev[weighti].intensity # intensity of node of preceding layer
+            if self.hidden_layers[0] is not 0:
+                return DeltaOutputWeights, DeltaHiddenLayersWeights
+            else:
+                return DeltaOutputWeights
 
-                    # delta_cost
-                    d1_temp = DeltaNodeWeightsSums[0][nodei] * dIntensity * -1# * dActivation
-                    DeltaHiddenLayersWeights[0][nodei, weighti] = d1_temp
+        def ApplyGradientDecentDelta(self, learnrate, DeltaOutputWeights, DeltaHiddenLayersWeights=None):
 
+            if self.hidden_layers[0] is not 0:
+                precedinglayer = self.hidden_layers[-1]
+            else:
+                precedinglayer = self.input_layer
 
+            for nodei in range(self.output_layer.size):
+                for weighti in range(precedinglayer.size):
+                    self.output_layer[nodei].weights[weighti] += DeltaOutputWeights[nodei, weighti]  * learnrate
 
-
-        # Applying the delta image ----------
-
-        if self.hidden_layers[0] is not 0:
-            precedinglayer = self.hidden_layers[-1]
-        else:
-            precedinglayer = self.input_layer
-
-        for nodei in range(self.output_layer.size):
-            for weighti in range(precedinglayer.size):
-                self.output_layer[nodei].weights[weighti] += DeltaOutputWeights[nodei, weighti]  * learnrate
-
-        #if self.hidden_layers[0] is not 0:
-        #    for layeri in range(len(self.hidden_layers)-1, -1, -1): # the layers of the delta image happen in reverse
-        #        for nodei in range(self.hidden_layers[layeri].size):
-        #            for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
-        #                self.hidden_layers[layeri][nodei].weights[weighti] += DeltaHiddenLayersWeights[layeri][nodei, weighti] * learnrate
-
-        if self.hidden_layers[0] is not 0:
-            for nodei in range(self.hidden_layers[0].size):
-                for weighti in range(self.hidden_layers[0][nodei].weights.size):
-                    self.hidden_layers[0][nodei].weights[weighti] += DeltaHiddenLayersWeights[0][nodei, weighti] * learnrate
+            if self.hidden_layers[0] is not 0:
+                for layeri in range(len(self.hidden_layers)-1, -1, -1): # the layers of the delta image happen in reverse
+                    for nodei in range(self.hidden_layers[layeri].size):
+                        for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
+                            self.hidden_layers[layeri][nodei].weights[weighti] += DeltaHiddenLayersWeights[layeri][nodei, weighti] * learnrate
 
 
     def pickle(self):
