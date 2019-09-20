@@ -46,21 +46,29 @@ class Population:
                 for testi in range(self.training_data.shape[0]):
                     meep.brain.set_inputs(self.training_data[testi])
                     meep.brain.fire_network()
-                    errorsum += round(meep.brain.costfunction(self.training_answers[testi]), 3)
-                meep.score = errorsum/len(self.training_data)
+                    errorsum += meep.brain.costfunction(self.training_answers[testi])
+                meep.score = errorsum/self.training_data.shape[0]
 
-            if meep.score <= 0.000001:
-                meep.isDone = True
-                return meep
+                if meep.score <= 0.00001:
+                    meep.isDone = True
+                    return meep
 
-            if np.isnan(meep.score) or (np.isinf(meep.score) and meep.score > 0) or meep.score >= 10 ** 100:
-                meep.isAlive = False
-                break
+                if meep.score >= 100000:
+                    meep.isAlive = False
+                    meep.score = 100000
+                    meep.fitness = 0
+                    continue
 
-            if meep.epochs == 0:
-                meep.isAlive = False
-            else:
-                meep.epochs -= 1
+                if meep.epochs == 0:
+                    meep.isAlive = False
+                else:
+                    meep.epochs -= 1
+
+                if np.isnan(meep.score) or (np.isinf(meep.score) and meep.score > 0) or meep.score >= 10 ** 100:
+                    meep.isAlive = False
+                    break
+
+
 
             #return None
 

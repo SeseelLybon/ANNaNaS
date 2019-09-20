@@ -296,8 +296,7 @@ class NeuralNetwork:
                 DeltaOutputWeights[nodei, weighti] += d1_temp
 
                 if self.hidden_layers[0] is not 0:
-                    # TODO; figure out if the DeltaNodeWeightsSum is read backwards or forwards
-                    # [-1/0][weighti] the weighti is correct, because it's mapping from right to left!
+                    # [-1][weighti] the weighti is correct, because it's mapping from right to left!
                     DeltaNodeWeightsSums[-1][weighti] += self.output_layer[nodei].weights[weighti] * dCost
 
         #--------------
@@ -322,6 +321,11 @@ class NeuralNetwork:
                         # delta_cost
                         d1_temp = DeltaNodeWeightsSums[layer_cur_i][nodei] * dIntensity * -1# * dActivation
                         DeltaHiddenLayersWeights[layer_cur_i][nodei, weighti] = d1_temp
+
+                        if self.hidden_layers[0] is not 0:
+                            # [-1][weighti] the weighti is correct, because it's mapping from right to left!
+                            if layer_cur_i > 0:
+                                DeltaNodeWeightsSums[layer_cur_i-1][weighti] += self.hidden_layers[layer_cur_i][nodei].weights[weighti] * DeltaNodeWeightsSums[layer_cur_i][nodei]
 
         if self.hidden_layers[0] is not 0:
             return DeltaOutputWeights, DeltaHiddenLayersWeights
