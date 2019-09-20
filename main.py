@@ -46,7 +46,7 @@ learnrate = 0.10
 
 bestmeep:Meeple
 
-pop = Population(10, 3, tuple([4]), 8, training_data, training_answers)
+pop = Population(10, 3, tuple([4,4]), 8, training_data, training_answers)
 
 counter = 0
 
@@ -61,7 +61,7 @@ while running:
 
     if meep is None:
         if pop.isDone():
-            print("\n--------------------------------------------")
+            print("\n|--------------------------------------------")
             print("All meeps's are dead but not done yet. Time for a new batch!")
             print("Best score this generation:", pop.bestMeeple.score)
             print("startin generation", pop.generation)

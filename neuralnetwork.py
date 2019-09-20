@@ -3,7 +3,7 @@ import numpy as np
 import pyglet
 import copy
 from pyglet.gl import *
-
+from typing import List
 
 
 class NeuralNetwork:
@@ -256,7 +256,7 @@ class NeuralNetwork:
         self.set_inputs(training_input)
         self.fire_network()
 
-        DeltaHiddenLayersWeights: np.ndarray = None
+        DeltaHiddenLayersWeights:List[np.ndarray] = None
         DeltaNodeWeightsSums: np.ndarray = None
         DeltaOutputWeights: np.ndarray = None
 

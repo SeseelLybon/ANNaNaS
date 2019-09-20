@@ -47,25 +47,29 @@ class Population:
                     meep.brain.set_inputs(self.training_data[testi])
                     meep.brain.fire_network()
                     errorsum += meep.brain.costfunction(self.training_answers[testi])
+                    if errorsum > 1000:
+                        # Used to catch exploding gradients. But dunno if this influences save error sums this large.
+                        break
                 meep.score = errorsum/self.training_data.shape[0]
 
                 if meep.score <= 0.00001:
                     meep.isDone = True
                     return meep
 
-                if meep.score >= 100000:
-                    meep.isAlive = False
-                    meep.score = 100000
-                    meep.fitness = 0
-                    continue
-
                 if meep.epochs == 0:
                     meep.isAlive = False
                 else:
                     meep.epochs -= 1
 
-                if np.isnan(meep.score) or (np.isinf(meep.score) and meep.score > 0) or meep.score >= 10 ** 100:
+                if np.isnan(meep.score) or (np.isinf(meep.score) and meep.score > 0) or meep.score >= 1000:
+                    # Used to catch exploding gradients. But dunno if this influences save error sums this large.
+                    # TODO the exploding gradient is abnormally high with even just 2 hidden layers
+                    #   Look better into this
                     meep.isAlive = False
+                    meep.score = 100000
+                    meep.fitness = 0
+                    meep.isKilled = True
+                    print("X_X")
                     break
 
 
@@ -178,10 +182,11 @@ class Population:
 
     def calculateFitness(self):
         for meep in self.pop:
-            if meep.score == 0:
-                meep.fitness = np.inf
-            else:
-                meep.fitness = (1/meep.score)
+            #if meep.score == 0:
+            #    meep.fitness = np.inf
+            #else:
+            #    meep.fitness = (1/meep.score)
+            meep.fitness = (1/meep.score)
 
     #get the sum of averages from each specie
     def getAverageFitnessSum(self)->float:
