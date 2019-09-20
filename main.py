@@ -46,7 +46,7 @@ learnrate = 0.10
 
 bestmeep:Meeple
 
-pop = Population(10, 3, tuple([4,4]), 8, training_data, training_answers)
+pop = Population(10, 3, tuple([4]), 8, training_data, training_answers)
 
 counter = 0
 
