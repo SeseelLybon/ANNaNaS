@@ -40,14 +40,14 @@ class Population:
 
             if meep.isAlive and not meep.isDone:
 
-                meep.brain.train(training_data=self.training_data, training_answers=self.training_answers, learnrate=0.05)
+                meep.brain.train(training_data=self.training_data, training_answers=self.training_answers, learnrate=0.1)
 
                 errorsum = 0
                 for testi in range(self.training_data.shape[0]):
                     meep.brain.set_inputs(self.training_data[testi])
                     meep.brain.fire_network()
                     errorsum += meep.brain.costfunction(self.training_answers[testi])
-                    if errorsum > 1000:
+                    if errorsum > 100000:
                         # Used to catch exploding gradients. But dunno if this influences save error sums this large.
                         break
                 meep.score = errorsum/self.training_data.shape[0]
@@ -61,16 +61,16 @@ class Population:
                 else:
                     meep.epochs -= 1
 
-                if np.isnan(meep.score) or (np.isinf(meep.score) and meep.score > 0) or meep.score >= 1000:
-                    # Used to catch exploding gradients. But dunno if this influences save error sums this large.
-                    # TODO the exploding gradient is abnormally high with even just 2 hidden layers
-                    #   Look better into this
-                    meep.isAlive = False
-                    meep.score = 100000
-                    meep.fitness = 0
-                    meep.isKilled = True
-                    print("X_X")
-                    break
+                #if np.isnan(meep.score) or np.isinf(meep.score) or meep.score >= 100000:
+                #    # Used to catch exploding gradients. But dunno if this influences save error sums this large.
+                #    # TODO the exploding gradient is abnormally high with even just 2 hidden layers
+                #    #   Look better into this
+                #    meep.isAlive = False
+                #    meep.score = 100000
+                #    meep.fitness = 0
+                #    meep.isKilled = True
+                #    print("X_X")
+                #    break
 
 
 
@@ -229,11 +229,12 @@ class Population:
         for specie in self.species:
             # this calculates how many children a specie is allowed to produce in Population.naturalSelection()
             # If this is less then one, the specie did so bad, it won't generate a child then. So it basically just died here.
-            if specie.averageFitness/averageSum * len(self.pop) < 1:
+            if (specie.averageFitness/averageSum) * len(self.pop) < 1:
                 markedForRemoval.append(specie)
 
         if len(markedForRemoval) > 0:
             print("Killing", len(markedForRemoval), "bad species")
+
         self.species[:] = [ x for x in self.species if x not in markedForRemoval ]
 
 

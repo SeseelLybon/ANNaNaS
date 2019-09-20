@@ -10,9 +10,9 @@ class Species:
         self.meeples:list = [meep]
         self.sizeChromosome = meep.brain.getAmountWeights()
 
-        self.similairy_threshold_total = 0.95 # 1 = 100%
+        self.similairy_threshold_total = 0.90 # 1 = 100%
         self.similairy_threshold_gene = 1 # 1 = 1
-        self.mutateChance = 1/40    # 1 = 100%
+        self.mutateChance = 1/30    # 1 = 100%
         self.mutateStrength = 1
 
         self.staleness = 0 # stagnation
@@ -88,7 +88,7 @@ class Species:
         return float("inf")
 
     def selectParent(self)->Meeple:
-        rand = np.random.randint(0, self.fitnessSum)
+        rand = np.random.randint(0, max(self.fitnessSum, 1))
         runningSum = 0
         for i in range(len(self.meeples)):
             runningSum +=  self.meeples[i].fitness
@@ -122,6 +122,7 @@ class Species:
         self.fitnessSum = 0
         for i in range(len(self.meeples)):
             self.fitnessSum += self.meeples[i].fitness
+        return
 
     def generateAverageFitness(self):
         self.calculateFitnessSum()

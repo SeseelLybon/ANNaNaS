@@ -42,11 +42,11 @@ errorrounding = 3
 outputrounding = 3
 
 epochs = 200
-learnrate = 0.10
+learnrate = 0.01
 
 bestmeep:Meeple
 
-pop = Population(10, 3, tuple([4]), 8, training_data, training_answers)
+pop = Population(10, 3, tuple([4,8]), 8, training_data, training_answers)
 
 counter = 0
 

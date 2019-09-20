@@ -291,13 +291,18 @@ class NeuralNetwork:
             for weighti in range(layer_next.size):
 
                 dIntensity = layer_next[weighti].intensity # intensity of node of preceding layer
+#
+                #if self.output_layer[nodei].intensity <= 0:
+                #    dActivation = 0
+                #else:
+                #    dActivation = 1
 
                 d1_temp =   dIntensity * dCost * -1# * dActivation
                 DeltaOutputWeights[nodei, weighti] += d1_temp
 
                 if self.hidden_layers[0] is not 0:
                     # [-1][weighti] the weighti is correct, because it's mapping from right to left!
-                    DeltaNodeWeightsSums[-1][weighti] += self.output_layer[nodei].weights[weighti] * dCost
+                    DeltaNodeWeightsSums[-1][weighti] += self.output_layer[nodei].weights[weighti] * dCost# * dActivation
 
         #--------------
 
@@ -318,6 +323,11 @@ class NeuralNetwork:
 
                         dIntensity = layer_prev[weighti].intensity # intensity of node of preceding layer
 
+                        #if self.hidden_layers[layer_cur_i][nodei].intensity <= 0:
+                        #    dActivation = 0
+                        #else:
+                        #    dActivation = 1
+
                         # delta_cost
                         d1_temp = DeltaNodeWeightsSums[layer_cur_i][nodei] * dIntensity * -1# * dActivation
                         DeltaHiddenLayersWeights[layer_cur_i][nodei, weighti] = d1_temp
@@ -325,7 +335,9 @@ class NeuralNetwork:
                         if self.hidden_layers[0] is not 0:
                             # [-1][weighti] the weighti is correct, because it's mapping from right to left!
                             if layer_cur_i > 0:
-                                DeltaNodeWeightsSums[layer_cur_i-1][weighti] += self.hidden_layers[layer_cur_i][nodei].weights[weighti] * DeltaNodeWeightsSums[layer_cur_i][nodei]
+                                DeltaNodeWeightsSums[layer_cur_i-1][weighti] += self.hidden_layers[layer_cur_i][nodei].weights[weighti] * \
+                                                                                DeltaNodeWeightsSums[layer_cur_i][nodei]# * dActivation
+
 
         if self.hidden_layers[0] is not 0:
             return DeltaOutputWeights, DeltaHiddenLayersWeights
@@ -341,13 +353,13 @@ class NeuralNetwork:
 
         for nodei in range(self.output_layer.size):
             for weighti in range(precedinglayer.size):
-                self.output_layer[nodei].weights[weighti] += (DeltaOutputWeights[nodei, weighti]/batchsize)  * learnrate
+                self.output_layer[nodei].weights[weighti] += min( max((DeltaOutputWeights[nodei, weighti]/batchsize)  * learnrate, -2), 2 )
 
         if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)-1, -1, -1): # the layers of the delta image happen in reverse
                 for nodei in range(self.hidden_layers[layeri].size):
                     for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
-                        self.hidden_layers[layeri][nodei].weights[weighti] += (DeltaHiddenLayersWeights[layeri][nodei, weighti]/batchsize) * learnrate
+                        self.hidden_layers[layeri][nodei].weights[weighti] += min( max((DeltaHiddenLayersWeights[layeri][nodei, weighti]/batchsize) * learnrate, -2), 2 )
 
 
     def pickle(self):
