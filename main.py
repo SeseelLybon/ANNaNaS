@@ -24,7 +24,7 @@ from pymunk import Vec2d
 
 
 
-pops = Population(100)
+pops = Population(100, input_size=7, hidden_size=tuple([20, 10]), output_size=2)
 
 showGraph = False
 skip_once = False
@@ -115,7 +115,7 @@ def update(dt):
         closestobst = None
 
     if closestobst is None:
-        obst_distance = 1200
+        obst_distance = 2000
         obst_height = 0
         obst_x = 0
         obst_y = 0
@@ -184,7 +184,7 @@ def spawnupdater(dt):
     # TODO: This doesn't work. as it'll still doesn't space the objects out evenly as the game speeds up
     #if len(obstacle_drawlist) < max_obstacles:
     dice_throw = np.random.rand()
-    pos_adjust = 1000# + np.random.rand() * 300 // 1
+    pos_adjust = 1500# + np.random.rand() * 300 // 1
 
     if score < 700:
         if dice_throw < 0.50:  # spawn large cacti

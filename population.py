@@ -4,17 +4,13 @@ import numpy as np
 from typing import List
 from species import Species
 from math import floor
-
-from meeple import Meeple
-
+import pyglet
 from obstacle import dino
 
 
+class Population:
 
-
-    def __init__(self, size):
-
-    def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int, training_data, training_answers):
+    def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int, training_data=None, training_answers=None):
         self.pop = np.ndarray([size], dtype=dino)
         self.species:List[Species] = []
         self.speciesCreated = 0
@@ -27,7 +23,7 @@ from obstacle import dino
 
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = Meeple(input_size, hidden_size, output_size)
+            self.pop[i] = dino(input_size, hidden_size, output_size)
 
         self.bestMeeple:dino = self.pop[0]
         self.highestFitness = 0
@@ -238,5 +234,3 @@ from obstacle import dino
         # remove the bottom half of all species.
         for specie in self.species:
             specie.cull()
-
-
