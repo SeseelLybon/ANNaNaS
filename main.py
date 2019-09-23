@@ -42,18 +42,18 @@ errorrounding = 3
 outputrounding = 3
 
 epochs = 200
-learnrate = 0.01
+learnrate = 0.1
 
 bestmeep:Meeple
 
-pop = Population(10, 3, tuple([4,8]), 8, training_data, training_answers)
+pop = Population(100, 3, tuple([8,8,8]), 8, training_data, training_answers)
 
 counter = 0
 
 running = True
-print("-----------|")
+print("--------------------|")
 while running:
-    if counter % 10 == 0:
+    if counter % 1 == 0:
         print("-", end="")
     counter+=1
 

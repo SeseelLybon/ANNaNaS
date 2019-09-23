@@ -353,13 +353,13 @@ class NeuralNetwork:
 
         for nodei in range(self.output_layer.size):
             for weighti in range(precedinglayer.size):
-                self.output_layer[nodei].weights[weighti] += min( max((DeltaOutputWeights[nodei, weighti]/batchsize)  * learnrate, -2), 2 )
+                self.output_layer[nodei].weights[weighti] += min( max((DeltaOutputWeights[nodei, weighti]/batchsize)  * learnrate, -4), 4 )
 
         if self.hidden_layers[0] is not 0:
             for layeri in range(len(self.hidden_layers)-1, -1, -1): # the layers of the delta image happen in reverse
                 for nodei in range(self.hidden_layers[layeri].size):
                     for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
-                        self.hidden_layers[layeri][nodei].weights[weighti] += min( max((DeltaHiddenLayersWeights[layeri][nodei, weighti]/batchsize) * learnrate, -2), 2 )
+                        self.hidden_layers[layeri][nodei].weights[weighti] += min( max((DeltaHiddenLayersWeights[layeri][nodei, weighti]/batchsize) * learnrate, -4), 4 )
 
 
     def pickle(self):
