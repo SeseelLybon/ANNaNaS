@@ -3,6 +3,7 @@ import numpy as np
 import pyglet
 import copy
 from pyglet.gl import *
+from typing import List
 
 
 class NeuralNetwork:
@@ -81,9 +82,23 @@ class NeuralNetwork:
     def get_output(self, num:int):
         return self.output_layer[num].intensity
 
+    # get all values of all output nodes in order
+    def get_outputs(self):
+        return [node.intensity for node in self.output_layer]
+
     # don't set inputs directly! would put them on private, but Python has no privates
     def set_input(self, num:int, intense:float):
         self.input_layer[num].intensity = intense
+
+    # set all values of all output nodes in order
+    # if the list is shorter than the input layer, last nodes won't be updated
+    # if the list is longer than the input layer, crash?
+    def set_inputs(self, inputlist:np.ndarray):
+        # If this gives an error, then inputlist is not the same size as the inputlayer-1
+        for node_i in range(inputlist.size):
+            self.input_layer[node_i].intensity = inputlist[node_i]
+
+
 
     @staticmethod
     def Sigmoid(x:float):
@@ -110,7 +125,7 @@ class NeuralNetwork:
         else:
             return 0
 
-    def mutate(self,mutatechance=1/30, mutatestrength=2):
+    def mutate(self,mutatechance=1/30, mutatestrength=1):
         for nodei in range(self.input_layer.size):
             for weighti in range(self.input_layer[nodei].weights.size):
                 if np.random.rand() <= mutatechance:
@@ -187,39 +202,164 @@ class NeuralNetwork:
                 for nodei in range(self.hidden_layers[layeri].size):
                     for weighti in range(child.hidden_layers[layeri][nodei].weights.shape[0]):
                         if np.random.rand() < 0.50:
-                                child.hidden_layers[layeri][nodei].weights[weighti] = self.hidden_layers[layeri][nodei].weights[weighti]
+                            child.hidden_layers[layeri][nodei].weights[weighti] = self.hidden_layers[layeri][nodei].weights[weighti]
                         else:
-                                child.hidden_layers[layeri][nodei].weights[weighti] = parent2.hidden_layers[layeri][nodei].weights[weighti]
+                            child.hidden_layers[layeri][nodei].weights[weighti] = parent2.hidden_layers[layeri][nodei].weights[weighti]
         else:
             child.hidden_layers = [0]
 
         for nodei in range(self.output_layer.size):
             for weighti in range(self.output_layer[nodei].weights.shape[0]):
                 if np.random.rand() < 0.50:
-                        child.output_layer[nodei].weights[weighti] = self.output_layer[nodei].weights[weighti]
+                    child.output_layer[nodei].weights[weighti] = self.output_layer[nodei].weights[weighti]
                 else:
-                        child.output_layer[nodei].weights[weighti] = parent2.output_layer[nodei].weights[weighti]
+                    child.output_layer[nodei].weights[weighti] = parent2.output_layer[nodei].weights[weighti]
 
         return child
 
-    ##Disabled as of now as the top layer of this network isn't used for detecting, but for optimizing
-    ## Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
-    #def backpropegate(self, desired_output):
-    #    #Move through the output layer
-    #    for nodei in range(self.output_layer.size):
-    #        Z_j_L0 = 0
-    #        C_0_d = 0
-    #        a_j_L0_d = 0
-    #        for nodei in range(self.output_layer.shape[0]):
-    #            C_0_d += 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
-    #            for weighti in range(self.output_layer[nodei].weights.shape[0]):
-    #                Z_j_L0 += self.hidden_layers[-1][nodei].intensity * self.output_layer[nodei].weights[weighti]
-    #        a_j_L0_d=self.ReLUd(Z_j_L0)
-    #        d1_temp = C_0_d
-    #        d2_temp = a_j_L0_d
-    #        d3_temp = 0
-    #        #Move through the hidden layers and adjust them.
 
+    def costfunction(self, correct_output:np.array)->float:
+        if len(correct_output) != self.output_layer.size:
+            raise ValueError
+            # can't test error score if the 2 node arrays don't match in length
+        total=0
+        for cor_val, output_node in zip(correct_output, self.output_layer):
+            total+= (output_node.intensity - cor_val)**2
+
+        return total
+
+
+    def train(self, training_data, training_answers, learnrate):
+
+        deltaimages=None
+
+        if training_data.shape[0] == 1:
+            deltaimages = self.GradientDecentDelta(training_input=training_data[0], desired_output=training_answers[0])
+        else:
+            for data, answer in zip(training_data, training_answers):
+                deltaimages = self.GradientDecentDelta(training_input=data, desired_output=answer, deltaimages=deltaimages)
+
+
+
+        if isinstance(deltaimages, np.ndarray):
+            self.ApplyGradientDecentDelta(learnrate, deltaimages, batchsize=training_data.shape[0])
+        elif isinstance(deltaimages, tuple):
+            self.ApplyGradientDecentDelta(learnrate, deltaimages[0], deltaimages[1], batchsize=training_data.shape[0])
+
+
+    # Can only be used if there is a new output in that moment.
+    # Use after having set inputs and firing the network! Otherwise this doesn't work as intended!
+        # The amount that a weight needs to change is delta_cost/delta_weight = delta_intensity/delta_weight * delta_activation/delta_intensity * delta_activation/delta_cost
+        # This goes from right to left and can be 'easily' chained.
+    def GradientDecentDelta(self, training_input, desired_output, deltaimages=None):
+
+        self.set_inputs(training_input)
+        self.fire_network()
+
+        DeltaHiddenLayersWeights:List[np.ndarray] = None
+        DeltaNodeWeightsSums: np.ndarray = None
+        DeltaOutputWeights: np.ndarray = None
+
+        if self.hidden_layers[0] is not 0:
+            layer_next = self.hidden_layers[-1]
+        else:
+            layer_next = self.input_layer
+
+        if deltaimages is not None:
+            if isinstance(deltaimages, np.ndarray):
+                DeltaOutputWeights: np.ndarray = deltaimages
+            elif isinstance(deltaimages, tuple):
+                DeltaOutputWeights: np.ndarray = deltaimages[0]
+                DeltaHiddenLayersWeights = deltaimages[1]
+                DeltaNodeWeightsSums = np.array([np.zeros([layer.size],float) for layer in self.hidden_layers])
+        else:
+            DeltaOutputWeights:np.ndarray = np.zeros([self.output_layer.size, layer_next.size], dtype=float)
+            if self.hidden_layers[0] is not 0:
+                # [layeri][nodei, weighti]
+                DeltaHiddenLayersWeights = [np.zeros([layer.size, layer[0].weights.size],float) for layer in self.hidden_layers]
+
+        if self.hidden_layers[0] is not 0:
+            # [layeri][nodei]
+            DeltaNodeWeightsSums = np.array([np.zeros([layer.size],float) for layer in self.hidden_layers])
+
+        # Making the delta image ----------
+
+        # Move through the output layer to make its delta image
+        for nodei in range(self.output_layer.size):
+            dCost = 2*(self.output_layer[nodei].intensity - desired_output[nodei] )
+
+            for weighti in range(layer_next.size):
+
+                dIntensity = layer_next[weighti].intensity # intensity of node of preceding layer
+#
+                #if self.output_layer[nodei].intensity <= 0:
+                #    dActivation = 0
+                #else:
+                #    dActivation = 1
+
+                d1_temp =   dIntensity * dCost * -1# * dActivation
+                DeltaOutputWeights[nodei, weighti] += d1_temp
+
+                if self.hidden_layers[0] is not 0:
+                    # [-1][weighti] the weighti is correct, because it's mapping from right to left!
+                    DeltaNodeWeightsSums[-1][weighti] += self.output_layer[nodei].weights[weighti] * dCost# * dActivation
+
+        #--------------
+
+        # Move through the hidden layers to make its delta image
+        if self.hidden_layers[0] is not 0:
+
+
+
+            for layer_cur_i in range(len(self.hidden_layers)-1, -1, -1): #move in reverse. 'last' layer has already been handled above.
+                if layer_cur_i == 0:
+                    layer_prev = self.input_layer
+                else:
+                    layer_prev = self.hidden_layers[layer_cur_i-1]
+
+                for nodei in range(self.hidden_layers[layer_cur_i].size-1):
+
+                    for weighti in range(layer_prev.size):
+
+                        dIntensity = layer_prev[weighti].intensity # intensity of node of preceding layer
+
+                        #if self.hidden_layers[layer_cur_i][nodei].intensity <= 0:
+                        #    dActivation = 0
+                        #else:
+                        #    dActivation = 1
+
+                        # delta_cost
+                        d1_temp = DeltaNodeWeightsSums[layer_cur_i][nodei] * dIntensity * -1# * dActivation
+                        DeltaHiddenLayersWeights[layer_cur_i][nodei, weighti] = d1_temp
+
+                        if self.hidden_layers[0] is not 0:
+                            # [-1][weighti] the weighti is correct, because it's mapping from right to left!
+                            if layer_cur_i > 0:
+                                DeltaNodeWeightsSums[layer_cur_i-1][weighti] += self.hidden_layers[layer_cur_i][nodei].weights[weighti] * \
+                                                                                DeltaNodeWeightsSums[layer_cur_i][nodei]# * dActivation
+
+
+        if self.hidden_layers[0] is not 0:
+            return DeltaOutputWeights, DeltaHiddenLayersWeights
+        else:
+            return DeltaOutputWeights
+
+    def ApplyGradientDecentDelta(self, learnrate, DeltaOutputWeights, DeltaHiddenLayersWeights=None, batchsize=1):
+
+        if self.hidden_layers[0] is not 0:
+            precedinglayer = self.hidden_layers[-1]
+        else:
+            precedinglayer = self.input_layer
+
+        for nodei in range(self.output_layer.size):
+            for weighti in range(precedinglayer.size):
+                self.output_layer[nodei].weights[weighti] += min( max((DeltaOutputWeights[nodei, weighti]/batchsize)  * learnrate, -4), 4 )
+
+        if self.hidden_layers[0] is not 0:
+            for layeri in range(len(self.hidden_layers)-1, -1, -1): # the layers of the delta image happen in reverse
+                for nodei in range(self.hidden_layers[layeri].size):
+                    for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
+                        self.hidden_layers[layeri][nodei].weights[weighti] += min( max((DeltaHiddenLayersWeights[layeri][nodei, weighti]/batchsize) * learnrate, -4), 4 )
 
 
     def pickle(self):
@@ -254,10 +394,6 @@ class NeuralNetwork:
 
 
 
-    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
     #------------------------ GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
 
 
@@ -434,10 +570,6 @@ class NeuralNetwork:
         self.updateedgesGFX()
 
     # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
-    # ------------------------ END OF GRAPHICAL STUFF OF THE NEURAL NETWORK----------------------------------
 
 
 
@@ -456,7 +588,9 @@ class Node:
             self.weights = np.zeros(parent_size, dtype=float)
         elif weights is None:
             #If not hollow and no weights are provided, initiallize random weights
-            self.weights = np.random.uniform(-5,5,[parent_size,])
+            self.weights = np.random.uniform(-1,1,[parent_size,])
+            for weighti in range(self.weights.size):
+                self.weights[weighti] *= math.sqrt(2/parent_size)
         else:
             #Else use weights provided
             self.weights=weights

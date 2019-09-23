@@ -1,5 +1,5 @@
-from neuralnetwork import NeuralNetwork
-import pyglet
+
+
 import numpy as np
 from typing import List
 from species import Species
@@ -9,11 +9,12 @@ from meeple import Meeple
 
 from obstacle import dino
 
-class Population:
 
 
 
     def __init__(self, size):
+
+    def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int, training_data, training_answers):
         self.pop = np.ndarray([size], dtype=dino)
         self.species:List[Species] = []
         self.speciesCreated = 0
@@ -21,10 +22,12 @@ class Population:
         self.size = size
         self.generation = 0
 
+        self.training_data = training_data
+        self.training_answers = training_answers
+
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = dino(7, tuple([14, 7]), 2)
-            #self.brains[i] = NeuralNetwork(4+1,tuple([5,3]),16)
+            self.pop[i] = Meeple(input_size, hidden_size, output_size)
 
         self.bestMeeple:dino = self.pop[0]
         self.highestFitness = 0
@@ -54,6 +57,11 @@ class Population:
             for obst in obstacle_drawlist:
                 if dinner.isColliding( obst ):
                     dinner.isAlive = False
+
+
+
+            #return None
+
 
     def drawAlife(self):
         aliveBatch = pyglet.graphics.Batch()
@@ -217,11 +225,12 @@ class Population:
         for specie in self.species:
             # this calculates how many children a specie is allowed to produce in Population.naturalSelection()
             # If this is less then one, the specie did so bad, it won't generate a child then. So it basically just died here.
-            if specie.averageFitness/averageSum * len(self.pop) < 1:
+            if (specie.averageFitness/averageSum) * len(self.pop) < 1:
                 markedForRemoval.append(specie)
 
         if len(markedForRemoval) > 0:
             print("Killing", len(markedForRemoval), "bad species")
+
         self.species[:] = [ x for x in self.species if x not in markedForRemoval ]
 
 
@@ -229,3 +238,5 @@ class Population:
         # remove the bottom half of all species.
         for specie in self.species:
             specie.cull()
+
+
