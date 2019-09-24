@@ -24,7 +24,7 @@ from pymunk import Vec2d
 
 
 
-pops = Population(100, input_size=7, hidden_size=tuple([20, 10]), output_size=2)
+pops = Population(100, input_size=7, hidden_size=tuple([5]), output_size=2)
 
 showGraph = False
 skip_once = False
@@ -158,7 +158,7 @@ def update(dt):
         lastspawnscore = 0
 
     score = round(score+0.3, 1)
-    if score - lastspawnscore > 60:
+    if score - lastspawnscore > 40:
         spawnupdater(1)
         lastspawnscore = score
 
@@ -186,7 +186,7 @@ def spawnupdater(dt):
     dice_throw = np.random.rand()
     pos_adjust = 1500# + np.random.rand() * 300 // 1
 
-    if score < 700:
+    if score < 400:
         if dice_throw < 0.50:  # spawn large cacti
             obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(40, 60)))
         else:  # Spawn smol cacti

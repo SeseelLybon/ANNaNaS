@@ -40,7 +40,7 @@ class Species:
 
         if self.bestFitness < self.meeples[0].fitness:
             self.bestFitness = self.meeples[0].fitness
-            self.bestMeeple = self.meeples[0].clone()
+            self.bestMeeple = self.meeples[0]
             self.staleness=0
         else:
             self.staleness+=1
