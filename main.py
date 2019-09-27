@@ -24,7 +24,7 @@ from pymunk import Vec2d
 
 
 
-pops = Population(100, input_size=7, hidden_size=tuple([5]), output_size=2)
+pops = Population(50, input_size=7, hidden_size=tuple([5]), output_size=2)
 
 showGraph = False
 skip_once = False

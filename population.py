@@ -90,6 +90,7 @@ class Population:
 
     def naturalSelection(self):
 
+        self.print_deathrate()
         runonce = True
         UnMassExtingtionEventsAttempt = 0
         species_pre_speciate:int = -1
@@ -279,3 +280,32 @@ class Population:
         # remove the bottom half of all species.
         for specie in self.species:
             specie.cull()
+
+    def print_deathrate(self, do_print=True):
+        if not do_print:
+            return
+        # go through all meeps and add their score to a dict.
+        # pick the highest score and bins for every x% of score from the max
+        # print
+        scoredict = dict()
+        for meep in self.pop:
+            if meep.score in scoredict:
+                scoredict[meep.score] += 1
+            else:
+                scoredict[meep.score] = 1
+
+        highestscore = max(scoredict.keys())
+
+        scorebins = dict()
+        for meep in self.pop:
+            score = round( meep.score / (highestscore*0.1), 0)
+            if score in scorebins:
+                scorebins[score] += 1
+            else:
+                scorebins[score] = 1
+
+        #for key, value in sorted(scorebins.items(), key=lambda kv: kv[0]):
+        #    print(key,":",value, " - ")
+        print("death bin:amount,", sorted(scorebins.items(), key=lambda kv: kv[0]))
+
+        pass
