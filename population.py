@@ -10,12 +10,15 @@ from obstacle import dino
 
 class Population:
 
-    def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int, training_data=None, training_answers=None):
+    def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int, training_data=None, training_answers=None, isHallow=False):
         self.pop = np.ndarray([size], dtype=dino)
         self.species:List[Species] = []
         self.speciesCreated = 0
 
         self.size = size
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
         self.generation = 0
 
         self.training_data = training_data
@@ -25,7 +28,7 @@ class Population:
 
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = dino(input_size, hidden_size, output_size)
+            self.pop[i] = dino(input_size, hidden_size, output_size, isHallow=isHallow)
 
         self.bestMeeple:dino = self.pop[0]
         self.highestFitness = 0
@@ -308,4 +311,71 @@ class Population:
         #    print(key,":",value, " - ")
         print("death bin:amount,", sorted(scorebins.items(), key=lambda kv: kv[0]))
 
+    def pickle_population_to_file(self):
+        import pickle
+
+        pickled_meeps = []
+
+        for meep in self.pop:
+            pickled_meeps.append( meep.brain.pickle() )
+
+
+        with open('pickledmeeps.picklejar', 'wb') as the_file:
+            pickle.dump( [self.generation, pickled_meeps], the_file)
+
+    def unpickle_population_from_file(self):
+        import pickle
+
+        with open('pickledmeeps.picklejar', 'rb') as the_file:
+            unpickledjar = pickle.load(the_file)
+
+        self.generation = unpickledjar[0]
+        unpickled_meeps = unpickledjar[1]
+
+
+        self.pop = np.ndarray([self.size], dtype=dino)
+        for i in range(self.pop.size):
+            self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=True)
+            self.pop[i].brain.unpicklefrom(unpickled_meeps[i])
+
+
         pass
+
+if __name__ == "__main__":
+    print("Starting population.py as main")
+
+
+    test_population_1 = Population(4, input_size=4, hidden_size=tuple([0]), output_size=4, isHallow=False)
+
+    print("Printing data old population")
+    for i in range( test_population_1.pop.size ):
+        print("Printing data dino:", i)
+        test_population_1.pop[i].brain.set_inputs(np.array([1,2,3,4]))
+        test_population_1.pop[i].brain.fire_network()
+        print(test_population_1.pop[i].brain.get_outputs())
+        print()
+
+    test_population_1.pickle_population_to_file()
+
+    test_population_2 = Population(4, input_size=4, hidden_size=tuple([0]), output_size=4, isHallow=True)
+
+    print("Printing data new (hollow) population")
+    for i in range(test_population_1.pop.size):
+        print("Printing data dino:", i)
+        test_population_2.pop[i].brain.set_inputs(np.array([1, 2, 3, 4]))
+        test_population_2.pop[i].brain.fire_network()
+        print(test_population_2.pop[i].brain.get_outputs())
+        print()
+
+    test_population_2.unpickle_population_from_file()
+
+    print("Printing data new (unpickled) population")
+    for i in range(test_population_1.pop.size):
+        print("Printing data dino:", i)
+        test_population_2.pop[i].brain.set_inputs(np.array([1, 2, 3, 4]))
+        test_population_2.pop[i].brain.fire_network()
+        print(test_population_2.pop[i].brain.get_outputs())
+        print()
+
+
+    print("Finished population.py as main")

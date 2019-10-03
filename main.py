@@ -22,9 +22,14 @@ import obstacle as obt
 
 from pymunk import Vec2d
 
+loadfromfile = True
+savePopulation = True
 
-
-pops = Population(50, input_size=7, hidden_size=tuple([5]), output_size=2)
+if loadfromfile:
+    pops = Population(50, input_size=7, hidden_size=tuple([5]), output_size=2, isHallow=True)
+    pops.unpickle_population_from_file()
+else:
+    pops = Population(50, input_size=7, hidden_size=tuple([5]), output_size=2)
 
 showGraph = False
 skip_once = False
@@ -90,13 +95,13 @@ def on_draw():
 @window.event
 def on_key_press(symbol, modifiers):
     if symbol == key.SPACE:
-        print("jumping")
-        pops.pop[-1].jump()
-
-    if symbol == key.DOWN:
-        #obt.dino1.duck()
-        pass
-
+        print("Stopping program")
+        pyglet.app.exit()
+        if savePopulation:
+            print("Saving population to file")
+            pops.pickle_population_to_file()
+        else:
+            print("Not saving population to file")
 
 def update(dt):
     global score
