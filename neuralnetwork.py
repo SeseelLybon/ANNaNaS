@@ -363,13 +363,42 @@ class NeuralNetwork:
 
 
     def pickle(self):
-        pass
-        # TODO: Save this NN for later use.
+        import pickle
+        import copy
+        if self.hidden_layers[0] is not 0:
+            pickleblebrain = [[None for i in range(self.input_layer.size)],
+                              [[None for j in range(self.hidden_layers[i].size)] for i in range(len(self.hidden_layers))],
+                              [None for i in range(self.output_layer.size)]]
 
-    def unpickle(self):
-        pass
-        # TODO: Load to put data in this NN
-        #   Maybe also a better way than how clone does it?
+            pickledbrain = pickle.dumps(pickleblebrain)
+        else:
+            pickleblebrain = [[None for i in range(self.input_layer.size)],
+                              [None for i in range(self.output_layer.size)]]
+
+            for i in range(len(pickleblebrain[0])):
+                pickleblebrain[0][i]= copy.deepcopy(self.input_layer[i].weights)
+
+            for i in range(len(pickleblebrain[1])):
+                pickleblebrain[1][i] = copy.deepcopy(self.output_layer[i].weights)
+
+            pickledbrain = pickle.dumps(pickleblebrain)
+
+        return pickledbrain
+
+
+    def unpicklefrom(self, pickledbrain):
+        import pickle
+        if self.hidden_layers[0] is not 0:
+            pass
+        else:
+            unpickledbrain = pickle.loads(pickledbrain)
+
+            for i in range(len(unpickledbrain[0])):
+                self.input_layer[i].weights = unpickledbrain[0][i]
+
+            for i in range(len(unpickledbrain[1])):
+                self.input_layer[i].weights = unpickledbrain[0][i]
+
 
     def getAmountWeights(self)->int:
 
@@ -600,8 +629,32 @@ class Node:
                                            batch=batch )
 
 if __name__ == "__main__":
-    oldbrain = NeuralNetwork(4,tuple([0]),16)
-    newbrain = oldbrain.clone()
+    print("Starting Neuralnetwork.py as main")
+    import pickle
+
+    print("Printing data old brain")
+    oldbrain = NeuralNetwork(4,tuple([0]),4)
+    oldbrain.set_inputs(np.array([1,2,3,4]))
+    oldbrain.fire_network()
+    print(oldbrain.get_outputs())
+
+    pickledbrain1 = oldbrain.pickle()
+
+    print("Printing data new (hollow) brain")
+    newbrain = NeuralNetwork(4,tuple([0]),4, isHollow=True)
+    newbrain.set_inputs(np.array([1,2,3,4]))
+    newbrain.fire_network()
+    print(newbrain.get_outputs())
+
+    print("Printing data new brain with unpickled brain")
+    newbrain.unpicklefrom( pickledbrain1 )
+    newbrain.set_inputs(np.array([1,2,3,4]))
+    newbrain.fire_network()
+    print(newbrain.get_outputs())
+
     temp = False
+
+
+    print("Finished Neuralnetwork.py as main")
 
 
