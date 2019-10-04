@@ -24,7 +24,7 @@ class Population:
         self.training_data = training_data
         self.training_answers = training_answers
 
-        self.maxStaleness = 7 # how often a species can not improve before it's considered stale/stuck
+        self.maxStaleness = 15 # how often a species can not improve before it's considered stale/stuck
 
 
         for i in range(self.pop.shape[0]):

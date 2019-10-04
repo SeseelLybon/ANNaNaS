@@ -370,12 +370,22 @@ class NeuralNetwork:
                               [None for i in range(self.output_layer.size)]
                               ]
 
+            # Get the weight lists from the hidden nodes
+            for layer_i in range(len(pickleblebrain[0])):
+                for node_i in range(len(pickleblebrain[0][layer_i])):
+                    pickleblebrain[0][layer_i][node_i] = copy.deepcopy(self.hidden_layers[layer_i][node_i].weights)
+
+            # Get the weight lists from the output nodes
+            for i in range(len(pickleblebrain[1])):
+                pickleblebrain[1][i] = copy.deepcopy(self.output_layer[i].weights)
+
             pickledbrain = pickle.dumps(pickleblebrain)
         else:
             pickleblebrain = [None for i in range(self.output_layer.size)]
 
-            for i in range(len(pickleblebrain)):
-                pickleblebrain[i] = copy.deepcopy(self.output_layer[i].weights)
+            # Get the weight lists from the output nodes
+            for node_i in range(len(pickleblebrain)):
+                pickleblebrain[node_i] = copy.deepcopy(self.output_layer[node_i].weights)
 
             pickledbrain = pickle.dumps(pickleblebrain)
 
@@ -385,12 +395,21 @@ class NeuralNetwork:
     def unpicklefrom(self, pickledbrain):
         import pickle
         if self.hidden_layers[0] is not 0:
-            pass
+            unpickledbrain = pickle.loads(pickledbrain)
+
+            # Get the weight lists from the hidden nodes
+            for layer_i in range(len(unpickledbrain[0])):
+                for node_i in range(len(unpickledbrain[0][layer_i])):
+                    self.hidden_layers[layer_i][node_i].weights = unpickledbrain[0][layer_i][node_i]
+
+            # Get the weight lists from the output nodes
+            for node_i in range(len(unpickledbrain[1])):
+                self.output_layer[node_i].weights = unpickledbrain[1][node_i]
         else:
             unpickledbrain = pickle.loads(pickledbrain)
 
-            for i in range(len(unpickledbrain)):
-                self.output_layer[i].weights = unpickledbrain[i]
+            for node_i in range(len(unpickledbrain)):
+                self.output_layer[node_i].weights = unpickledbrain[node_i]
 
 
     def getAmountWeights(self)->int:
@@ -626,7 +645,7 @@ if __name__ == "__main__":
     import pickle
 
     print("Printing data old brain")
-    oldbrain = NeuralNetwork(4,tuple([0]),4)
+    oldbrain = NeuralNetwork(4,tuple([4,4]),4)
     oldbrain.set_inputs(np.array([1,2,3,4]))
     oldbrain.fire_network()
     print(oldbrain.get_outputs())
@@ -634,7 +653,7 @@ if __name__ == "__main__":
     pickledbrain1 = oldbrain.pickle()
 
     print("Printing data new (hollow) brain")
-    newbrain = NeuralNetwork(4,tuple([0]),4, isHollow=True)
+    newbrain = NeuralNetwork(4,tuple([4,4]),4, isHollow=True)
     newbrain.set_inputs(np.array([1,2,3,4]))
     newbrain.fire_network()
     print(newbrain.get_outputs())

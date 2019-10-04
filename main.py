@@ -26,10 +26,12 @@ loadfromfile = True
 savePopulation = True
 
 if loadfromfile:
-    pops = Population(50, input_size=7, hidden_size=tuple([5]), output_size=2, isHallow=True)
+    print("Loading population from file")
+    pops = Population(50, input_size=7, hidden_size=tuple([4]), output_size=2, isHallow=True)
     pops.unpickle_population_from_file()
 else:
-    pops = Population(50, input_size=7, hidden_size=tuple([5]), output_size=2)
+    print("Generating new population")
+    pops = Population(50, input_size=7, hidden_size=tuple([4]), output_size=2)
 
 showGraph = False
 skip_once = False
