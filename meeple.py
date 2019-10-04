@@ -3,7 +3,12 @@
 from neuralnetwork import NeuralNetwork
 
 class Meeple:
+
+    global_ID = [0]
+
     def __init__(self, input_size:int, hidden_size:tuple, output_size:int, isHallow=False):
+        self.ID = self.global_ID[0]
+        self.global_ID[0] += 1
         self.fitness = 0
         self.score = float("-inf")
         self.epochs = 20

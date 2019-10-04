@@ -321,7 +321,7 @@ class Population:
 
 
         with open('pickledmeeps.picklejar', 'wb') as the_file:
-            pickle.dump( [self.generation, pickled_meeps], the_file)
+            pickle.dump( [self.generation, dino.global_ID-self.size, pickled_meeps], the_file)
 
     def unpickle_population_from_file(self):
         import pickle
@@ -330,7 +330,8 @@ class Population:
             unpickledjar = pickle.load(the_file)
 
         self.generation = unpickledjar[0]
-        unpickled_meeps = unpickledjar[1]
+        dino.global_ID = unpickledjar[1]
+        unpickled_meeps = unpickledjar[2]
 
 
         self.pop = np.ndarray([self.size], dtype=dino)
