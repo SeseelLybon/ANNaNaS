@@ -363,6 +363,7 @@ class NeuralNetwork:
 
 
     def pickle(self):
+        # TODO: Look into python Serpent; saver pickling since we're going to network this stuff.
         import pickle
         import copy
         if self.hidden_layers[0] is not 0:
