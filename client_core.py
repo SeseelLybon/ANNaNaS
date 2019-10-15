@@ -5,17 +5,10 @@
 #-------------------------------------
 
 
-print("\n\n\tStart of client------------")
-
-
 import pyglet
-from pyglet.window import key
-import logging
-logging.basicConfig(level=logging.DEBUG)
 from typing import List
 
 import numpy as np
-
 from population import Population
 
 window = pyglet.window.Window(1200,800)
@@ -25,16 +18,7 @@ import obstacle as obt
 
 from pymunk import Vec2d
 
-loadfromfile = False
-savePopulation = True
-
-if loadfromfile:
-    print("Loading population from file")
-    pops = Population(50, input_size=7, hidden_size=tuple([4]), output_size=2, isHallow=True)
-    pops.unpickle_population_from_file()
-else:
-    print("Generating new population")
-    pops = Population(50, input_size=7, hidden_size=tuple([4]), output_size=2)
+pops:Population = None
 
 showGraph = False
 skip_once = False
@@ -64,6 +48,7 @@ dinos_live_label = pyglet.text.Label("Dino's alive: ",
 
 @window.event
 def on_draw():
+    global pops
     global window
     global score
     global lastspawnscore
@@ -97,18 +82,9 @@ def on_draw():
     #pops.bestMeeple.draw()
 
 
-@window.event
-def on_key_press(symbol, modifiers):
-    if symbol == key.SPACE:
-        print("Stopping program")
-        pyglet.app.exit()
-        if savePopulation:
-            print("Saving population to file")
-            pops.pickle_population_to_file()
-        else:
-            print("Not saving population to file")
 
 def update(dt):
+    global pops
     global score
     global bestfitness
     global lastspawnscore
@@ -140,14 +116,6 @@ def update(dt):
                       obst_height,
                       obst_x,
                       obst_y]
-
-    ##generate fake data for the obstacles that are missing
-    #if len(obstacle_drawlist) < max_obstacles:
-    #    for fake_obst in range( max_obstacles-len(obstacle_drawlist) ):
-    #        global_inputs += [5000,
-    #                          0,
-    #                          0,
-    #                          0]
 
 
     global_inputs.append(score)
@@ -214,10 +182,37 @@ def spawnupdater(dt):
             obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 240), Vec2d(80, 20)))
 
 
-pyglet.clock.schedule_interval_soft(update, 1 / 75)
-#pyglet.clock.schedule_interval_soft(spawnupdater, 1.5)
-pyglet.clock.schedule_interval_soft(scoreupdate, 1 / 10)
-pyglet.app.run()
+def dojob(job):
+    global pops
+    print("Starting the job batch")
+
+    # unpack job (a pickle of a list of meeple brains)
 
 
-print("\n\n\tEnd of client------------")
+    # start the simulation and poll if it's done
+    pyglet.clock.schedule_interval_soft(update, 1 / 75)
+    pyglet.clock.schedule_interval_soft(scoreupdate, 1 / 10)
+    pyglet.clock.schedule_interval_soft(job_isDone, 30)
+    pyglet.app.run()
+
+
+    pass
+
+def job_isDone(dt):
+    global pops
+    print("Testing if job batch is done")
+
+
+    # if it's done, pickle the results (doesn't need to be the brains, but it has to be linked to an ID of sorts)
+    # return the pickled results
+
+    if pops.isDone():
+        pyglet.clock.unschedule(update)
+        pyglet.clock.unschedule(scoreupdate)
+        pyglet.clock.unschedule(job_isDone)
+        print("Job batch is done")
+        return True # return pickled dead meeps; ID: fitness
+    else:
+        print("Job batch is not done")
+        return False
+

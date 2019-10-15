@@ -18,7 +18,7 @@ class Main_manager:
     def __init__(self, IP):
         self.isRunning = True
         self.local_job_server = Pyro4.core.Proxy('PYRO:Greeting@' + IP + ':9090')
-        self.job_results:List[int] = []
+        self.job_results = []
         self.main_process = Process(target=self.run)
 
 
@@ -45,13 +45,10 @@ class Main_manager:
 
         while isRunning:
             print("Testing if clients are done")
-            if self.local_job_server.get_isDone():
-
-                self.isRunning=False
-                print("Jobs are done. Printing results, then returning")
+            if self.local_job_server.test_hasAllResults():
+                print("All meeps have been simulated and tested")
                 self.job_results = self.local_job_server.get_jobs_results()
                 print(self.job_results)
-                print(sum(self.job_results))
                 return
             else:
                 print("Not all jobs are done...")
