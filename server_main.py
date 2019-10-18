@@ -1,8 +1,6 @@
 
 
 
-print("\n\n\tStart of server------------")
-
 
 import pyglet
 import numpy as np
@@ -17,7 +15,6 @@ import uuid
 
 import masterclient
 
-local_population:Population# = None # Population(50, input_size=7, hidden_size=tuple([4]), output_size=2)
 
 
 
@@ -25,6 +22,7 @@ local_population:Population# = None # Population(50, input_size=7, hidden_size=t
 class Job_server(object):
 
     def __init__(self):
+        @Pyro4.expose
         self.workers:dict = {}
         self.hasUnworkedMeeps = False
         self.hasAllResults = False
@@ -36,10 +34,14 @@ class Job_server(object):
     def get_job(self, workerid):
         if not self.workers[workerid].hasClaimedSlots:
             self.workers[workerid].hasClaimedSlots = True
-            #TODO: check if all the meeps have been claimed, then set self.hasUnworkedMeeps = True
+            if len(self.unworked_meeps) == 0:
+                self.hasUnworkedMeeps = True
             return self.unworked_meeps[:self.workers[workerid].work_slots]
         else:
             return False
+
+    def return_results(self, x):
+        self.results.append(x)
 
     def get_hasUnworkedMeeps(self)->bool:
         if len(self.unworked_meeps) > 0:
@@ -61,10 +63,19 @@ class Job_server(object):
         return self.hasAllResults
 
     def get_jobs_results(self):
-        return self.worked_meeps
+        return self.results
 
     def get_jobs_amount(self):
         return len(self.unworked_meeps)
+
+    def get_results_amount(self):
+        return len(self.results)
+
+    def get_workers_amount(self):
+        return len(self.workers)
+
+    def get_registered_slots(self):
+        return sum( [ x.work_slots for x in self.workers.values() ] )
 
     def set_jobs(self, jobs):
         self.unworked_meeps = jobs
@@ -79,15 +90,17 @@ class Job_server(object):
     def register_worker(self, workerid, work_slots):
         self.workers[workerid] = Worker(workerid, work_slots)
         self.max_slots += work_slots
-        print("Worker registered to labour force", workerid, self.workers[workerid])
+        print("Server: Worker registered to labour force", workerid)
 
     def unregister_worker(self, workerid):
         self.max_slots-= self.workers[workerid]
         self.workers.pop(workerid)
-        print("Worker", workerid, "left the labour force")
+        print("Server: Worker", workerid, "left the labour force")
 
 
-class Worker():
+
+@Pyro4.expose
+class Worker:
     def __init__(self, workerID, work_slots):
         self.workerID = workerID
         self.work_slots = work_slots
@@ -96,7 +109,8 @@ class Worker():
 
 
 if __name__ == "__main__":
-    print("Starting server_main.py as __main__")
+
+    print("Server: Starting server_main.py as __main__")
     #server_IP = "10.19.38.66"
     server_IP = "localhost"
 
@@ -111,4 +125,4 @@ if __name__ == "__main__":
 
     main_manager.stop()
 
-    print("Done with server_main.py as __main__")
+    print("Server: Done with server_main.py as __main__")

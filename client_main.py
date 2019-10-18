@@ -6,11 +6,6 @@ import pyglet
 import uuid
 
 
-
-class Worker(object):
-    def __init__(self):
-        pass
-
 def doJob(job):
     return job[0]*job[1]
 
@@ -19,7 +14,16 @@ expected_generation = 0
 
 def lookforjob(dt):
 
-    job = job_server.get_job(expected_generation, workerid)
+    if job_server.get_hasUnworkedMeeps() == 0:
+        print("No jobs queued")
+
+        job_server.return_results("Something")
+
+        pyglet.clock.unschedule(lookforjob)
+        pyglet.clock.schedule_interval_soft(lookforjob, 2)
+        return
+
+    job = job_server.get_job(workerid)
 
     if job is None:
         print("Didn't get a job")
@@ -52,6 +56,7 @@ if __name__ == '__main__':
 
     job_server = Pyro4.core.Proxy('PYRO:Greeting@' + ipAddressServer + ':9090')
     job_server.register_worker(workerid, 50)
+    print(job_server.get_workers_amount())
     pyglet.clock.schedule_interval_soft(lookforjob, 4)
 
 

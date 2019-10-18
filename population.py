@@ -8,6 +8,8 @@ import pyglet
 from obstacle import dino
 
 
+
+
 class Population:
 
     def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int, training_data=None, training_answers=None, isHallow=False):
