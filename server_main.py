@@ -2,27 +2,24 @@
 
 
 
-import pyglet
-import numpy as np
-from population import Population
-
 import Pyro4
-from multiprocessing import Process
-from typing import List
-import time
-import math
-import uuid
+
 
 import masterclient
 
 
 
+class Worker:
+    def __init__(self, workerID, work_slots):
+        self.workerID = workerID
+        self.work_slots = work_slots
+        self.hasClaimedSlots = False
+        self.hasReturnedResults = False
 
 @Pyro4.expose
 class Job_server(object):
 
     def __init__(self):
-        @Pyro4.expose
         self.workers:dict = {}
         self.hasUnworkedMeeps = False
         self.hasAllResults = False
@@ -74,6 +71,9 @@ class Job_server(object):
     def get_workers_amount(self):
         return len(self.workers)
 
+    def get_workers(self):
+        return [ x.workerID for x in self.workers.values() ]
+
     def get_registered_slots(self):
         return sum( [ x.work_slots for x in self.workers.values() ] )
 
@@ -89,23 +89,17 @@ class Job_server(object):
 
     def register_worker(self, workerid, work_slots):
         self.workers[workerid] = Worker(workerid, work_slots)
-        self.max_slots += work_slots
-        print("Server: Worker registered to labour force", workerid)
+        #self.max_slots += work_slots
+        print("Jobserver:", self.get_registered_slots())
+        print("Jobserver:", self.workers.keys())
+        print("Jobserver:", "Worker registered to labour force", workerid)
 
-    def unregister_worker(self, workerid):
-        self.max_slots-= self.workers[workerid]
-        self.workers.pop(workerid)
-        print("Server: Worker", workerid, "left the labour force")
+#    def unregister_worker(self, workerid):
+#        self.max_slots-= self.workers[workerid]
+#        self.workers.pop(workerid)
+#        print("Jobserver:", "Worker", workerid, "left the labour force")
 
 
-
-@Pyro4.expose
-class Worker:
-    def __init__(self, workerID, work_slots):
-        self.workerID = workerID
-        self.work_slots = work_slots
-        self.hasClaimedSlots = False
-        self.hasReturnedResults = False
 
 
 if __name__ == "__main__":
@@ -118,8 +112,10 @@ if __name__ == "__main__":
 
     main_manager.start()
 
+    job_server_o = Job_server()
+
     JobserverDaemon = Pyro4.Daemon.serveSimple({
-        Job_server: 'Greeting',
+        job_server_o: 'Greeting',
     }, host=server_IP, port=9090, ns=False, verbose=True)
 
 

@@ -2,6 +2,7 @@
 
 import Pyro4
 import pyglet
+import time
 
 import uuid
 
@@ -13,32 +14,38 @@ def doJob(job):
 expected_generation = 0
 
 def lookforjob(dt):
+    global job_server
+    print("--------")
+    time.sleep(5)
 
-    if job_server.get_hasUnworkedMeeps() == 0:
-        print("No jobs queued")
+    print(job_server.get_workers_amount())
+    print(job_server.get_workers())
 
-        job_server.return_results("Something")
-
-        pyglet.clock.unschedule(lookforjob)
-        pyglet.clock.schedule_interval_soft(lookforjob, 2)
-        return
-
-    job = job_server.get_job(workerid)
-
-    if job is None:
-        print("Didn't get a job")
-
-        pyglet.clock.unschedule(lookforjob)
-        pyglet.clock.schedule_interval_soft(lookforjob, 2)
-
-    else:
-        print("Got a job", job)
-        joboutput = doJob(job)
-
-        job_server.return_job_results(joboutput)
-
-        pyglet.clock.unschedule(lookforjob)
-        pyglet.clock.schedule_interval_soft(lookforjob, 1)
+#    if job_server.get_hasUnworkedMeeps() == 0:
+#        print("No jobs queued")
+#
+#        job_server.return_results("Something")
+#
+#        pyglet.clock.unschedule(lookforjob)
+#        pyglet.clock.schedule_interval_soft(lookforjob, 2)
+#        return
+#
+#    job = job_server.get_job(workerid)
+#
+#    if job is None:
+#        print("Didn't get a job")
+#
+#        pyglet.clock.unschedule(lookforjob)
+#        pyglet.clock.schedule_interval_soft(lookforjob, 2)
+#
+#    else:
+#        print("Got a job", job)
+#        joboutput = doJob(job)
+#
+#        job_server.return_job_results(joboutput)
+#
+#        pyglet.clock.unschedule(lookforjob)
+#        pyglet.clock.schedule_interval_soft(lookforjob, 1)
 
 
 
