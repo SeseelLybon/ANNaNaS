@@ -321,7 +321,6 @@ class Population:
         for meep in self.pop:
             pickled_meeps.append( meep.brain.pickle() )
 
-
         with open('pickledmeeps.picklejar', 'wb') as the_file:
             pickle.dump( [self.generation, dino.global_ID-self.size, pickled_meeps], the_file)
 
@@ -334,7 +333,6 @@ class Population:
         self.generation = unpickledjar[0]
         dino.global_ID = unpickledjar[1]
         unpickled_meeps = unpickledjar[2]
-
 
         self.pop = np.ndarray([self.size], dtype=dino)
         for i in range(self.pop.size):
