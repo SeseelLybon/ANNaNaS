@@ -7,6 +7,7 @@ from math import floor
 import pyglet
 from obstacle import dino
 
+import serpent
 
 
 
@@ -314,21 +315,19 @@ class Population:
         print("death bin:amount,", sorted(scorebins.items(), key=lambda kv: kv[0]))
 
     def pickle_population_to_file(self):
-        import pickle
 
-        pickled_meeps = []
+        ser_bytes_meeps = []
 
         for meep in self.pop:
-            pickled_meeps.append( meep.brain.pickle() )
+            ser_bytes_meeps.append(meep.brain.serpent_serialize())
 
         with open('pickledmeeps.picklejar', 'wb') as the_file:
-            pickle.dump( [self.generation, dino.global_ID-self.size, pickled_meeps], the_file)
+            serpent.dump( [self.generation, dino.global_ID-self.size, ser_bytes_meeps], the_file)
 
     def unpickle_population_from_file(self):
-        import pickle
 
         with open('pickledmeeps.picklejar', 'rb') as the_file:
-            unpickledjar = pickle.load(the_file)
+            unpickledjar = serpent.load(the_file)
 
         self.generation = unpickledjar[0]
         dino.global_ID = unpickledjar[1]
@@ -337,10 +336,27 @@ class Population:
         self.pop = np.ndarray([self.size], dtype=dino)
         for i in range(self.pop.size):
             self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=True)
-            self.pop[i].brain.unpicklefrom(unpickled_meeps[i])
+            self.pop[i].brain.serpent_deserialize(unpickled_meeps[i])
 
 
-        pass
+    def pickle_population_to_list(self):
+
+        serbytes_meeples_list = []
+
+        for meep in self.pop:
+            serbytes_meeples_list.append(meep.brain.serpent_serialize())
+
+        return serbytes_meeples_list
+
+
+    def unpickle_population_from_list(self, pickled_brains):
+
+
+        self.pop = np.ndarray([self.size], dtype=dino)
+        for i in range(self.pop.size):
+            self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=True)
+
+            self.pop[i].brain.serpent_deserialize(pickled_brains[i])
 
 if __name__ == "__main__":
     print("Starting population.py as main")

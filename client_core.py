@@ -11,6 +11,8 @@ from typing import List
 import numpy as np
 from population import Population
 
+import serpent
+
 window = pyglet.window.Window(1200,800)
 pyglet.gl.glClearColor(0.7,0.7,0.7,1)
 
@@ -18,7 +20,7 @@ import obstacle as obt
 
 from pymunk import Vec2d
 
-pops:Population = None
+client_population:Population = Population(50, input_size=7, hidden_size=tuple([4]), output_size=2, isHallow=True)
 
 showGraph = False
 skip_once = False
@@ -27,6 +29,8 @@ best_score = 0
 bestfitness = 0
 lastspawnscore = 0
 max_obstacles = 3
+
+client_isDone = False
 
 obstacle_drawlist:List[obt.obstacle] = []
 
@@ -48,19 +52,20 @@ dinos_live_label = pyglet.text.Label("Dino's alive: ",
 
 @window.event
 def on_draw():
-    global pops
+    global client_population
     global window
     global score
     global lastspawnscore
+    global showGraph
 
     window.clear()
 
-    if pops.bestMeeple is not None:
-        pops.bestMeeple.brain.updateposGFX([600, 750], [550, 500])
-        pops.bestMeeple.brain.updateintensityGFX([2,2,      # dinner pos
-                                                  0.5,2,3,3,  # first object
-                                                  1.5])       # score
-        pops.bestMeeple.brain.draw()
+    if client_population.bestMeeple is not None and showGraph:
+        client_population.bestMeeple.brain.updateposGFX([600, 750], [550, 500])
+        client_population.bestMeeple.brain.updateintensityGFX([2, 2,  # dinner pos
+                                                               0.5, 2, 3, 3,  # first object
+                                                               1.5])       # score
+        client_population.bestMeeple.brain.draw()
 
     # Run the game here
     # Move the objects/obstacles on the platform, not the dino or the platform
@@ -68,14 +73,14 @@ def on_draw():
 
     score_label.text = 'score: ' + str(score)
     score_label.draw()
-    score_best_label.text = 'best score: ' + str(pops.highestScore)
+    score_best_label.text = 'best score: ' + str(client_population.highestScore)
     score_best_label.draw()
-    dinos_live_label.text = "Dino's alive: " + str(pops.countAlive()) + " of " + str(100)
+    dinos_live_label.text = "Dino's alive: " + str(client_population.countAlive()) + " of " + str(100)
     dinos_live_label.draw()
 
     obt.ground.draw()
 
-    pops.drawAlife()
+    client_population.drawAlife()
 
     for obst in obstacle_drawlist:
         obst.draw()
@@ -84,7 +89,8 @@ def on_draw():
 
 
 def update(dt):
-    global pops
+    global client_population
+    global client_isDone
     global score
     global bestfitness
     global lastspawnscore
@@ -121,19 +127,16 @@ def update(dt):
     global_inputs.append(score)
     # -----------------
 
-    pops.updateAlive(obstacle_drawlist, score, global_inputs)
+    client_population.updateAlive(obstacle_drawlist, score, global_inputs)
 
 
-    if pops.isDone():
+    if client_population.isDone():
         print("--------------------------------------------")
-        print("All dino's are dead. Time for a new batch!")
-        print("Best score this generation:", score)
-        print("startin generation", pops.generation)
-        pops.naturalSelection()
-        obstacle_drawlist[:] = []
-        score = 0
-        bestfitness = 0
-        lastspawnscore = 0
+        print("All dino's are dead. Returning dino brains.")
+        print("Best score this batch:", score)
+        pyglet.clock.unschedule(update)
+        pyglet.clock.unschedule(scoreupdate)
+        client_isDone = True
 
     score = round(score+0.3, 1)
     if score - lastspawnscore > 40:
@@ -183,36 +186,22 @@ def spawnupdater(dt):
 
 
 def dojob(job):
-    global pops
+    global client_population
+    global client_isDone
+    client_isDone = False
+
     print("Starting the job batch")
 
+
     # unpack job (a pickle of a list of meeple brains)
+    client_population.unpickle_population_from_list(job)
 
 
     # start the simulation and poll if it's done
     pyglet.clock.schedule_interval_soft(update, 1 / 75)
     pyglet.clock.schedule_interval_soft(scoreupdate, 1 / 10)
-    pyglet.clock.schedule_interval_soft(job_isDone, 30)
     pyglet.app.run()
 
 
-    pass
 
-def job_isDone(dt):
-    global pops
-    print("Testing if job batch is done")
-
-
-    # if it's done, pickle the results (doesn't need to be the brains, but it has to be linked to an ID of sorts)
-    # return the pickled results
-
-    if pops.isDone():
-        pyglet.clock.unschedule(update)
-        pyglet.clock.unschedule(scoreupdate)
-        pyglet.clock.unschedule(job_isDone)
-        print("Job batch is done")
-        return True # return pickled dead meeps; ID: fitness
-    else:
-        print("Job batch is not done")
-        return False
 

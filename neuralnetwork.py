@@ -5,6 +5,10 @@ import copy
 from pyglet.gl import *
 from typing import List
 
+import serpent
+import copy
+
+import ast
 
 class NeuralNetwork:
 
@@ -361,11 +365,8 @@ class NeuralNetwork:
                     for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
                         self.hidden_layers[layeri][nodei].weights[weighti] += min( max((DeltaHiddenLayersWeights[layeri][nodei, weighti]/batchsize) * learnrate, -4), 4 )
 
+    def serpent_serialize(self):
 
-    def pickle(self):
-        # TODO: Look into python Serpent; saver pickling since we're going to network this stuff.
-        import pickle
-        import copy
         if self.hidden_layers[0] is not 0:
             pickleblebrain = [[[None for j in range(self.hidden_layers[i].size)] for i in range(len(self.hidden_layers))],
                               [None for i in range(self.output_layer.size)]
@@ -374,43 +375,49 @@ class NeuralNetwork:
             # Get the weight lists from the hidden nodes
             for layer_i in range(len(pickleblebrain[0])):
                 for node_i in range(len(pickleblebrain[0][layer_i])):
-                    pickleblebrain[0][layer_i][node_i] = copy.deepcopy(self.hidden_layers[layer_i][node_i].weights)
+                    pickleblebrain[0][layer_i][node_i] = list(copy.deepcopy(self.hidden_layers[layer_i][node_i].weights))
 
             # Get the weight lists from the output nodes
             for i in range(len(pickleblebrain[1])):
-                pickleblebrain[1][i] = copy.deepcopy(self.output_layer[i].weights)
+                pickleblebrain[1][i] = list(copy.deepcopy(self.output_layer[i].weights))
 
-            pickledbrain = pickle.dumps(pickleblebrain)
+            # TODO: Also pickle the fitness of the brain
+            pickledbrain = serpent.dumps(pickleblebrain)
+
+
         else:
             pickleblebrain = [None for i in range(self.output_layer.size)]
 
             # Get the weight lists from the output nodes
             for node_i in range(len(pickleblebrain)):
-                pickleblebrain[node_i] = copy.deepcopy(self.output_layer[node_i].weights)
+                pickleblebrain[node_i] = list(copy.deepcopy(self.output_layer[node_i].weights))
 
-            pickledbrain = pickle.dumps(pickleblebrain)
+            # TODO: Also pickle the fitness of the brain
+            pickledbrain = serpent.dumps(pickleblebrain)
 
         return pickledbrain
 
 
-    def unpicklefrom(self, pickledbrain):
-        import pickle
+    def serpent_deserialize(self, pickledbrain):
+
+        # TODO: Needs to also unpickle the fitness
+        unpickledbrain = serpent.loads(serpent.tobytes(pickledbrain))
+
+
         if self.hidden_layers[0] is not 0:
-            unpickledbrain = pickle.loads(pickledbrain)
 
             # Get the weight lists from the hidden nodes
             for layer_i in range(len(unpickledbrain[0])):
                 for node_i in range(len(unpickledbrain[0][layer_i])):
-                    self.hidden_layers[layer_i][node_i].weights = unpickledbrain[0][layer_i][node_i]
+                    self.hidden_layers[layer_i][node_i].weights = np.array(unpickledbrain[0][layer_i][node_i])
 
             # Get the weight lists from the output nodes
             for node_i in range(len(unpickledbrain[1])):
-                self.output_layer[node_i].weights = unpickledbrain[1][node_i]
+                self.output_layer[node_i].weights = np.array(unpickledbrain[1][node_i])
         else:
-            unpickledbrain = pickle.loads(pickledbrain)
 
             for node_i in range(len(unpickledbrain)):
-                self.output_layer[node_i].weights = unpickledbrain[node_i]
+                self.output_layer[node_i].weights = np.array(unpickledbrain[node_i])
 
 
     def getAmountWeights(self)->int:
@@ -651,7 +658,7 @@ if __name__ == "__main__":
     oldbrain.fire_network()
     print(oldbrain.get_outputs())
 
-    pickledbrain1 = oldbrain.pickle()
+    pickledbrain1 = oldbrain.serpent_serialize()
 
     print("Printing data new (hollow) brain")
     newbrain = NeuralNetwork(4,tuple([4,4]),4, isHollow=True)
@@ -660,7 +667,7 @@ if __name__ == "__main__":
     print(newbrain.get_outputs())
 
     print("Printing data new brain with unpickled brain")
-    newbrain.unpicklefrom( pickledbrain1 )
+    newbrain.serpent_deserialize(pickledbrain1)
     newbrain.set_inputs(np.array([1,2,3,4]))
     newbrain.fire_network()
     print(newbrain.get_outputs())

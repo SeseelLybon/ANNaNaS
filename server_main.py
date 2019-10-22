@@ -33,10 +33,13 @@ class Job_server(object):
         if len(self.unworked_meeps) == 0:
             self.workers[workerid].isWorkingOnJobs = True
             self.hasUnworkedMeeps = True
-        return self.unworked_meeps[:self.workers[workerid].work_slots]
+        claimed_meeps = self.unworked_meeps[0:self.workers[workerid].work_slots]
+        self.unworked_meeps[:] = self.unworked_meeps[self.workers[workerid].work_slots:]
+        return claimed_meeps
 
-    def return_results(self, x):
-        self.results.append(x)
+    def return_results(self, workerid, x):
+        self.results += x
+        self.workers[workerid].isWorkingOnJobs = False
 
     def get_hasUnworkedMeeps(self)->bool:
         if len(self.unworked_meeps) > 0:
@@ -51,9 +54,10 @@ class Job_server(object):
         # then I'll assume that all meeps have been processed.
         # TODO: probably overkill. Unless there's a glitch, results should never exceed max_jobs
         #   Though if a worker dies before it returns the results, the program locks up.
-        if len(self.unworked_meeps) == 0 and\
-                len([True for x in self.workers if not x.isWorkingOnJobs]) and\
-                len(self.results) == self.max_jobs:
+        if  len(self.workers) > 0 and\
+                len([True for worker in self.workers.values() if worker.isWorkingOnJobs]) == 0 and\
+                len(self.unworked_meeps) == 0 and\
+                len(self.results) == 100:
             return True
         else:
             return False
@@ -110,7 +114,7 @@ if __name__ == "__main__":
     #server_IP = "10.19.38.66"
     server_IP = "localhost"
 
-    main_manager = masterclient.Main_manager(server_IP, 300)
+    main_manager = masterclient.Main_manager(server_IP)
 
     main_manager.start()
 
