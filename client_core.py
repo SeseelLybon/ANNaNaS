@@ -188,14 +188,29 @@ def spawnupdater(dt):
 def dojob(job):
     global client_population
     global client_isDone
+    global score
+    global bestfitness
+    global lastspawnscore
+    global best_score
+    global obstacle_drawlist
+
     client_isDone = False
 
     print("Starting the job batch")
 
+    # Resetting the variables of the sim...
+    score = 0
+    best_score = 0
+    bestfitness = 0
+    lastspawnscore = 0
+    obstacle_drawlist = []
 
     # unpack job (a pickle of a list of meeple brains)
     client_population.unpickle_population_from_list(job)
 
+    for meep in client_population.pop:
+        meep.brain.score = 0
+        meep.brain.fitness = 0
 
     # start the simulation and poll if it's done
     pyglet.clock.schedule_interval_soft(update, 1 / 75)

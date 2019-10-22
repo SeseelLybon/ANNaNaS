@@ -24,7 +24,8 @@ class NeuralNetwork:
         self.pos:tuple = (0,0)
         self.dim:tuple = (0,0)
         self.batch = pyglet.graphics.Batch()
-        self.fitness = 0
+        self.fitness = float("-inf")
+        self.score = float("-inf")
 
         #self.input_layer = [None]*input_size
         self.input_layer:np.ndarray = np.ndarray([self.input_size], Node)
@@ -382,7 +383,6 @@ class NeuralNetwork:
                 pickleblebrain[1][i] = list(copy.deepcopy(self.output_layer[i].weights))
 
             # TODO: Also pickle the fitness of the brain
-            pickledbrain = serpent.dumps(pickleblebrain)
 
 
         else:
@@ -393,7 +393,8 @@ class NeuralNetwork:
                 pickleblebrain[node_i] = list(copy.deepcopy(self.output_layer[node_i].weights))
 
             # TODO: Also pickle the fitness of the brain
-            pickledbrain = serpent.dumps(pickleblebrain)
+
+        pickledbrain = serpent.dumps([pickleblebrain, self.score])
 
         return pickledbrain
 
@@ -402,6 +403,8 @@ class NeuralNetwork:
 
         # TODO: Needs to also unpickle the fitness
         unpickledbrain = serpent.loads(serpent.tobytes(pickledbrain))
+        self.score = unpickledbrain[1]
+        unpickledbrain = unpickledbrain[0]
 
 
         if self.hidden_layers[0] is not 0:

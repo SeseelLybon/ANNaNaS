@@ -21,6 +21,7 @@ def return_results():
 
     job_server.return_results(workerid, client_core.client_population.pickle_population_to_list())
     pyglet.clock.schedule_interval_soft(lookforjob, 2)
+    print("Looking for jobs again")
 
 def lookforjob(dt):
     global job_server

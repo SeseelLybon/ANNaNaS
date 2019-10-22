@@ -52,7 +52,6 @@ class dino(Meeple):
         self.jumping = False
         self.ducking = False
         self.isAlive = True
-        self.score = float("-inf")
 
     def update(self, score):
         if self.isAlive:
@@ -69,7 +68,7 @@ class dino(Meeple):
             self.pos.y = max(40, self.pos.y)
 
             self.sprite.update(x=self.pos.x, y=self.pos.y)
-            self.score = score
+            self.brain.score = score
 
 
 

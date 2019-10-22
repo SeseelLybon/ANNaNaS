@@ -22,7 +22,7 @@ class States(Enum):
     processing_results = auto()
     done = auto()
 
-master_population = Population(100, input_size=7, hidden_size=tuple([4]), output_size=2)
+master_population = Population(200, input_size=7, hidden_size=tuple([4]), output_size=2)
 
 class Main_manager:
 
@@ -64,7 +64,7 @@ class Main_manager:
             print("Testing if clients are done")
             if self.local_job_server.test_hasAllResults():
                 self.state = States.processing_results
-                print("All meeps have been tested and returned")
+                print("All meeps have been tested and returned to the warehouse")
 
                 # Future note; we do actually need the brains from the clients because we might run Backpropegation on them.
                 # In that case, the brain *does* change and is important to us!
@@ -72,11 +72,14 @@ class Main_manager:
                 master_population.unpickle_population_from_list(ser_bytes)
 
                 #TODO run natural selection
+                print("Starting natural selection")
                 master_population.naturalSelection()
 
+                print("Done Natural Selection/MachineLearning. Sending jobs to warehouse")
                 #TODO send population back to server
+                self.local_job_server.set_jobs(master_population.pickle_population_to_list())
                 self.state = States.has_jobs_ready
             else:
                 print("Not all jobs are done...")
-                print(self.local_job_server.get_jobs_amount())
+                print(self.local_job_server.get_jobs_amount(), self.local_job_server.get_results_amount())
                 time.sleep(10)

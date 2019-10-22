@@ -183,8 +183,8 @@ class Population:
                 maxFit = self.species[specie_i].bestFitness
 
                 self.bestMeeple = self.species[specie_i].bestMeeple
-                self.highestFitness = self.bestMeeple.fitness
-                self.highestScore = self.bestMeeple.score
+                self.highestFitness = self.bestMeeple.brain.fitness
+                self.highestScore = self.bestMeeple.brain.score
 
         ## make sure that the new fitness is actually higher than the previous one.
         #if self.highestFitness < self.pop[tempnewbestMeeplei].fitness:
@@ -218,7 +218,7 @@ class Population:
 
     def calculateFitness(self):
         for dinner in self.pop:
-            dinner.fitness = dinner.score*2
+            dinner.brain.fitness = dinner.brain.score*2
 
     #get the sum of averages from each specie
     def getAverageFitnessSum(self)->float:
@@ -295,16 +295,16 @@ class Population:
         # print
         scoredict = dict()
         for meep in self.pop:
-            if meep.score in scoredict:
-                scoredict[meep.score] += 1
+            if meep.brain.score in scoredict:
+                scoredict[meep.brain.score] += 1
             else:
-                scoredict[meep.score] = 1
+                scoredict[meep.brain.score] = 1
 
         highestscore = max(scoredict.keys())
 
         scorebins = dict()
         for meep in self.pop:
-            score = round( meep.score / (highestscore*0.1), 0)
+            score = round( meep.brain.score / (highestscore*0.1), 0)
             if score in scorebins:
                 scorebins[score] += 1
             else:

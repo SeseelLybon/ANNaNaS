@@ -27,7 +27,7 @@ class Job_server(object):
         self.unworked_meeps = []
         self.results = []
         self.current_generation = 0
-        self.max_jobs:int = None
+        self.max_jobs:int = 200
 
     def get_job(self, workerid):
         if len(self.unworked_meeps) == 0:
@@ -57,7 +57,7 @@ class Job_server(object):
         if  len(self.workers) > 0 and\
                 len([True for worker in self.workers.values() if worker.isWorkingOnJobs]) == 0 and\
                 len(self.unworked_meeps) == 0 and\
-                len(self.results) == 100:
+                len(self.results) == self.max_jobs:
             return True
         else:
             return False
@@ -85,6 +85,7 @@ class Job_server(object):
 
     def set_jobs(self, jobs):
         self.unworked_meeps = jobs
+        self.results = [] # TODO: probably shouldn't do this here
 
     def set_current_generation(self, cur_gen:int):
         self.current_generation = cur_gen

@@ -36,10 +36,10 @@ class Species:
             return False
 
     def sortSpecie(self):
-        self.meeples.sort(key=lambda meep: meep.fitness, reverse=True)
+        self.meeples.sort(key=lambda meep: meep.brain.fitness, reverse=True)
 
-        if self.bestFitness < self.meeples[0].fitness:
-            self.bestFitness = self.meeples[0].fitness
+        if self.bestFitness < self.meeples[0].brain.fitness:
+            self.bestFitness = self.meeples[0].brain.fitness
             self.bestMeeple = self.meeples[0]
             self.staleness=0
         else:
@@ -91,7 +91,7 @@ class Species:
         rand = np.random.randint(0, max(self.fitnessSum, 1))
         runningSum = 0
         for i in range(len(self.meeples)):
-            runningSum +=  self.meeples[i].fitness
+            runningSum +=  self.meeples[i].brain.fitness
             if runningSum > rand:
                 return self.meeples[i]
 
@@ -107,7 +107,7 @@ class Species:
         else:
             parent1:Meeple = self.selectParent()
             parent2:Meeple = self.selectParent()
-            if parent1.fitness > parent2.fitness:
+            if parent1.brain.fitness > parent2.brain.fitness:
                 child = parent1.crossover(parent2)
             else:
                 child = parent2.crossover(parent1)
@@ -121,7 +121,7 @@ class Species:
     def calculateFitnessSum(self):
         self.fitnessSum = 0
         for i in range(len(self.meeples)):
-            self.fitnessSum += self.meeples[i].fitness
+            self.fitnessSum += self.meeples[i].brain.fitness
         return
 
     def generateAverageFitness(self):
@@ -139,14 +139,14 @@ class Species:
 
 
 
-if __name__ == "__main__":
-    meep1 = Meeple(786,tuple([200,200,200]),20)
-    meep2 = Meeple(786,tuple([200,200,200]),20)
-
-    genes1 = meep1.brain.getAmountWeights()
-    genes2 = meep2.brain.getAmountWeights()
-    specie1 = Species(meep1)
-    similar_genes = specie1.getAmtSimilarGenes(meep1, meep2)
-
-    print( "genes =", genes1, "|genes =", genes2, "| similar genes = ", similar_genes )
-    print( "similarity =", round((similar_genes/genes1)*100, 2), "%" )
+#if __name__ == "__main__":
+#    meep1 = Meeple(786,tuple([200,200,200]),20)
+#    meep2 = Meeple(786,tuple([200,200,200]),20)
+#
+#    genes1 = meep1.brain.getAmountWeights()
+#    genes2 = meep2.brain.getAmountWeights()
+#    specie1 = Species(meep1)
+#    similar_genes = specie1.getAmtSimilarGenes(meep1, meep2)
+#
+#    print( "genes =", genes1, "|genes =", genes2, "| similar genes = ", similar_genes )
+#    print( "similarity =", round((similar_genes/genes1)*100, 2), "%" )
