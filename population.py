@@ -266,8 +266,9 @@ class Population:
 
         if len(markedForRemoval) > 0:
             print("Killing", len(markedForRemoval), "bad species")
-        elif len(markedForRemoval) == len(self.species):
+        elif len(markedForRemoval)+2 >= len(self.species):
             print("MASS EXTINGTION EVENT")
+            print("Going to kill too many species")
             plan = "C"
             if plan == "A":
                 pass
