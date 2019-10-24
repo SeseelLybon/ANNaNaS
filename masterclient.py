@@ -11,6 +11,7 @@ import time
 from typing import List
 from population import Population
 import serpent
+import os
 
 from enum import Enum
 from enum import auto
@@ -22,7 +23,7 @@ class States(Enum):
     processing_results = auto()
     done = auto()
 
-master_population = Population(800, input_size=7, hidden_size=tuple([0]), output_size=2)
+master_population = Population(100, input_size=7, hidden_size=tuple([0]), output_size=2)
 
 class Main_manager:
 
@@ -32,6 +33,10 @@ class Main_manager:
         #self.local_population:Population = master_population
         self.job_results = []
         self.main_process = Process(target=self.run)
+
+        #create if not there, or overwrite with nothing if there
+        with open("spreadsheetdata.txt", "w+") as f:
+            f.write("")
 
 
     def start(self):

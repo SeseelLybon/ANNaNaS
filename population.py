@@ -303,13 +303,21 @@ class Population:
 
         highestscore = max(scoredict.keys())
 
-        scorebins = dict()
+        scorebins = {0:0,1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0}
         for meep in self.pop:
             score = round( meep.brain.score / (highestscore*0.1), 0)
             if score in scorebins:
                 scorebins[score] += 1
             else:
                 scorebins[score] = 1
+
+
+        with open("spreadsheetdata.txt", "a") as f:
+            temp_string = ""
+            for value in scorebins.values():
+                temp_string+= "\t" + str(value)
+
+            f.write(str(self.generation) + temp_string + "\n")
 
         #for key, value in sorted(scorebins.items(), key=lambda kv: kv[0]):
         #    print(key,":",value, " - ")
