@@ -22,7 +22,7 @@ class States(Enum):
     processing_results = auto()
     done = auto()
 
-master_population = Population(800, input_size=7, hidden_size=tuple([4]), output_size=2)
+master_population = Population(800, input_size=7, hidden_size=tuple([0]), output_size=2)
 
 class Main_manager:
 
@@ -79,6 +79,7 @@ class Main_manager:
                 #TODO send population back to server
                 self.local_job_server.set_jobs(master_population.pickle_population_to_list())
                 self.state = States.has_jobs_ready
+                print("Starting generation", master_population.generation)
             else:
                 print("Not all jobs are done...")
                 print(self.local_job_server.get_jobs_amount(), self.local_job_server.get_results_amount())

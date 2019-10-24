@@ -20,7 +20,7 @@ def return_results():
     global workerid
 
     job_server.return_results(workerid, client_core.client_population.pickle_population_to_list())
-    pyglet.clock.schedule_interval_soft(lookforjob, 2)
+    pyglet.clock.schedule_interval_soft(lookforjob, lookforjob_TIMEOUT)
     print("Looking for jobs again")
 
 def lookforjob(dt):
@@ -31,7 +31,7 @@ def lookforjob(dt):
         print("No jobs queued")
 
         pyglet.clock.unschedule(lookforjob)
-        pyglet.clock.schedule_interval_soft(lookforjob, 2)
+        pyglet.clock.schedule_interval_soft(lookforjob, lookforjob_TIMEOUT)
         return
 
     jobs = job_server.get_job(workerid)
@@ -40,7 +40,7 @@ def lookforjob(dt):
         print("Didn't get a job")
 
         pyglet.clock.unschedule(lookforjob)
-        pyglet.clock.schedule_interval_soft(lookforjob, 2)
+        pyglet.clock.schedule_interval_soft(lookforjob, lookforjob_TIMEOUT)
         return
 
     else:
@@ -51,6 +51,8 @@ def lookforjob(dt):
         client_core.dojob(job=jobs)
 
 workerid = None
+
+lookforjob_TIMEOUT = 10 # seconds
 
 if __name__ == '__main__':
 

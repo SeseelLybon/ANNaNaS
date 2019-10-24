@@ -20,7 +20,7 @@ import obstacle as obt
 
 from pymunk import Vec2d
 
-client_population:Population = Population(50, input_size=7, hidden_size=tuple([4]), output_size=2, isHallow=True)
+client_population:Population = Population(50, input_size=7, hidden_size=tuple([0]), output_size=2, isHallow=True)
 
 showGraph = False
 skip_once = False
@@ -156,10 +156,10 @@ def update(dt):
         obstacle_drawlist[:] = [x for x in obstacle_drawlist if x not in markforremoval]
 
 
-
 def scoreupdate(dt):
     global score
     score+=1
+
 
 def spawnupdater(dt):
     # TODO: This doesn't work. as it'll still doesn't space the objects out evenly as the game speeds up
@@ -215,7 +215,6 @@ def dojob(job):
     # start the simulation and poll if it's done
     pyglet.clock.schedule_interval_soft(update, 1 / 75)
     pyglet.clock.schedule_interval_soft(scoreupdate, 1 / 10)
-    pyglet.app.run()
 
 
 

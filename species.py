@@ -10,7 +10,7 @@ class Species:
         self.meeples:list = [meep]
         self.sizeChromosome = meep.brain.getAmountWeights()
 
-        self.similairy_threshold_total = 0.95 # 1 = 100%
+        self.similairy_threshold_total = 0.90 # 1 = 100%
         self.similairy_threshold_gene = 1 # 1 = 1
         self.mutateChance = 1/40    # 1 = 100%
         self.mutateStrength = 1
