@@ -7,6 +7,8 @@ from math import floor
 import pyglet
 from obstacle import dino
 
+import time
+
 import serpent
 
 
@@ -317,8 +319,8 @@ class Population:
             for value in scorebins.values():
                 temp_string+= "\t" + str(value)
 
-            f.write(str(self.generation) + temp_string + "\n")
-
+            f.write(str(time.time()) + "\t" + str(self.highestScore) + "\t"  + str(max(self.pop, key=lambda kv: kv.brain.score).brain.score) + "\t"  + str(self.generation) + temp_string + "\n")
+            # Time, Highest score overall, highst score generation, generation, deathbin
         #for key, value in sorted(scorebins.items(), key=lambda kv: kv[0]):
         #    print(key,":",value, " - ")
         print("death bin:amount,", sorted(scorebins.items(), key=lambda kv: kv[0]))
