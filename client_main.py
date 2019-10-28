@@ -7,6 +7,7 @@ import time
 import uuid
 
 import client_core
+import sys
 
 def test_isDone(dt):
     if client_core.client_isDone:
@@ -62,12 +63,12 @@ if __name__ == '__main__':
     print("Starting client; waiting for jobs")
 
 
-    #ipAddressServer = "10.19.38.66" # TODO add your server remote IP here
-    ipAddressServer = "localhost"
+    ipAddressServer = sys.argv[1]
+    work_slots = int(sys.argv[2])
 
 
     job_server = Pyro4.core.Proxy('PYRO:Greeting@' + ipAddressServer + ':9090')
-    job_server.register_worker(workerid, 50)
+    job_server.register_worker(workerid, work_slots)
     print(job_server.get_workers_amount())
     pyglet.clock.schedule_interval_soft(lookforjob, 4)
 

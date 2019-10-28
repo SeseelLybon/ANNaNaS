@@ -23,16 +23,18 @@ class States(Enum):
     processing_results = auto()
     done = auto()
 
-master_population = Population(400, input_size=7, hidden_size=tuple([0]), output_size=2)
+master_population:Population
 
 class Main_manager:
 
-    def __init__(self, IP): # , input_size, hidden_size, output_size):
+    def __init__(self, IP, pop_size): # , input_size, hidden_size, output_size):
+        global master_population
+
         self.state = States.initializing
+
         self.local_job_server = Pyro4.core.Proxy('PYRO:Greeting@' + IP + ':9090')
-        #self.local_population:Population = master_population
         self.job_results = []
-        self.main_process = Process(target=self.run)
+        self.main_process = Process(target=self.run, args=(pop_size,))
 
         #create if not there, or overwrite with nothing if there
         with open("spreadsheetdata.txt", "w+") as f:
@@ -41,15 +43,18 @@ class Main_manager:
 
     def start(self):
         print("client: Starting master client")
+
         self.main_process.start()
 
     def stop(self):
         print("client: Stopping master client")
         self.main_process.close()
 
-    def run(self):
+    def run(self, pop_size):
+        global master_population
         print("client: Started main() as process")
 
+        master_population = Population(pop_size, input_size=7, hidden_size=tuple([0]), output_size=2)
 
         self.local_job_server.set_jobs(master_population.pickle_population_to_list())
 

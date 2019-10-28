@@ -3,9 +3,9 @@
 
 
 import Pyro4
-
-
 import masterclient
+import sys
+from population import Population
 
 
 
@@ -27,7 +27,7 @@ class Job_server(object):
         self.unworked_meeps = []
         self.results = []
         self.current_generation = 0
-        self.max_jobs:int = 400
+        self.max_jobs:int = 0
 
     def get_job(self, workerid):
         if len(self.unworked_meeps) == 0:
@@ -96,11 +96,12 @@ class Job_server(object):
 
     def register_worker(self, workerid, work_slots):
         self.workers[workerid] = Worker(workerid, work_slots)
-        #self.max_slots += work_slots
+        self.max_jobs += work_slots
         print("Jobserver:", self.get_registered_slots())
         print("Jobserver:", self.workers.keys())
         print("Jobserver:", "Worker registered to labour force", workerid)
 
+    # TODO: implement unregister_worker for catching clients that die or loose connection
 #    def unregister_worker(self, workerid):
 #        self.max_slots-= self.workers[workerid]
 #        self.workers.pop(workerid)
@@ -111,11 +112,14 @@ class Job_server(object):
 
 if __name__ == "__main__":
 
+    server_IP = sys.argv[1]
+    pop_size = int(sys.argv[2])
+
     print("Server: Starting server_main.py as __main__")
     #server_IP = "10.19.38.66"
-    server_IP = "localhost"
+    #server_IP = "localhost"
 
-    main_manager = masterclient.Main_manager(server_IP)
+    main_manager = masterclient.Main_manager(server_IP, pop_size)
 
     main_manager.start()
 
