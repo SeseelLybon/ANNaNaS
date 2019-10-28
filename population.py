@@ -143,7 +143,8 @@ class Population:
 
         id_s = []
         for spec in self.species:
-            id_s.append((spec.speciesID,spec.staleness,spec.bestFitness, spec.averageFitness))
+            id_s.append((spec.speciesID, len(spec.meeples),spec.staleness,spec.bestFitness, spec.averageFitness))
+        id_s[:] = id_s[:50]
         id_s.reverse()
         print("Species ID's", id_s )
 

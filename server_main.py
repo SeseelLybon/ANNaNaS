@@ -27,7 +27,7 @@ class Job_server(object):
         self.unworked_meeps = []
         self.results = []
         self.current_generation = 0
-        self.max_jobs:int = 100
+        self.max_jobs:int = 400
 
     def get_job(self, workerid):
         if len(self.unworked_meeps) == 0:
