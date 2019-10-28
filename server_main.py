@@ -20,14 +20,14 @@ class Worker:
 @Pyro4.expose
 class Job_server(object):
 
-    def __init__(self):
+    def __init__(self, pop_size):
         self.workers:dict = {}
         self.hasUnworkedMeeps = False
         self.hasAllResults = False
         self.unworked_meeps = []
         self.results = []
         self.current_generation = 0
-        self.max_jobs:int = 0
+        self.max_jobs:int = pop_size    # Size of population of master_client
 
     def get_job(self, workerid):
         if len(self.unworked_meeps) == 0:
@@ -52,7 +52,7 @@ class Job_server(object):
         # and none of the workers mention they have claimed meeps
         # and the amount of results equals the max amount of jobs Masterclient has given.
         # then I'll assume that all meeps have been processed.
-        # TODO: probably overkill. Unless there's a glitch, results should never exceed max_jobs
+        # TODO: probably overkill. Unless there's a glitch, results should never exceed max_results
         #   Though if a worker dies before it returns the results, the program locks up.
         if  len(self.workers) > 0 and\
                 len([True for worker in self.workers.values() if worker.isWorkingOnJobs]) == 0 and\
@@ -96,14 +96,12 @@ class Job_server(object):
 
     def register_worker(self, workerid, work_slots):
         self.workers[workerid] = Worker(workerid, work_slots)
-        self.max_jobs += work_slots
         print("Jobserver:", self.get_registered_slots())
         print("Jobserver:", self.workers.keys())
         print("Jobserver:", "Worker registered to labour force", workerid)
 
     # TODO: implement unregister_worker for catching clients that die or loose connection
 #    def unregister_worker(self, workerid):
-#        self.max_slots-= self.workers[workerid]
 #        self.workers.pop(workerid)
 #        print("Jobserver:", "Worker", workerid, "left the labour force")
 
@@ -123,7 +121,7 @@ if __name__ == "__main__":
 
     main_manager.start()
 
-    job_server_o = Job_server()
+    job_server_o = Job_server(pop_size)
 
     JobserverDaemon = Pyro4.Daemon.serveSimple({
         job_server_o: 'Greeting',

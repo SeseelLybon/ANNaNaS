@@ -20,7 +20,7 @@ import obstacle as obt
 
 from pymunk import Vec2d
 
-client_population:Population = Population(50, input_size=7, hidden_size=tuple([0]), output_size=2, isHallow=True)
+client_population:Population# = Population(50, input_size=7, hidden_size=tuple([0]), output_size=2, isHallow=True)
 
 showGraph = False
 skip_once = False

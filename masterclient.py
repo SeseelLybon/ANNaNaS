@@ -23,7 +23,7 @@ class States(Enum):
     processing_results = auto()
     done = auto()
 
-master_population:Population
+master_population:Population# = Population(200, input_size=7, hidden_size=tuple([0]), output_size=2)
 
 class Main_manager:
 

@@ -363,12 +363,13 @@ class Population:
 
     def unpickle_population_from_list(self, pickled_brains):
 
-
+        print(len(pickled_brains))
         self.pop = np.ndarray([self.size], dtype=dino)
         for i in range(self.pop.size):
             self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=True)
 
             self.pop[i].brain.serpent_deserialize(pickled_brains[i])
+
 
 if __name__ == "__main__":
     print("Starting population.py as main")

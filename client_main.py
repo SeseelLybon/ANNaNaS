@@ -7,6 +7,7 @@ import time
 import uuid
 
 import client_core
+from population import Population
 import sys
 
 def test_isDone(dt):
@@ -66,10 +67,9 @@ if __name__ == '__main__':
     ipAddressServer = sys.argv[1]
     work_slots = int(sys.argv[2])
 
-
+    client_core.client_population = Population(work_slots, input_size=7, hidden_size=tuple([0]), output_size=2, isHallow=True)
     job_server = Pyro4.core.Proxy('PYRO:Greeting@' + ipAddressServer + ':9090')
     job_server.register_worker(workerid, work_slots)
-    print(job_server.get_workers_amount())
     pyglet.clock.schedule_interval_soft(lookforjob, 4)
 
 
