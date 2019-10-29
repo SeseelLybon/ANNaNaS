@@ -11,6 +11,7 @@ import time
 
 import serpent
 
+from pympler import asizeof
 
 
 class Population:
@@ -122,6 +123,10 @@ class Population:
             self.calculateFitness()  # calc fitness of each meeple, currently not needed
             self.sortSpecies()  # sort all the species to the average fitness, best first. In the species sort by meeple's fitness
 
+            print("Masterclient_Debug-start_11:-----------------------")
+            print(asizeof.asizeof(self))
+            print("Masterclient_Debug_end:-----------------------")
+
             # Clean the species
             self.cullSpecies()
             self.setBestMeeple()
@@ -129,7 +134,9 @@ class Population:
             self.killBadSpecies()
             self.killStaleSpecies()
 
-
+        print("Masterclient_Debug-start_12:-----------------------")
+        print(asizeof.asizeof(self))
+        print("Masterclient_Debug_end:-----------------------")
 
 
         print("highest score", self.highestScore)
@@ -168,6 +175,10 @@ class Population:
 
         self.pop = np.array(children, dtype=dino)
         self.generation += 1
+
+        print("Masterclient_Debug-start_13:-----------------------")
+        print(asizeof.asizeof(self))
+        print("Masterclient_Debug_end:-----------------------")
 
 
     def setBestMeeple(self):
@@ -364,7 +375,7 @@ class Population:
     def unpickle_population_from_list(self, pickled_brains):
 
         print(len(pickled_brains))
-        self.pop = np.ndarray([self.size], dtype=dino)
+        self.pop[:] = np.ndarray([self.size], dtype=dino)
         for i in range(self.pop.size):
             self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=True)
 

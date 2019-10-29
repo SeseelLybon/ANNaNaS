@@ -13,6 +13,13 @@ from population import Population
 import serpent
 import os
 
+
+# Add to leaky code within python_script_being_profiled.py
+from pympler import muppy, summary
+from pympler import asizeof
+import gc
+
+
 from enum import Enum
 from enum import auto
 
@@ -74,12 +81,23 @@ class Main_manager:
             print("Testing if clients are done")
             if self.local_job_server.test_hasAllResults():
                 self.state = States.processing_results
+
+
+                print("Masterclient_Debug-start_01:-----------------------")
+                print(asizeof.asizeof(master_population))
+                print("Masterclient_Debug_end:-----------------------")
+
+
                 print("All meeps have been tested and returned to the warehouse")
 
                 # Future note; we do actually need the brains from the clients because we might run Backpropegation on them.
                 # In that case, the brain *does* change and is important to us!
                 ser_bytes = self.local_job_server.get_jobs_results()
                 master_population.unpickle_population_from_list(ser_bytes)
+
+                print("Masterclient_Debug-start_02:-----------------------")
+                print(asizeof.asizeof(master_population))
+                print("Masterclient_Debug_end:-----------------------")
 
                 #TODO run natural selection
                 print("Starting natural selection")
@@ -90,7 +108,17 @@ class Main_manager:
                 self.local_job_server.set_jobs(master_population.pickle_population_to_list())
                 self.state = States.has_jobs_ready
                 print("Starting generation", master_population.generation)
+
+                print("Masterclient_Debug-start_03:-----------------------")
+                print(asizeof.asizeof(master_population))
+                print("Masterclient_Debug_end:-----------------------")
+
+                gc.collect()
+
+                print("Masterclient_Debug-start_04:-----------------------")
+                print(asizeof.asizeof(master_population))
+                print("Masterclient_Debug_end:-----------------------")
             else:
                 print("Not all jobs are done...")
                 print(self.local_job_server.get_jobs_amount(), self.local_job_server.get_results_amount())
-                time.sleep(10)
+                time.sleep(20)
