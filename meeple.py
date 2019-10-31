@@ -48,8 +48,3 @@ class Meeple:
         temp.brain = self.brain.crossover(parent2.brain)
         return temp
 
-
-
-if __name__ == "__main__":
-    meeple1 = Meeple(4,tuple([0]),16)
-    print(meeple1.fitness)

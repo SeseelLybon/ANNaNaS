@@ -12,6 +12,7 @@ import time
 import serpent
 
 from pympler import asizeof
+import gc
 
 
 class Population:
@@ -100,9 +101,9 @@ class Population:
     def naturalSelection(self):
 
         print("Masterclient_Debug-start_11:-----------------------")
-        print(asizeof.asizeof(self))
-        print(asizeof.asizeof(self.pop))
-        print(asizeof.asizeof(self.species))
+        print("size of self.pop", asizeof.asizeof(self.pop))
+        print("size of self.pop[0]", asizeof.asizeof(self.pop[0]))
+        print("size of self.pop[0]", asizeof.asizeof(self.pop[0].brain))
         print("Masterclient_Debug_end:-----------------------")
         # TODO Memory leak in self.species
 
@@ -126,14 +127,19 @@ class Population:
 
             species_pre_speciate = len(self.species)
             self.speciate()  # seperate the existing population into species for the purpose of natural selection
+            print("Masterclient_Debug-start_21:-----------------------")
+            print("size of self.pop", asizeof.asizeof(self.pop))
+            print("size of self.pop[0]", asizeof.asizeof(self.pop[0]))
+            print("size of self.pop[0]", asizeof.asizeof(self.pop[0].brain))
+            print("Masterclient_Debug_end:-----------------------")
             species_pre_cull = len(self.species)
             self.calculateFitness()  # calc fitness of each meeple, currently not needed
             self.sortSpecies()  # sort all the species to the average fitness, best first. In the species sort by meeple's fitness
 
-            print("Masterclient_Debug-start_12:-----------------------")
-            print(asizeof.asizeof(self))
-            print(asizeof.asizeof(self.pop))
-            print(asizeof.asizeof(self.species))
+            print("Masterclient_Debug-start_23:-----------------------")
+            print("size of self.pop", asizeof.asizeof(self.pop))
+            print("size of self.pop[0]", asizeof.asizeof(self.pop[0]))
+            print("size of self.pop[0]", asizeof.asizeof(self.pop[0].brain))
             print("Masterclient_Debug_end:-----------------------")
 
             # Clean the species
@@ -144,9 +150,9 @@ class Population:
             self.killStaleSpecies()
 
         print("Masterclient_Debug-start_13:-----------------------")
-        print(asizeof.asizeof(self))
-        print(asizeof.asizeof(self.pop))
-        print(asizeof.asizeof(self.species))
+        print("size of self.pop", asizeof.asizeof(self.pop))
+        print("size of self.pop[0]", asizeof.asizeof(self.pop[0]))
+        print("size of self.pop[0]", asizeof.asizeof(self.pop[0].brain))
         print("Masterclient_Debug_end:-----------------------")
 
 
@@ -162,8 +168,9 @@ class Population:
         id_s = []
         for spec in self.species:
             id_s.append((spec.speciesID, len(spec.meeples),spec.staleness,spec.bestFitness, spec.averageFitness))
-        id_s.reverse()
-        id_s[:] = id_s[:50]
+        #id_s.reverse()
+        id_s.sort(key=lambda x: x[4])
+        id_s[:] = id_s[-50:]
         print("Species ID's", id_s )
 
         self.bestMeeple = self.bestMeeple.clone()
@@ -191,19 +198,14 @@ class Population:
         self.generation += 1
 
         print("Masterclient_Debug-start_14:-----------------------")
-        print(asizeof.asizeof(self))
-        print(asizeof.asizeof(self.pop))
-        print(asizeof.asizeof(self.species))
+        print("size of self", asizeof.asizeof(self))
+        print("size of self.pop", asizeof.asizeof(self.pop))
+        print("size of self.pop[0]", asizeof.asizeof(self.pop[0]))
+        print("size of self.pop[0]", asizeof.asizeof(self.pop[0].brain))
         print("Masterclient_Debug_end:-----------------------")
 
 
     def setBestMeeple(self):
-
-        # TODO: Make it so that the best meeple of the population is tied to the species so that when the species dies
-        #   The rest isn't compared/hold back to what is a dead species.
-        #   SortSpecies has already happened, so the [0] of each specie is the best by default.
-        #   Set the best meeple of pop by looking at the species top.
-        #   This means that the max fitness can drop if a species dies, but won't drop if it's still going!
 
         maxFit = 0
 
@@ -312,6 +314,9 @@ class Population:
 
         self.species[:] = [ x for x in self.species if x not in markedForRemoval ]
 
+        #if len(markedForRemoval) > 0:
+        #    print("Debug line: ", gc.get_referrers(markedForRemoval[0]))
+
 
     def cullSpecies(self):
         # remove the bottom half of all species.
@@ -396,43 +401,3 @@ class Population:
             self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=True)
 
             self.pop[i].brain.serpent_deserialize(pickled_brains[i])
-
-
-if __name__ == "__main__":
-    print("Starting population.py as main")
-
-
-    test_population_1 = Population(4, input_size=4, hidden_size=tuple([0]), output_size=4, isHallow=False)
-
-    print("Printing data old population")
-    for i in range( test_population_1.pop.size ):
-        print("Printing data dino:", i)
-        test_population_1.pop[i].brain.set_inputs(np.array([1,2,3,4]))
-        test_population_1.pop[i].brain.fire_network()
-        print(test_population_1.pop[i].brain.get_outputs())
-        print()
-
-    test_population_1.pickle_population_to_file()
-
-    test_population_2 = Population(4, input_size=4, hidden_size=tuple([0]), output_size=4, isHallow=True)
-
-    print("Printing data new (hollow) population")
-    for i in range(test_population_1.pop.size):
-        print("Printing data dino:", i)
-        test_population_2.pop[i].brain.set_inputs(np.array([1, 2, 3, 4]))
-        test_population_2.pop[i].brain.fire_network()
-        print(test_population_2.pop[i].brain.get_outputs())
-        print()
-
-    test_population_2.unpickle_population_from_file()
-
-    print("Printing data new (unpickled) population")
-    for i in range(test_population_1.pop.size):
-        print("Printing data dino:", i)
-        test_population_2.pop[i].brain.set_inputs(np.array([1, 2, 3, 4]))
-        test_population_2.pop[i].brain.fire_network()
-        print(test_population_2.pop[i].brain.get_outputs())
-        print()
-
-
-    print("Finished population.py as main")
