@@ -99,6 +99,13 @@ class Population:
 
     def naturalSelection(self):
 
+        print("Masterclient_Debug-start_11:-----------------------")
+        print(asizeof.asizeof(self))
+        print(asizeof.asizeof(self.pop))
+        print(asizeof.asizeof(self.species))
+        print("Masterclient_Debug_end:-----------------------")
+        # TODO Memory leak in self.species
+
         self.print_deathrate()
         runonce = True
         UnMassExtingtionEventsAttempt = 0
@@ -123,8 +130,10 @@ class Population:
             self.calculateFitness()  # calc fitness of each meeple, currently not needed
             self.sortSpecies()  # sort all the species to the average fitness, best first. In the species sort by meeple's fitness
 
-            print("Masterclient_Debug-start_11:-----------------------")
+            print("Masterclient_Debug-start_12:-----------------------")
             print(asizeof.asizeof(self))
+            print(asizeof.asizeof(self.pop))
+            print(asizeof.asizeof(self.species))
             print("Masterclient_Debug_end:-----------------------")
 
             # Clean the species
@@ -134,8 +143,10 @@ class Population:
             self.killBadSpecies()
             self.killStaleSpecies()
 
-        print("Masterclient_Debug-start_12:-----------------------")
+        print("Masterclient_Debug-start_13:-----------------------")
         print(asizeof.asizeof(self))
+        print(asizeof.asizeof(self.pop))
+        print(asizeof.asizeof(self.species))
         print("Masterclient_Debug_end:-----------------------")
 
 
@@ -151,8 +162,8 @@ class Population:
         id_s = []
         for spec in self.species:
             id_s.append((spec.speciesID, len(spec.meeples),spec.staleness,spec.bestFitness, spec.averageFitness))
-        id_s[:] = id_s[:50]
         id_s.reverse()
+        id_s[:] = id_s[:50]
         print("Species ID's", id_s )
 
         self.bestMeeple = self.bestMeeple.clone()
@@ -173,11 +184,16 @@ class Population:
         while len(children) < self.size:
             children.append(self.species[0].generateChild())
 
+        for mep in self.pop:
+            del mep
+
         self.pop = np.array(children, dtype=dino)
         self.generation += 1
 
-        print("Masterclient_Debug-start_13:-----------------------")
+        print("Masterclient_Debug-start_14:-----------------------")
         print(asizeof.asizeof(self))
+        print(asizeof.asizeof(self.pop))
+        print(asizeof.asizeof(self.species))
         print("Masterclient_Debug_end:-----------------------")
 
 
@@ -317,7 +333,7 @@ class Population:
 
         highestscore = max(scoredict.keys())
 
-        scorebins = {0:0,1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0}
+        scorebins = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0}
         for meep in self.pop:
             score = round( meep.brain.score / (highestscore*0.1), 0)
             if score in scorebins:
