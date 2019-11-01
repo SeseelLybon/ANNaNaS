@@ -144,8 +144,9 @@ class Population:
         id_s = []
         for spec in self.species:
             id_s.append((spec.speciesID, len(spec.meeples),spec.staleness,spec.bestFitness, spec.averageFitness))
-        id_s[:] = id_s[:50]
+        id_s.sort(key=lambda x: x[4])
         id_s.reverse()
+        id_s[:] = id_s[:50]
         print("Species ID's", id_s )
 
         self.bestMeeple = self.bestMeeple.clone()
@@ -306,7 +307,7 @@ class Population:
 
         highestscore = max(scoredict.keys())
 
-        scorebins = {0:0,1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0}
+        scorebins = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0}
         for meep in self.pop:
             score = round( meep.brain.score / (highestscore*0.1), 0)
             if score in scorebins:

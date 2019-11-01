@@ -647,9 +647,12 @@ class Node:
             #Else use weights provided
             self.weights=weights
 
-        self.sprite = pyglet.sprite.Sprite(image_whiteneuron, x=0,
-                                                              y=0,
-                                           batch=batch )
+
+        # TODO: removed this because it is a memory leak, stacking every generation
+        #self.sprite = pyglet.sprite.Sprite(image_whiteneuron, x=0,
+        #                                                      y=0,
+        #                                   batch=batch )
+        self.sprite = None
 
 if __name__ == "__main__":
     print("Starting Neuralnetwork.py as main")
