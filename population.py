@@ -100,13 +100,6 @@ class Population:
 
     def naturalSelection(self):
 
-        print("Masterclient_Debug-start_11:-----------------------")
-        print("size of self.pop", asizeof.asizeof(self.pop))
-        print("size of self.pop[0]", asizeof.asizeof(self.pop[0]))
-        print("size of self.pop[0]", asizeof.asizeof(self.pop[0].brain))
-        print("Masterclient_Debug_end:-----------------------")
-        # TODO Memory leak in self.species
-
         self.print_deathrate()
         runonce = True
         UnMassExtingtionEventsAttempt = 0
@@ -127,20 +120,9 @@ class Population:
 
             species_pre_speciate = len(self.species)
             self.speciate()  # seperate the existing population into species for the purpose of natural selection
-            print("Masterclient_Debug-start_21:-----------------------")
-            print("size of self.pop", asizeof.asizeof(self.pop))
-            print("size of self.pop[0]", asizeof.asizeof(self.pop[0]))
-            print("size of self.pop[0]", asizeof.asizeof(self.pop[0].brain))
-            print("Masterclient_Debug_end:-----------------------")
             species_pre_cull = len(self.species)
             self.calculateFitness()  # calc fitness of each meeple, currently not needed
             self.sortSpecies()  # sort all the species to the average fitness, best first. In the species sort by meeple's fitness
-
-            print("Masterclient_Debug-start_23:-----------------------")
-            print("size of self.pop", asizeof.asizeof(self.pop))
-            print("size of self.pop[0]", asizeof.asizeof(self.pop[0]))
-            print("size of self.pop[0]", asizeof.asizeof(self.pop[0].brain))
-            print("Masterclient_Debug_end:-----------------------")
 
             # Clean the species
             self.cullSpecies()
@@ -148,12 +130,6 @@ class Population:
 
             self.killBadSpecies()
             self.killStaleSpecies()
-
-        print("Masterclient_Debug-start_13:-----------------------")
-        print("size of self.pop", asizeof.asizeof(self.pop))
-        print("size of self.pop[0]", asizeof.asizeof(self.pop[0]))
-        print("size of self.pop[0]", asizeof.asizeof(self.pop[0].brain))
-        print("Masterclient_Debug_end:-----------------------")
 
 
         print("highest score", self.highestScore)
@@ -198,10 +174,9 @@ class Population:
         self.generation += 1
 
         print("Masterclient_Debug-start_14:-----------------------")
-        print("size of self", asizeof.asizeof(self))
-        print("size of self.pop", asizeof.asizeof(self.pop))
-        print("size of self.pop[0]", asizeof.asizeof(self.pop[0]))
-        print("size of self.pop[0]", asizeof.asizeof(self.pop[0].brain))
+        print("size of self", get_size(self))
+        print("size of self.pop", get_size(self.pop))
+        print("size of self.species", get_size(self.species))
         print("Masterclient_Debug_end:-----------------------")
 
 
@@ -401,3 +376,30 @@ class Population:
             self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=True)
 
             self.pop[i].brain.serpent_deserialize(pickled_brains[i])
+
+
+
+
+
+
+import sys
+
+def get_size(obj, seen=None):
+    """Recursively finds size of objects"""
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([get_size(v, seen) for v in obj.values()])
+        size += sum([get_size(k, seen) for k in obj.keys()])
+    elif hasattr(obj, '__dict__'):
+        size += get_size(obj.__dict__, seen)
+    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([get_size(i, seen) for i in obj])
+    return size

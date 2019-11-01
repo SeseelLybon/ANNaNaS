@@ -57,10 +57,6 @@ class NeuralNetwork:
             self.output_layer[i] = Node(2, self.hidden_size[-1], batch=self.batch, isHollow=isHollow)
 
 
-
-
-
-
     # Fires all input nodes
     def fire_network(self):
 
@@ -647,9 +643,10 @@ class Node:
             #Else use weights provided
             self.weights=weights
 
-        self.sprite = pyglet.sprite.Sprite(image_whiteneuron, x=0,
-                                                              y=0,
-                                           batch=batch )
+        #self.sprite = pyglet.sprite.Sprite(image_whiteneuron, x=0,
+        #                                                      y=0,
+        #                                   batch=batch )
+        self.sprite = None
 
 if __name__ == "__main__":
     print("Starting Neuralnetwork.py as main")
