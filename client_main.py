@@ -25,6 +25,13 @@ def return_results():
     pyglet.clock.schedule_interval_soft(lookforjob, lookforjob_TIMEOUT)
     print("Looking for jobs again")
 
+
+def register_alive(dt):
+    global job_server
+    print("Telling server I am still alive")
+    job_server.register_alive(workerid)
+
+
 def lookforjob(dt):
     global job_server
     print("--------")
@@ -71,9 +78,12 @@ if __name__ == '__main__':
     job_server = Pyro4.core.Proxy('PYRO:Greeting@' + ipAddressServer + ':9090')
     job_server.register_worker(workerid, work_slots)
     pyglet.clock.schedule_interval_soft(lookforjob, 4)
+    pyglet.clock.schedule_interval_soft(register_alive, 30)
 
-
-    pyglet.app.run()
+    try:
+        pyglet.app.run()
+    except Pyro4.errors.ConnectionClosedError:
+        pass
 
 
     print("Stopping client")

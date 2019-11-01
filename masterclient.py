@@ -8,10 +8,8 @@ import Pyro4
 
 from multiprocessing import Process
 import time
-from typing import List
 from population import Population
-import serpent
-import os
+import time
 
 from enum import Enum
 from enum import auto
@@ -64,9 +62,20 @@ class Main_manager:
         print("client: Returning from main()")
 
 
+
     def waiting_for_isDone(self):
 
+
+        lasttime = 0
         while self.state is not States.done:
+
+            curtime = time.time()
+            if curtime-lasttime >= 60:
+                print("Testing if all workers were alive")
+                print("all workers alive?", self.local_job_server.test_ifWorkersAlive())
+                lasttime = curtime
+            else:
+                print("skipped testing if workers are alive")
 
             print("client: --------")
 

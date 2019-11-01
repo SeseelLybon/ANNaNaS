@@ -173,12 +173,6 @@ class Population:
 
     def setBestMeeple(self):
 
-        # TODO: Make it so that the best meeple of the population is tied to the species so that when the species dies
-        #   The rest isn't compared/hold back to what is a dead species.
-        #   SortSpecies has already happened, so the [0] of each specie is the best by default.
-        #   Set the best meeple of pop by looking at the species top.
-        #   This means that the max fitness can drop if a species dies, but won't drop if it's still going!
-
         maxFit = 0
 
         #go through all meeples in the population and test if their fitness is higher than the previous one
@@ -189,15 +183,6 @@ class Population:
                 self.bestMeeple = self.species[specie_i].bestMeeple
                 self.highestFitness = self.bestMeeple.brain.fitness
                 self.highestScore = self.bestMeeple.brain.score
-
-        ## make sure that the new fitness is actually higher than the previous one.
-        #if self.highestFitness < self.pop[tempnewbestMeeplei].fitness:
-        #    self.bestMeeple = self.pop[tempnewbestMeeplei]
-        #    self.highestFitness = self.bestMeeple.fitness
-        #    self.highestScore = self.bestMeeple.score
-        #    print("New best meeple")
-        #else:
-        #    print("Best fitness this generation:", self.pop[tempnewbestMeeplei].fitness)
 
 
 
@@ -371,42 +356,3 @@ class Population:
 
             self.pop[i].brain.serpent_deserialize(pickled_brains[i])
 
-
-if __name__ == "__main__":
-    print("Starting population.py as main")
-
-
-    test_population_1 = Population(4, input_size=4, hidden_size=tuple([0]), output_size=4, isHallow=False)
-
-    print("Printing data old population")
-    for i in range( test_population_1.pop.size ):
-        print("Printing data dino:", i)
-        test_population_1.pop[i].brain.set_inputs(np.array([1,2,3,4]))
-        test_population_1.pop[i].brain.fire_network()
-        print(test_population_1.pop[i].brain.get_outputs())
-        print()
-
-    test_population_1.pickle_population_to_file()
-
-    test_population_2 = Population(4, input_size=4, hidden_size=tuple([0]), output_size=4, isHallow=True)
-
-    print("Printing data new (hollow) population")
-    for i in range(test_population_1.pop.size):
-        print("Printing data dino:", i)
-        test_population_2.pop[i].brain.set_inputs(np.array([1, 2, 3, 4]))
-        test_population_2.pop[i].brain.fire_network()
-        print(test_population_2.pop[i].brain.get_outputs())
-        print()
-
-    test_population_2.unpickle_population_from_file()
-
-    print("Printing data new (unpickled) population")
-    for i in range(test_population_1.pop.size):
-        print("Printing data dino:", i)
-        test_population_2.pop[i].brain.set_inputs(np.array([1, 2, 3, 4]))
-        test_population_2.pop[i].brain.fire_network()
-        print(test_population_2.pop[i].brain.get_outputs())
-        print()
-
-
-    print("Finished population.py as main")

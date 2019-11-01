@@ -6,6 +6,7 @@ import Pyro4
 import masterclient
 import sys
 from population import Population
+import time
 
 
 
@@ -16,6 +17,7 @@ class Worker:
         self.isWorkingOnJobs = False
         self.claimedMeeps = [] # backup of all the meeps the worker claimed in case he died.
         self.isAlive = True
+        self.lastTimeStamp = 0
 
 @Pyro4.expose
 class Job_server(object):
@@ -29,23 +31,29 @@ class Job_server(object):
         self.current_generation = 0
         self.max_jobs:int = pop_size    # Size of population of master_client
 
+
     def get_job(self, workerid):
         if len(self.unworked_meeps) == 0:
             self.workers[workerid].isWorkingOnJobs = True
             self.hasUnworkedMeeps = True
         claimed_meeps = self.unworked_meeps[0:self.workers[workerid].work_slots]
+        self.workers[workerid].claimedMeeps[:] = claimed_meeps
         self.unworked_meeps[:] = self.unworked_meeps[self.workers[workerid].work_slots:]
         return claimed_meeps
+
 
     def return_results(self, workerid, x):
         self.results += x
         self.workers[workerid].isWorkingOnJobs = False
+        self.workers[workerid].claimedMeeps.clear()
+
 
     def get_hasUnworkedMeeps(self)->bool:
         if len(self.unworked_meeps) > 0:
             return True
         else:
             return False
+
 
     def test_hasAllResults(self)->bool:
         # If there are no meeps to be processed
@@ -61,6 +69,7 @@ class Job_server(object):
             return True
         else:
             return False
+
 
     def get_hasAllResults(self):
         return self.hasAllResults
@@ -80,19 +89,24 @@ class Job_server(object):
     def get_workers(self):
         return [ x.workerID for x in self.workers.values() ]
 
+
     def get_registered_slots(self):
         return sum( [ x.work_slots for x in self.workers.values() ] )
+
 
     def set_jobs(self, jobs):
         self.unworked_meeps = jobs
         self.results = [] # TODO: probably shouldn't do this here
 
+
     def set_current_generation(self, cur_gen:int):
         self.current_generation = cur_gen
+
 
     def return_job_results(self, workerid, worked_meeps):
         self.worked_meeps.append(worked_meeps)
         self.workers[workerid].hasReturnedResults = True
+
 
     def register_worker(self, workerid, work_slots):
         self.workers[workerid] = Worker(workerid, work_slots)
@@ -100,10 +114,29 @@ class Job_server(object):
         print("Jobserver:", self.workers.keys())
         print("Jobserver:", "Worker registered to labour force", workerid)
 
-    # TODO: implement unregister_worker for catching clients that die or loose connection
-#    def unregister_worker(self, workerid):
-#        self.workers.pop(workerid)
-#        print("Jobserver:", "Worker", workerid, "left the labour force")
+
+    def unregister_worker(self, workerid):
+        if self.workers[workerid].isWorkingOnJobs:
+            self.unworked_meeps += self.workers[workerid].claimedMeeps
+        self.workers.pop(workerid)
+        print("Jobserver:", "Worker", workerid, "left the labour force")
+
+
+    def register_alive(self, workerid):
+        self.workers[workerid].isAlive = True
+
+
+    def test_ifWorkersAlive(self)->bool:
+        allworkers_alive = True
+        for worker in self.workers.values():
+            if not worker.isAlive:
+                self.unregister_worker(worker.workerID)
+                allworkers_alive = False
+                continue
+                # Worker hasn't marked itself as alive since the last time this was ran
+            else:
+                worker.isAlive = False
+        return allworkers_alive
 
 
 
