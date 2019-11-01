@@ -33,11 +33,14 @@ class Job_server(object):
 
 
     def get_job(self, workerid):
+        if self.workers.get(workerid, None) is None:
+            return "Not registered"
+
         if len(self.unworked_meeps) == 0:
             self.workers[workerid].isWorkingOnJobs = True
             self.hasUnworkedMeeps = True
-        claimed_meeps = self.unworked_meeps[0:self.workers[workerid].work_slots]
-        self.workers[workerid].claimedMeeps[:] = claimed_meeps
+        claimed_meeps = self.unworked_meeps[:self.workers[workerid].work_slots]
+        self.workers[workerid].claimedMeeps += self.unworked_meeps[:self.workers[workerid].work_slots]
         self.unworked_meeps[:] = self.unworked_meeps[self.workers[workerid].work_slots:]
         return claimed_meeps
 
@@ -115,28 +118,31 @@ class Job_server(object):
         print("Jobserver:", "Worker registered to labour force", workerid)
 
 
-    def unregister_worker(self, workerid):
-        if self.workers[workerid].isWorkingOnJobs:
-            self.unworked_meeps += self.workers[workerid].claimedMeeps
-        self.workers.pop(workerid)
-        print("Jobserver:", "Worker", workerid, "left the labour force")
-
-
     def register_alive(self, workerid):
         self.workers[workerid].isAlive = True
 
 
     def test_ifWorkersAlive(self)->bool:
-        allworkers_alive = True
+        deadworkers = []
+
         for worker in self.workers.values():
             if not worker.isAlive:
-                self.unregister_worker(worker.workerID)
-                allworkers_alive = False
-                continue
                 # Worker hasn't marked itself as alive since the last time this was ran
+                deadworkers.append(worker.workerID)
+                #if self.workers[worker.workerID].isWorkingOnJobs:
+                self.unworked_meeps += self.workers[worker.workerID].claimedMeeps
+                self.hasUnworkedMeeps = True
+                continue
             else:
                 worker.isAlive = False
-        return allworkers_alive
+
+        if len(deadworkers) > 0:
+            for deadworkerid in deadworkers:
+                self.workers.pop(deadworkerid)
+                print("Jobserver:", "Worker", deadworkerid, "left the building")
+            return False
+        else:
+            return True
 
 
 

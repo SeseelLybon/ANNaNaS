@@ -51,6 +51,11 @@ def lookforjob(dt):
         pyglet.clock.unschedule(lookforjob)
         pyglet.clock.schedule_interval_soft(lookforjob, lookforjob_TIMEOUT)
         return
+    elif jobs == "Not registered":
+        pyglet.app.exit()
+        print("Worker was not registered to the server for some reason, but is still alive.")
+        print("This shouldn't have happened.")
+        return
 
     else:
         print("Got a job")

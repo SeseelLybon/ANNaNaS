@@ -70,12 +70,13 @@ class Main_manager:
         while self.state is not States.done:
 
             curtime = time.time()
-            if curtime-lasttime >= 60:
+            if curtime-lasttime >= 30:
                 print("Testing if all workers were alive")
                 print("all workers alive?", self.local_job_server.test_ifWorkersAlive())
                 lasttime = curtime
             else:
-                print("skipped testing if workers are alive")
+                #print("skipped testing if workers are alive")
+                pass
 
             print("client: --------")
 
