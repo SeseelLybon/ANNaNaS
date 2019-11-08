@@ -20,7 +20,11 @@ import obstacle as obt
 
 from pymunk import Vec2d
 
-client_population:Population = Population(1, input_size=7, hidden_size=tuple([0]), output_size=2, isHallow=True)
+client_population:Population = Population(1, input_size=1, hidden_size=tuple([0]), output_size=1, isHallow=True)
+
+inputsize:int = None
+hiddensize:tuple = None
+outputsize:int = None
 
 showGraph = False
 skip_once = False
@@ -75,7 +79,7 @@ def on_draw():
     score_label.draw()
     score_best_label.text = 'best score: ' + str(client_population.highestScore)
     score_best_label.draw()
-    dinos_live_label.text = "Dino's alive: " + str(client_population.countAlive()) + " of " + str(100)
+    dinos_live_label.text = "Dino's alive: " + str(client_population.countAlive()) + " of " + str(client_population.size)
     dinos_live_label.draw()
 
     obt.ground.draw()
@@ -206,7 +210,7 @@ def dojob(job):
     obstacle_drawlist = []
 
     # unpack job (a pickle of a list of meeple brains)
-    client_population = Population(len(job), input_size=7, hidden_size=tuple([0]), output_size=2, isHallow=True)
+    client_population = Population(len(job), input_size=inputsize, hidden_size=hiddensize, output_size=outputsize, isHallow=True)
 
     client_population.unpickle_population_from_list(job)
 

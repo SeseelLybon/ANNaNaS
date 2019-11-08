@@ -80,7 +80,7 @@ if __name__ == '__main__':
     work_slots = int(sys.argv[2])
 
     job_server = Pyro4.core.Proxy('PYRO:Greeting@' + ipAddressServer + ':9090')
-    job_server.register_worker(workerid, work_slots)
+    client_core.inputsize, client_core.hiddensize, client_core.outputsize = job_server.register_worker(workerid, work_slots)
     pyglet.clock.schedule_interval_soft(lookforjob, 4)
     pyglet.clock.schedule_interval_soft(register_alive, 30)
 

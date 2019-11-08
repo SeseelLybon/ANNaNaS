@@ -22,7 +22,7 @@ class Worker:
 @Pyro4.expose
 class Job_server(object):
 
-    def __init__(self, pop_size):
+    def __init__(self, pop_size, inputsize, hiddensize, outputsize):
         self.workers:dict = {}
         self.hasUnworkedMeeps = False
         self.hasAllResults = False
@@ -30,6 +30,10 @@ class Job_server(object):
         self.results = []
         self.current_generation = 0
         self.max_jobs:int = pop_size    # Size of population of master_client
+
+        self.inputsize = inputsize
+        self.hiddensize = hiddensize
+        self.outputsize = outputsize
 
 
     def get_job(self, workerid):
@@ -116,6 +120,7 @@ class Job_server(object):
         print("Jobserver:", self.get_registered_slots())
         print("Jobserver:", self.workers.keys())
         print("Jobserver:", "Worker registered to labour force", workerid)
+        return self.inputsize, self.hiddensize, self.outputsize
 
 
     def register_alive(self, workerid):
@@ -151,16 +156,19 @@ if __name__ == "__main__":
 
     server_IP = sys.argv[1]
     pop_size = int(sys.argv[2])
+    inputsize = 7
+    hiddensize = (0,)
+    outputsize = 2
 
     print("Server: Starting server_main.py as __main__")
     #server_IP = "10.19.38.66"
     #server_IP = "localhost"
 
-    main_manager = masterclient.Main_manager(server_IP, pop_size)
+    main_manager = masterclient.Main_manager(server_IP, pop_size, inputsize, hiddensize, outputsize)
 
     main_manager.start()
 
-    job_server_o = Job_server(pop_size)
+    job_server_o = Job_server(pop_size, inputsize, hiddensize, outputsize)
 
     JobserverDaemon = Pyro4.Daemon.serveSimple({
         job_server_o: 'Greeting',

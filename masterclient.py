@@ -25,14 +25,14 @@ master_population:Population# = Population(200, input_size=7, hidden_size=tuple(
 
 class Main_manager:
 
-    def __init__(self, IP, pop_size): # , input_size, hidden_size, output_size):
+    def __init__(self, IP, pop_size, inputsize, hiddensize, outputsize):
         global master_population
 
         self.state = States.initializing
 
         self.local_job_server = Pyro4.core.Proxy('PYRO:Greeting@' + IP + ':9090')
         self.job_results = []
-        self.main_process = Process(target=self.run, args=(pop_size,))
+        self.main_process = Process(target=self.run, args=(pop_size, inputsize, hiddensize, outputsize,))
 
         #create if not there, or overwrite with nothing if there
         with open("spreadsheetdata.txt", "w+") as f:
@@ -48,11 +48,11 @@ class Main_manager:
         print("client: Stopping master client")
         self.main_process.close()
 
-    def run(self, pop_size):
+    def run(self, pop_size, inputsize, hiddensize, outputsize):
         global master_population
         print("client: Started main() as process")
 
-        master_population = Population(pop_size, input_size=7, hidden_size=tuple([0]), output_size=2)
+        master_population = Population(pop_size, input_size=inputsize, hidden_size=hiddensize, output_size=outputsize)
 
         self.local_job_server.set_jobs(master_population.pickle_population_to_list())
 
