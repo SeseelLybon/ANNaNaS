@@ -37,8 +37,8 @@ class Job_server(object):
             return "Not registered"
 
         if len(self.unworked_meeps) == 0:
-            self.workers[workerid].isWorkingOnJobs = True
-            self.hasUnworkedMeeps = True
+            return None
+
         claimed_meeps = self.unworked_meeps[:self.workers[workerid].work_slots]
         self.workers[workerid].claimedMeeps += self.unworked_meeps[:self.workers[workerid].work_slots]
         self.unworked_meeps[:] = self.unworked_meeps[self.workers[workerid].work_slots:]

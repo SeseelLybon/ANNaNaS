@@ -20,7 +20,7 @@ import obstacle as obt
 
 from pymunk import Vec2d
 
-client_population:Population# = Population(50, input_size=7, hidden_size=tuple([0]), output_size=2, isHallow=True)
+client_population:Population = Population(1, input_size=7, hidden_size=tuple([0]), output_size=2, isHallow=True)
 
 showGraph = False
 skip_once = False
@@ -206,6 +206,8 @@ def dojob(job):
     obstacle_drawlist = []
 
     # unpack job (a pickle of a list of meeple brains)
+    client_population = Population(len(job), input_size=7, hidden_size=tuple([0]), output_size=2, isHallow=True)
+
     client_population.unpickle_population_from_list(job)
 
     for meep in client_population.pop:
