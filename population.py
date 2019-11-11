@@ -10,6 +10,8 @@ from obstacle import dino
 import time
 
 import serpent
+from os import rename as os_rename
+from os import remove as os_remove
 
 
 
@@ -319,8 +321,20 @@ class Population:
         for meep in self.pop:
             ser_bytes_meeps.append(meep.brain.serpent_serialize())
 
+        try:
+            os_remove('pickledmeeps.picklejar_old')
+        except FileNotFoundError:
+            pass
+            # File doesn't exist, so doesn't need to be removed
+        finally:
+            try:
+                os_rename('pickledmeeps.picklejar', 'pickledmeeps.picklejar_old')
+            except FileNotFoundError:
+                pass
+                # File doesn't exist, so doesn't need to be renamed
+
         with open('pickledmeeps.picklejar', 'wb') as the_file:
-            serpent.dump( [self.generation, dino.global_ID-self.size, ser_bytes_meeps], the_file)
+            serpent.dump( [self.generation, dino.global_ID[0]-self.size, ser_bytes_meeps], the_file)
 
     def unpickle_population_from_file(self):
 
@@ -328,7 +342,7 @@ class Population:
             unpickledjar = serpent.load(the_file)
 
         self.generation = unpickledjar[0]
-        dino.global_ID = unpickledjar[1]
+        dino.global_ID = [unpickledjar[1]]
         unpickled_meeps = unpickledjar[2]
 
         self.pop = np.ndarray([self.size], dtype=dino)

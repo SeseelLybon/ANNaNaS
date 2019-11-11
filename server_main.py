@@ -156,6 +156,10 @@ if __name__ == "__main__":
 
     server_IP = sys.argv[1]
     pop_size = int(sys.argv[2])
+    if len(sys.argv) == 4:
+        load_from_save = sys.argv[3]
+    else:
+        load_from_save =  "False"
     inputsize = 7
     hiddensize = (0,)
     outputsize = 2
@@ -164,7 +168,7 @@ if __name__ == "__main__":
     #server_IP = "10.19.38.66"
     #server_IP = "localhost"
 
-    main_manager = masterclient.Main_manager(server_IP, pop_size, inputsize, hiddensize, outputsize)
+    main_manager = masterclient.Main_manager(server_IP, pop_size, inputsize, hiddensize, outputsize, load_from_save)
 
     main_manager.start()
 

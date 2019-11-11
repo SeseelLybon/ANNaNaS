@@ -25,18 +25,22 @@ master_population:Population# = Population(200, input_size=7, hidden_size=tuple(
 
 class Main_manager:
 
-    def __init__(self, IP, pop_size, inputsize, hiddensize, outputsize):
+    def __init__(self, IP, pop_size, inputsize, hiddensize, outputsize, load_from_file):
         global master_population
 
         self.state = States.initializing
 
         self.local_job_server = Pyro4.core.Proxy('PYRO:Greeting@' + IP + ':9090')
         self.job_results = []
-        self.main_process = Process(target=self.run, args=(pop_size, inputsize, hiddensize, outputsize,))
+        self.main_process = Process(target=self.run, args=(pop_size, inputsize, hiddensize, outputsize, load_from_file,))
 
-        #create if not there, or overwrite with nothing if there
-        with open("spreadsheetdata.txt", "w+") as f:
-            f.write("")
+        if load_from_file == "False":
+            #create if not there, or overwrite with nothing if there
+            with open("spreadsheetdata.txt", "w+") as f:
+                f.write("")
+        else:
+            pass
+            # Continue appending to the existing file that should still be valids
 
 
     def start(self):
@@ -48,11 +52,20 @@ class Main_manager:
         print("client: Stopping master client")
         self.main_process.close()
 
-    def run(self, pop_size, inputsize, hiddensize, outputsize):
+    def run(self, pop_size, inputsize, hiddensize, outputsize, load_from_file):
         global master_population
         print("client: Started main() as process")
+        print(load_from_file)
+        if load_from_file == "True":
+            try:
+                master_population = Population(pop_size, input_size=inputsize, hidden_size=hiddensize, output_size=outputsize, isHallow=True)
+                master_population.unpickle_population_from_file()
+            except FileNotFoundError:
+                master_population = Population(pop_size, input_size=inputsize, hidden_size=hiddensize, output_size=outputsize)
 
-        master_population = Population(pop_size, input_size=inputsize, hidden_size=hiddensize, output_size=outputsize)
+        else:
+            master_population = Population(pop_size, input_size=inputsize, hidden_size=hiddensize, output_size=outputsize)
+
 
         self.local_job_server.set_jobs(master_population.pickle_population_to_list())
 
@@ -98,6 +111,7 @@ class Main_manager:
                 print("Done Natural Selection/MachineLearning. Sending jobs to warehouse")
                 #TODO send population back to server
                 self.local_job_server.set_jobs(master_population.pickle_population_to_list())
+                master_population.pickle_population_to_file()
                 self.state = States.has_jobs_ready
                 print("Starting generation", master_population.generation)
             else:
