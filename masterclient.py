@@ -104,12 +104,12 @@ class Main_manager:
                 ser_bytes = self.local_job_server.get_jobs_results()
                 master_population.unpickle_population_from_list(ser_bytes)
 
-                #TODO run natural selection
+                #run natural selection
                 print("Starting natural selection")
                 master_population.naturalSelection()
 
                 print("Done Natural Selection/MachineLearning. Sending jobs to warehouse")
-                #TODO send population back to server
+                # send population back to server
                 self.local_job_server.set_jobs(master_population.pickle_population_to_list())
                 master_population.pickle_population_to_file()
                 self.state = States.has_jobs_ready

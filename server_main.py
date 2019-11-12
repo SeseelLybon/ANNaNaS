@@ -67,8 +67,6 @@ class Job_server(object):
         # and none of the workers mention they have claimed meeps
         # and the amount of results equals the max amount of jobs Masterclient has given.
         # then I'll assume that all meeps have been processed.
-        # TODO: probably overkill. Unless there's a glitch, results should never exceed max_results
-        #   Though if a worker dies before it returns the results, the program locks up.
         if  len(self.workers) > 0 and\
                 len([True for worker in self.workers.values() if worker.isWorkingOnJobs]) == 0 and\
                 len(self.unworked_meeps) == 0 and\
@@ -103,7 +101,7 @@ class Job_server(object):
 
     def set_jobs(self, jobs):
         self.unworked_meeps = jobs
-        self.results = [] # TODO: probably shouldn't do this here
+        self.results.clear()
 
 
     def set_current_generation(self, cur_gen:int):

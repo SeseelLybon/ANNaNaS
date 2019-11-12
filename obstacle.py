@@ -85,7 +85,8 @@ class dino(Meeple):
             self.sprite.draw()
 
     def isColliding(self, other):
-        # TODO: Collision detection
+        # Collision detection
+        # TODO: Can Collision Detection be optimized?
         if self.pos.x + self.dim.x < other.pos.x:
             return False  # dinner is to the left of stacle
         elif self.pos.x > other.pos.x + other.dim.x:
