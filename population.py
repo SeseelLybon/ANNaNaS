@@ -108,8 +108,17 @@ class Population:
 
         while self.MassExtingtionEvent == True or runonce:
             if UnMassExtingtionEventsAttempt >= 3:
-                break
-                #let the program crash
+
+                #Reset the population from the ground up
+                self.pop = np.ndarray([self.size], dtype=dino)
+                for i in range(self.pop.shape[0]):
+                    self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=False)
+
+                self.bestMeeple: dino = self.pop[0]
+                self.highestFitness = 0
+                self.highestScore = 0
+                self.generation = 0
+                self.species.clear()
             else:
                 UnMassExtingtionEventsAttempt+=1
                 print("Attempt", UnMassExtingtionEventsAttempt, "to speciate")
