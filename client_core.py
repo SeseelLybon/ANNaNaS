@@ -13,12 +13,9 @@ from population import Population
 
 import serpent
 
-window = pyglet.window.Window(1200,800)
+#window = pyglet.window.Window(1200,800)
 pyglet.gl.glClearColor(0.7,0.7,0.7,1)
 
-import obstacle as obt
-
-from pymunk import Vec2d
 
 client_population:Population = Population(1, input_size=1, hidden_size=tuple([0]), output_size=1, isHallow=True)
 
@@ -32,11 +29,30 @@ score = 0
 best_score = 0
 bestfitness = 0
 lastspawnscore = 0
-max_obstacles = 3
+
+
+# Temp
+from meeple import Meeple
+
+max_attempts = 10 # amount of attempts a mastermind can make before being considered dead
+max_dif_pegs = 6 # numbers simulate the diffirent colours of pegs
+max_pegs = 4 # how many pegs have to be guessed
+
+amount_attempts = 0 # amount of attempts done
+
+
+attempt_list = [] # Memory of previous attempts [attempt_o]
+
+
+
+
+
 
 client_isDone = False
 
-obstacle_drawlist:List[obt.obstacle] = []
+
+
+
 
 score_label = pyglet.text.Label('score: ' + str(score),
                   font_name='Times New Roman',
@@ -54,41 +70,43 @@ dinos_live_label = pyglet.text.Label("Dino's alive: ",
                    x=50, y=400,
                    anchor_x='left', anchor_y='center')
 
-@window.event
-def on_draw():
-    global client_population
-    global window
-    global score
-    global lastspawnscore
-    global showGraph
-
-    window.clear()
-
-    if client_population.bestMeeple is not None and showGraph:
-        client_population.bestMeeple.brain.updateposGFX([600, 750], [550, 500])
-        client_population.bestMeeple.brain.updateintensityGFX([2, 2,  # dinner pos
-                                                               0.5, 2, 3, 3,  # first object
-                                                               1.5])       # score
-        client_population.bestMeeple.brain.draw()
-
-    # Run the game here
-    # Move the objects/obstacles on the platform, not the dino or the platform
-    # Use the update() and isDone() function
-
-    score_label.text = 'score: ' + str(score)
-    score_label.draw()
-    score_best_label.text = 'best score: ' + str(client_population.highestScore)
-    score_best_label.draw()
-    dinos_live_label.text = "Dino's alive: " + str(client_population.countAlive()) + " of " + str(client_population.size)
-    dinos_live_label.draw()
-
-    obt.ground.draw()
-
-    client_population.drawAlife()
-
-    for obst in obstacle_drawlist:
-        obst.draw()
-    #pops.bestMeeple.draw()
+#@window.event
+#def on_draw():
+#    global client_population
+#    global window
+#    global score
+#    global lastspawnscore
+#    global showGraph
+#
+#    window.clear()
+#
+#    return
+#
+##    if client_population.bestMeeple is not None and showGraph:
+##        client_population.bestMeeple.brain.updateposGFX([600, 750], [550, 500])
+##        client_population.bestMeeple.brain.updateintensityGFX([2, 2,  # dinner pos
+##                                                               0.5, 2, 3, 3,  # first object
+##                                                               1.5])       # score
+##        client_population.bestMeeple.brain.draw()
+##
+##    # Run the game here
+##    # Move the objects/obstacles on the platform, not the dino or the platform
+##    # Use the update() and isDone() function
+##
+##    score_label.text = 'score: ' + str(score)
+##    score_label.draw()
+##    score_best_label.text = 'best score: ' + str(client_population.highestScore)
+##    score_best_label.draw()
+##    dinos_live_label.text = "Dino's alive: " + str(client_population.countAlive()) + " of " + str(client_population.size)
+##    dinos_live_label.draw()
+##
+##    obt.ground.draw()
+##
+##    client_population.drawAlife()
+##
+##    for obst in obstacle_drawlist:
+##        obst.draw()
+##    #pops.bestMeeple.draw()
 
 
 
@@ -99,115 +117,50 @@ def update(dt):
     global bestfitness
     global lastspawnscore
 
-    global_inputs  = []
-
-    # -----------------
-    # getting data to set the inputs of the brain
-
-    #go through each obstacle and append inputs
-    if len(obstacle_drawlist) > 0:
-        closestobst = obstacle_drawlist[0]
-    else:
-        closestobst = None
-
-    if closestobst is None:
-        obst_distance = 2000
-        obst_height = 0
-        obst_x = 0
-        obst_y = 0
-    else:
-        obst_distance = closestobst.pos.x
-        obst_height = closestobst.pos.y
-        obst_x = closestobst.dim.x
-        obst_y = closestobst.dim.y
-
-
-    global_inputs += [obst_distance,
-                      obst_height,
-                      obst_x,
-                      obst_y]
+#    global_inputs  = []
+#
+#    # -----------------
+#    # getting data to set the inputs of the brain
+#
+#
+#    global_inputs += [obst_distance,
+#                      obst_height,
+#                      obst_x,
+#                      obst_y]
+#
+#
+#    global_inputs.append(score)
+#    # -----------------
+#
+#    client_population.updateAlive(obstacle_drawlist, score, global_inputs)
+#
+#
+#    if client_population.isDone():
+#        print("--------------------------------------------")
+#        print("All dino's are dead. Returning dino brains.")
+#        print("Best score this batch:", score)
+#        pyglet.clock.unschedule(update)
+#        pyglet.clock.unschedule(scoreupdate)
+#        client_isDone = True
 
 
-    global_inputs.append(score)
-    # -----------------
-
-    client_population.updateAlive(obstacle_drawlist, score, global_inputs)
-
-
-    if client_population.isDone():
-        print("--------------------------------------------")
-        print("All dino's are dead. Returning dino brains.")
-        print("Best score this batch:", score)
-        pyglet.clock.unschedule(update)
-        pyglet.clock.unschedule(scoreupdate)
-        client_isDone = True
-
-    score = round(score+0.3, 1)
-    if score - lastspawnscore > 40:
-        spawnupdater(1)
-        lastspawnscore = score
-
-
-    # Obstacle garbage projection
-    markforremoval = list()
-    for obst in obstacle_drawlist:
-        obst.update(score)
-        if obst.isLeftofScreen(-100):
-            markforremoval.append(obst)
-            continue
-
-    if len(markforremoval) > 0:
-        obstacle_drawlist[:] = [x for x in obstacle_drawlist if x not in markforremoval]
-
-
-def scoreupdate(dt):
-    global score
-    score+=1
-
-
-def spawnupdater(dt):
-    # TODO: This doesn't work. as it'll still doesn't space the objects out evenly as the game speeds up
-    #if len(obstacle_drawlist) < max_obstacles:
-    dice_throw = np.random.rand()
-    pos_adjust = 1500# + np.random.rand() * 300 // 1
-
-    if score < 400:
-        if dice_throw < 0.50:  # spawn large cacti
-            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(40, 60)))
-        else:  # Spawn smol cacti
-            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(20, 30)))
-    else:
-        if dice_throw < 0.20:  # spawn large cacti
-            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(40, 60)))
-        elif dice_throw < 0.40:  # Spawn smol cacti
-            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 40), Vec2d(20, 30)))
-        elif dice_throw < 0.60:  # spawn low flying dino
-            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 80), Vec2d(80, 20)))
-        elif dice_throw < 0.80:  # spawn mid flying dino
-            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 160), Vec2d(80, 20)))
-        elif dice_throw < 1.00:  # spawn high flying dino
-            obstacle_drawlist.append(obt.obstacle(Vec2d(pos_adjust, 240), Vec2d(80, 20)))
 
 
 def dojob(job):
     global client_population
     global client_isDone
-    global score
-    global bestfitness
-    global lastspawnscore
-    global best_score
-    global obstacle_drawlist
+    #global score
+    #global bestfitness
+    #global lastspawnscore
+    #global best_score
 
     client_isDone = False
 
     print("Starting the job batch")
 
-    # Resetting the variables of the sim...
-    score = 0
-    best_score = 0
-    bestfitness = 0
-    lastspawnscore = 0
-    obstacle_drawlist = []
+    # For Mastermind, a job is testing a meep against x diffirent randomized solutions.
+    # Score is a function of the amount of correctly solved solutions aiming for 100%
+
 
     # unpack job (a pickle of a list of meeple brains)
     client_population = Population(len(job), input_size=inputsize, hidden_size=hiddensize, output_size=outputsize, isHallow=True)
@@ -218,10 +171,134 @@ def dojob(job):
         meep.brain.score = 0
         meep.brain.fitness = 0
 
-    # start the simulation and poll if it's done
-    pyglet.clock.schedule_interval_soft(update, 1 / 75)
-    pyglet.clock.schedule_interval_soft(scoreupdate, 1 / 10)
 
 
+    # Run test
+    for runi in range(100):
+        print("starting run", runi)
+        # generate new solution to test all meeps against
+        mastermind_solution = np.random.randint(1, max_dif_pegs, max_pegs)
+
+        # reset meeps every run except score
+        for meep in client_population.pop:
+            meep: Meeple = meep
+            meep.results_list = []  # whipe it's memory of attempts
+            meep.epochs = max_attempts # reset the amount of times it can try
+            meep.isAlive = True
+            meep.isDone = False
+
+        # run all meeps against this until pop.isDone.
+        while not client_population.isDone():
+            client_population.updateAlive(mastermind_solution, max_dif_pegs)
+
+    print("--------------------------------------------")
+    print("All dino's are either done or dead.")
+    best_score = max([meep.brain.score for meep in client_population.pop])
+    print("Best score this batch:", best_score)
+    client_isDone = True
+
+
+
+
+
+
+
+
+
+
+test = 1
+
+if __name__ == '__main__' and test == 1:
+    max_attempts = 20
+
+    input_size=max_pegs*max_attempts+4*max_attempts
+    hidden_size=tuple([0])
+    output_size=max_dif_pegs*max_pegs
+
+
+    client_population = Population(10, input_size=input_size, hidden_size=hidden_size, output_size=output_size,
+                                   isHallow=False)
+
+
+    for meep in client_population.pop:
+        meep.brain.score = 0
+        meep.brain.fitness = 0
+
+
+    # Run test
+    for runi in range(100):
+        print("starting run", runi)
+        # generate new solution to test all meeps against
+        mastermind_solution = np.random.randint(1, max_dif_pegs, max_pegs)
+
+        # reset meeps every run except score
+        for meep in client_population.pop:
+            meep: Meeple = meep
+            meep.results_list = []  # whipe it's memory of attempts
+            meep.epochs = max_attempts # reset the amount of times it can try
+            meep.isAlive = True
+            meep.isDone = False
+
+        # run all meeps against this until pop.isDone.
+        while not client_population.isDone():
+            client_population.updateAlive(mastermind_solution, max_dif_pegs)
+
+    print("--------------------------------------------")
+    print("All dino's are either done or dead.")
+    print("Best score this batch:", max([meep.brain.score for meep in client_population.pop]))
+
+
+
+elif __name__ == '__main__' and test == 2:
+    from population import check_attempt
+    from population import sanitize_output
+    from population import sanitize_input
+
+    input_size = max_pegs * max_attempts + 4 * max_attempts
+    hidden_size = tuple([0])
+    output_size = max_dif_pegs * max_pegs
+
+    meep1:Meeple = Meeple( input_size=input_size, hidden_size=hidden_size, output_size=output_size, isHallow=False)
+    amount_runs = 500
+    run_scores = []
+    run_amount:int=0
+
+    for run_amount in range(amount_runs):
+        print("run", run_amount)
+
+        attempt_list = []
+        mastermind_solution = np.random.randint(1,max_dif_pegs,max_pegs)
+
+
+        meep1.brain.set_inputs(np.zeros(max_pegs*max_attempts+4*max_attempts))
+        meep1.brain.fire_network()
+        output = meep1.brain.get_outputs()
+        attempt = sanitize_output(output, max_dif_pegs)
+        result = check_attempt(attempt, mastermind_solution)
+        #print("attempt:", 1, attempt, "result:",result)
+        attempt_list.append((attempt, result))
+
+        for i in range(2,max_attempts+1):
+
+            meep1.brain.set_inputs(sanitize_input(attempt_list))
+            meep1.brain.fire_network()
+            output = meep1.brain.get_outputs()
+            attempt = sanitize_output(output, max_dif_pegs)
+            result = check_attempt(attempt, mastermind_solution)
+            #print("attempt:", i, attempt, "result:",result)
+            attempt_list.append((attempt, result))
+
+            if result == [2,2,2,2]:
+                break
+
+        if result == [2,2,2,2]:
+            run_scores.append(1)
+            print("Got the solution!")
+        else:
+            run_scores.append(0)
+
+    print("Meep had an accuracy of", round(run_scores.count(1)/(amount_runs+1),4), "% or ", run_scores.count(1), "out of ", (run_amount+1))
+
+    pass
 
 

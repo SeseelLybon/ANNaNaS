@@ -4,8 +4,8 @@ import numpy as np
 from typing import List
 from species import Species
 from math import floor
-import pyglet
-from obstacle import dino
+#import pyglet - not drawing stuff atm
+from meeple import Meeple
 
 import time
 
@@ -18,7 +18,7 @@ from os import remove as os_remove
 class Population:
 
     def __init__(self, size, input_size:int, hidden_size:tuple, output_size:int, training_data=None, training_answers=None, isHallow=False):
-        self.pop = np.ndarray([size], dtype=dino)
+        self.pop = np.ndarray([size], dtype=Meeple)
         self.species:List[Species] = []
         self.speciesCreated = 0
 
@@ -35,9 +35,9 @@ class Population:
 
 
         for i in range(self.pop.shape[0]):
-            self.pop[i] = dino(input_size, hidden_size, output_size, isHallow=isHallow)
+            self.pop[i] = Meeple(input_size, hidden_size, output_size, isHallow=isHallow)
 
-        self.bestMeeple:dino = self.pop[0]
+        self.bestMeeple:Meeple = self.pop[0]
         self.highestFitness = 0
         self.highestScore = 0
 
@@ -45,55 +45,62 @@ class Population:
 
 
     #update all the meeps that are currently alive
-    def updateAlive(self, obstacle_drawlist, score, global_inputs):
+    def updateAlive(self, mastermind_solution, max_dif_pegs):
 
-        for dinner in self.pop:
-            if dinner.isAlive:
-                dinner.brain.set_input(0, dinner.pos.x)
-                dinner.brain.set_input(1, dinner.pos.y)
+        print("Updating all alive", self.countAlive())
+        #Run through all meeps
+        for meep in self.pop:
+            meep:Meeple = meep # trick forcing typecasting
 
-                for i in range(len(global_inputs)):
-                    i2=i+2
-                    dinner.brain.set_input(i2, global_inputs[i])
+            # if meep isn't alive or already found the solution, skip it
+            #if meep.isAlive or not meep.isDone:
+            if meep.isAlive:
+                meep.epochs -= 1
+                meep.brain.set_inputs(sanitize_input(meep.results_list))
+                meep.brain.fire_network()
+                output = meep.brain.get_outputs()
+                attempt = sanitize_output(output, max_dif_pegs)
+                result = check_attempt(attempt, mastermind_solution)
+                meep.results_list.append((attempt, result))
 
-                dinner.brain.fire_network()
+                if attempt == list(mastermind_solution):
+                    print("someone found a solution - I hope I can see this in the spam...")
+                    meep.brain.score += 1
+                    meep.brain.fitness += max(meep.epochs, 5)
+                    #meep.isDone = True
+                    meep.isAlive = False
+                    continue
+                elif meep.epochs <= 0:
+                    meep.isAlive = False
+                    continue
 
-            if dinner.brain.get_output(0) > 0.9:
-                dinner.jump()
-            if dinner.brain.get_output(1) > 0.9:
-                dinner.duck()
-
-            dinner.update(score)
-            for obst in obstacle_drawlist:
-                if dinner.isColliding( obst ):
-                    dinner.isAlive = False
-
-
-
-            #return None
 
 
     def drawAlife(self):
-        aliveBatch = pyglet.graphics.Batch()
-        for dinner in self.pop:
-            if dinner.isAlive:
-                dinner.sprite.batch = aliveBatch
-            else:
-                dinner.sprite.batch = None
-        aliveBatch.draw()
+        pass
+        # I've no idea how I'd show Mastermind on this scale.
+
+        #aliveBatch = pyglet.graphics.Batch()
+        #for dinner in self.pop:
+        #    if dinner.isAlive:
+        #        dinner.sprite.batch = aliveBatch
+        #    else:
+        #        dinner.sprite.batch = None
+        #aliveBatch.draw()
 
 
     #returns bool if all the players are dead or done
     def isDone(self)-> bool:
-        for dinner in self.pop:
-            if dinner.isAlive:
+        for meep in self.pop:
+            #if meep.isAlive or not meep.isDone: # Doesn't work atm
+            if meep.isAlive:
                 return False
         return True
 
     def countAlive(self)->int:
         tot = 0
-        for dinner in self.pop:
-            if dinner.isAlive:
+        for meep in self.pop:
+            if meep.isAlive:
                 tot+=1
         return tot
 
@@ -110,11 +117,11 @@ class Population:
             if UnMassExtingtionEventsAttempt >= 3:
 
                 #Reset the population from the ground up
-                self.pop = np.ndarray([self.size], dtype=dino)
+                self.pop = np.ndarray([self.size], dtype=Meeple)
                 for i in range(self.pop.shape[0]):
-                    self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=False)
+                    self.pop[i] = Meeple(self.input_size, self.hidden_size, self.output_size, isHallow=False)
 
-                self.bestMeeple: dino = self.pop[0]
+                self.bestMeeple: Meeple = self.pop[0]
                 self.highestFitness = 0
                 self.highestScore = 0
                 self.generation = 0
@@ -162,7 +169,7 @@ class Population:
 
         self.bestMeeple = self.bestMeeple.clone()
         self.bestMeeple.sprite.color = (0,200,100)
-        children:List[dino] = [self.bestMeeple]
+        children:List[Meeple] = [self.bestMeeple]
 
         for specie in self.species:
             #add the best meeple of a specie to the new generation list
@@ -178,7 +185,7 @@ class Population:
         while len(children) < self.size:
             children.append(self.species[0].generateChild())
 
-        self.pop = np.array(children, dtype=dino)
+        self.pop = np.array(children, dtype=Meeple)
         self.generation += 1
 
 
@@ -217,8 +224,8 @@ class Population:
 
 
     def calculateFitness(self):
-        for dinner in self.pop:
-            dinner.brain.fitness = dinner.brain.score*2
+        for meep in self.pop:
+            meep.brain.fitness = meep.brain.score*2
 
     #get the sum of averages from each specie
     def getAverageFitnessSum(self)->float:
@@ -361,7 +368,7 @@ class Population:
                 # File doesn't exist, so doesn't need to be renamed
 
         with open('pickledmeeps.picklejar', 'wb') as the_file:
-            serpent.dump( [self.generation, dino.global_ID[0]-self.size, ser_bytes_meeps], the_file)
+            serpent.dump( [self.generation, Meeple.global_ID[0]-self.size, ser_bytes_meeps], the_file)
 
     def unpickle_population_from_file(self):
 
@@ -369,12 +376,12 @@ class Population:
             unpickledjar = serpent.load(the_file)
 
         self.generation = unpickledjar[0]
-        dino.global_ID = [unpickledjar[1]]
+        Meeple.global_ID = [unpickledjar[1]]
         unpickled_meeps = unpickledjar[2]
 
-        self.pop = np.ndarray([self.size], dtype=dino)
+        self.pop = np.ndarray([self.size], dtype=Meeple)
         for i in range(self.pop.size):
-            self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=True)
+            self.pop[i] = Meeple(self.input_size, self.hidden_size, self.output_size, isHallow=True)
             self.pop[i].brain.serpent_deserialize(unpickled_meeps[i])
 
 
@@ -391,9 +398,52 @@ class Population:
     def unpickle_population_from_list(self, pickled_brains):
 
         print(len(pickled_brains))
-        self.pop = np.ndarray([self.size], dtype=dino)
+        self.pop = np.ndarray([self.size], dtype=Meeple)
         for i in range(self.pop.size):
-            self.pop[i] = dino(self.input_size, self.hidden_size, self.output_size, isHallow=True)
+            self.pop[i] = Meeple(self.input_size, self.hidden_size, self.output_size, isHallow=True)
 
             self.pop[i].brain.serpent_deserialize(pickled_brains[i])
 
+
+
+
+
+# Custom Code for Mastermind
+
+def check_attempt(attempt, mastermind_solution)->List[int]:
+
+    result:List[int] = []
+    #Some code that tests the current attempt for hits (number, location) and blows (number)
+    # 0 - miss
+    # 1 - blow (correct number, not correct location)
+    # 2 - hit (correct number, correct location)
+
+    for i in range(len(attempt)):
+        if attempt[i] == mastermind_solution[i]:
+            # if the right peg is in the right place
+            result.append(2)
+        elif attempt[i] in mastermind_solution:
+            # if the right peg is in the wrong place
+            result.append(1)
+        else:
+            # if the wrong peg
+            result.append(0)
+    result.sort(reverse=True)
+
+    # Obscufate as the player can't know which exact one is blow or hit.
+    return result
+
+def sanitize_output(output, max_dif_pegs):
+    soutput = [ np.argmax(output[:max_dif_pegs*1]),
+                np.argmax(output[max_dif_pegs*1:max_dif_pegs*2]),
+                np.argmax(output[max_dif_pegs*2:max_dif_pegs*3]),
+                np.argmax(output[max_dif_pegs*3:])
+                ]
+    return soutput
+
+def sanitize_input(results):
+    sinput = []
+    for t in results:
+        sinput += t[0]+t[1]
+    #print(sinput)
+    return np.array(sinput)
