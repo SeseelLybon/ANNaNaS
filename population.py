@@ -47,7 +47,7 @@ class Population:
     #update all the meeps that are currently alive
     def updateAlive(self, mastermind_solution, max_dif_pegs):
 
-        print("Updating all alive", self.countAlive())
+#        print("Updating all alive", self.countAlive())
         #Run through all meeps
         for meep in self.pop:
             meep:Meeple = meep # trick forcing typecasting
@@ -64,7 +64,7 @@ class Population:
                 meep.results_list.append((attempt, result))
 
                 if attempt == list(mastermind_solution):
-                    print("someone found a solution - I hope I can see this in the spam...")
+                    print("someone found a solution...")
                     meep.brain.score += 1
                     meep.brain.fitness += max(meep.epochs, 5)
                     #meep.isDone = True
@@ -168,7 +168,7 @@ class Population:
         print("Species ID's", id_s )
 
         self.bestMeeple = self.bestMeeple.clone()
-        self.bestMeeple.sprite.color = (0,200,100)
+        #self.bestMeeple.sprite.color = (0,200,100)
         children:List[Meeple] = [self.bestMeeple]
 
         for specie in self.species:

@@ -34,14 +34,10 @@ lastspawnscore = 0
 # Temp
 from meeple import Meeple
 
-max_attempts = 10 # amount of attempts a mastermind can make before being considered dead
+max_attempts = 30 # amount of attempts a mastermind can make before being considered dead
 max_dif_pegs = 6 # numbers simulate the diffirent colours of pegs
 max_pegs = 4 # how many pegs have to be guessed
 
-amount_attempts = 0 # amount of attempts done
-
-
-attempt_list = [] # Memory of previous attempts [attempt_o]
 
 
 
@@ -110,42 +106,6 @@ dinos_live_label = pyglet.text.Label("Dino's alive: ",
 
 
 
-def update(dt):
-    global client_population
-    global client_isDone
-    global score
-    global bestfitness
-    global lastspawnscore
-
-#    global_inputs  = []
-#
-#    # -----------------
-#    # getting data to set the inputs of the brain
-#
-#
-#    global_inputs += [obst_distance,
-#                      obst_height,
-#                      obst_x,
-#                      obst_y]
-#
-#
-#    global_inputs.append(score)
-#    # -----------------
-#
-#    client_population.updateAlive(obstacle_drawlist, score, global_inputs)
-#
-#
-#    if client_population.isDone():
-#        print("--------------------------------------------")
-#        print("All dino's are dead. Returning dino brains.")
-#        print("Best score this batch:", score)
-#        pyglet.clock.unschedule(update)
-#        pyglet.clock.unschedule(scoreupdate)
-#        client_isDone = True
-
-
-
-
 def dojob(job):
     global client_population
     global client_isDone
@@ -174,7 +134,7 @@ def dojob(job):
 
 
     # Run test
-    for runi in range(100):
+    for runi in range(10):
         print("starting run", runi)
         # generate new solution to test all meeps against
         mastermind_solution = np.random.randint(1, max_dif_pegs, max_pegs)
@@ -190,6 +150,11 @@ def dojob(job):
         # run all meeps against this until pop.isDone.
         while not client_population.isDone():
             client_population.updateAlive(mastermind_solution, max_dif_pegs)
+
+
+    # Test, could meep.results_lists fuck things?
+    for meep in client_population.pop:
+        del meep.results_list
 
     print("--------------------------------------------")
     print("All dino's are either done or dead.")

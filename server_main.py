@@ -152,15 +152,20 @@ class Job_server(object):
 
 if __name__ == "__main__":
 
+    max_attempts = 30  # amount of attempts a mastermind can make before being considered dead
+    max_dif_pegs = 6  # numbers simulate the diffirent colours of pegs
+    max_pegs = 4  # how many pegs have to be guessed
+
     server_IP = sys.argv[1]
     pop_size = int(sys.argv[2])
     if len(sys.argv) == 4:
         load_from_save = sys.argv[3]
     else:
         load_from_save =  "False"
-    inputsize = 7
-    hiddensize = (0,)
-    outputsize = 2
+
+    inputsize=max_pegs*max_attempts+4*max_attempts
+    hiddensize=tuple([0])
+    outputsize=max_dif_pegs*max_pegs
 
     print("Server: Starting server_main.py as __main__")
     #server_IP = "10.19.38.66"

@@ -76,8 +76,11 @@ if __name__ == '__main__':
     print("Starting client; waiting for jobs")
 
 
-    ipAddressServer = sys.argv[1]
-    work_slots = int(sys.argv[2])
+    #ipAddressServer = sys.argv[1]
+    #work_slots = int(sys.argv[2])
+
+    ipAddressServer = "localhost"
+    work_slots = 10
 
     job_server = Pyro4.core.Proxy('PYRO:Greeting@' + ipAddressServer + ':9090')
     client_core.inputsize, client_core.hiddensize, client_core.outputsize = job_server.register_worker(workerid, work_slots)
