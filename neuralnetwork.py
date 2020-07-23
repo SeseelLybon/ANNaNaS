@@ -238,8 +238,8 @@ class NeuralNetwork:
 
         deltaimages=None
 
-        if training_data.shape[0] == 1:
-            deltaimages = self.GradientDecentDelta(training_input=training_data[0], desired_output=training_answers[0])
+        if len(training_data.shape) == 1:
+            deltaimages = self.GradientDecentDelta(training_input=training_data, desired_output=training_answers)
         else:
             for data, answer in zip(training_data, training_answers):
                 deltaimages = self.GradientDecentDelta(training_input=data, desired_output=answer, deltaimages=deltaimages)

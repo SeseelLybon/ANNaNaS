@@ -33,7 +33,6 @@ class Population:
 
         self.maxStaleness = 15 # how often a species can not improve before it's considered stale/stuck
 
-
         for i in range(self.pop.shape[0]):
             self.pop[i] = Meeple(input_size, hidden_size, output_size, isHallow=isHallow)
 
@@ -45,7 +44,7 @@ class Population:
 
 
     #update all the meeps that are currently alive
-    def updateAlive(self, mastermind_solution, max_dif_pegs):
+    def updateAlive(self, mastermind_solution, max_dif_pegs, max_pegs):
 
 #        print("Updating all alive", self.countAlive())
         #Run through all meeps
@@ -59,14 +58,17 @@ class Population:
                 meep.brain.set_inputs(sanitize_input(meep.results_list))
                 meep.brain.fire_network()
                 output = meep.brain.get_outputs()
-                attempt = sanitize_output(output, max_dif_pegs)
+                attempt = sanitize_output(output, max_pegs)
                 result = check_attempt(attempt, mastermind_solution)
                 meep.results_list.append((attempt, result))
 
+                soutput=sanitize_output_inv(mastermind_solution,max_dif_pegs,max_pegs)
+                meep.brain.train(sanitize_input(meep.results_list), soutput, 0.01 )
+
                 if attempt == list(mastermind_solution):
-                    print("someone found a solution...")
-                    meep.brain.score += 1
-                    meep.brain.fitness += max(meep.epochs, 5)
+                    print("someone found a solution...", meep.ID, meep.epochs)
+                    meep.brain.score += min(meep.epochs, 7) # 1
+                    meep.brain.fitness += min(meep.epochs, 7)
                     #meep.isDone = True
                     meep.isAlive = False
                     continue
@@ -107,11 +109,15 @@ class Population:
 
     def naturalSelection(self):
 
+        last_time = time.time()
+
         self.print_deathrate()
         runonce = True
         UnMassExtingtionEventsAttempt = 0
         species_pre_speciate:int = -1
         species_pre_cull:int = -1
+
+        print(deltaTimeS(last_time),"s- Starting Natural Selection")
 
         while self.MassExtingtionEvent == True or runonce:
             if UnMassExtingtionEventsAttempt >= 3:
@@ -128,12 +134,12 @@ class Population:
                 self.species.clear()
             else:
                 UnMassExtingtionEventsAttempt+=1
-                print("Attempt", UnMassExtingtionEventsAttempt, "to speciate")
+                print(deltaTimeS(last_time),"s- Attempt", UnMassExtingtionEventsAttempt, "to speciate")
 
             runonce = False
             self.MassExtingtionEvent = False
 
-
+            print(deltaTimeS(last_time), "s- Sorting Species")
             species_pre_speciate = len(self.species)
             self.speciate()  # seperate the existing population into species for the purpose of natural selection
             species_pre_cull = len(self.species)
@@ -141,6 +147,7 @@ class Population:
             self.sortSpecies()  # sort all the species to the average fitness, best first. In the species sort by meeple's fitness
 
             # Clean the species
+            print(deltaTimeS(last_time), "s- Cleaning Species")
             self.cullSpecies()
             self.setBestMeeple()
 
@@ -157,19 +164,26 @@ class Population:
             print("Added", species_pre_cull - species_pre_speciate, "new species")
 
 
-        print("Species prespeciate:precull:postcull", species_pre_speciate, species_pre_cull, len(self.species))
+        print(deltaTimeS(last_time), "s- Species prespeciate:precull:postcull", species_pre_speciate, species_pre_cull, len(self.species))
 
         id_s = []
         for spec in self.species:
+            # Specie's ID
+            # Amount of meeps in Specie
+            # How stale Specie is
+            # Highest fitness in Specie
+            # Average fitness of Specie
             id_s.append((spec.speciesID, len(spec.meeples),spec.staleness,spec.bestFitness, spec.averageFitness))
         id_s.sort(key=lambda x: x[4])
         id_s.reverse()
         id_s[:] = id_s[:50]
-        print("Species ID's", id_s )
+        print(deltaTimeS(last_time), "s- Species ID's", id_s )
 
         self.bestMeeple = self.bestMeeple.clone()
         #self.bestMeeple.sprite.color = (0,200,100)
         children:List[Meeple] = [self.bestMeeple]
+
+        print(deltaTimeS(last_time), "s- Making new meeps from parents")
 
         for specie in self.species:
             #add the best meeple of a specie to the new generation list
@@ -180,6 +194,8 @@ class Population:
 
             for i in range(newChildrenAmount):
                 children.append(specie.generateChild())
+
+        print(deltaTimeS(last_time), "s- Making new meeps from scratch")
 
         # If the pop-cap hasn't been filled yet, keep getting children from the best specie till it is filled
         while len(children) < self.size:
@@ -312,7 +328,7 @@ class Population:
 
         scorebins = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0}
         for meep in self.pop:
-            score = round( meep.brain.score / (highestscore*0.1), 0)
+            score = round( meep.brain.score / max(highestscore*0.1, 1), 0)
             if score in scorebins:
                 scorebins[score] += 1
             else:
@@ -405,7 +421,8 @@ class Population:
             self.pop[i].brain.serpent_deserialize(pickled_brains[i])
 
 
-
+def deltaTimeS(last_time):
+    return int((time.time()-last_time)%60)
 
 
 # Custom Code for Mastermind
@@ -433,12 +450,32 @@ def check_attempt(attempt, mastermind_solution)->List[int]:
     # Obscufate as the player can't know which exact one is blow or hit.
     return result
 
-def sanitize_output(output, max_dif_pegs):
-    soutput = [ np.argmax(output[:max_dif_pegs*1]),
-                np.argmax(output[max_dif_pegs*1:max_dif_pegs*2]),
-                np.argmax(output[max_dif_pegs*2:max_dif_pegs*3]),
-                np.argmax(output[max_dif_pegs*3:])
-                ]
+# Turn the output of the ANN into a 'choice'
+def sanitize_output(output, max_pegs):
+    #soutput = [ np.argmax(output[:max_dif_pegs*1]),
+    #            np.argmax(output[max_dif_pegs*1:max_dif_pegs*2]),
+    #            np.argmax(output[max_dif_pegs*2:max_dif_pegs*3]),
+    #            np.argmax(output[max_dif_pegs*3:])
+    #            ]
+
+    soutput = []
+    for mp_i in range(max_pegs):
+       soutput.append( np.argmax(output[max_pegs*mp_i:max_pegs*(mp_i+1)] ) )
+
+    return soutput
+
+# Turn the solution into
+def sanitize_output_inv(solution, max_dif_pegs, max_pegs):
+    soutput = []
+
+    for mp_i in range(max_pegs):
+        temp=[0 for i in range(max_dif_pegs)]
+        temp[solution[mp_i]]=1
+        soutput += temp
+
+    #for mdp_i in range(max_dif_pegs):
+    #   soutput.append( np.argmax(output[max_dif_pegs*mdp_i:max_dif_pegs*(mdp_i+1)] ) )
+
     return soutput
 
 def sanitize_input(results):

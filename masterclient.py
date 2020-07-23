@@ -78,12 +78,11 @@ class Main_manager:
 
     def waiting_for_isDone(self):
 
-
         lasttime = 0
         while self.state is not States.done:
 
             curtime = time.time()
-            if curtime-lasttime >= 30:
+            if curtime-lasttime >= 60:
                 print("Testing if all workers were alive")
                 print("all workers alive?", self.local_job_server.test_ifWorkersAlive())
                 lasttime = curtime
@@ -91,13 +90,13 @@ class Main_manager:
                 #print("skipped testing if workers are alive")
                 pass
 
-            print("client: --------")
+            #print("client: --------")
 
 
-            print("Testing if clients are done")
+            #print("Testing if clients are done:", end="")
             if self.local_job_server.test_hasAllResults():
                 self.state = States.processing_results
-                print("All meeps have been tested and returned to the warehouse")
+                print("\nAll meeps have been tested and returned to the warehouse")
 
                 # Future note; we do actually need the brains from the clients because we might run Backpropegation on them.
                 # In that case, the brain *does* change and is important to us!
@@ -115,6 +114,8 @@ class Main_manager:
                 self.state = States.has_jobs_ready
                 print("Starting generation", master_population.generation)
             else:
-                print("Not all jobs are done...")
-                print(self.local_job_server.get_jobs_amount(), self.local_job_server.get_results_amount())
+                #print("Not all jobs are done...")
+                #print(self.local_job_server.get_jobs_amount(),
+                      #self.local_job_server.get_claimed_jobs_amount(),
+                #      self.local_job_server.get_results_amount())
                 time.sleep(10)

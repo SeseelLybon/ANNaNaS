@@ -75,17 +75,17 @@ if __name__ == '__main__':
     #jobless = True
     print("Starting client; waiting for jobs")
 
-
-    #ipAddressServer = sys.argv[1]
-    #work_slots = int(sys.argv[2])
-
-    ipAddressServer = "localhost"
-    work_slots = 10
+    try:
+        ipAddressServer = sys.argv[1]
+        work_slots = int(sys.argv[2])
+    except IndexError:
+        ipAddressServer = "localhost"
+        work_slots = 50
 
     job_server = Pyro4.core.Proxy('PYRO:Greeting@' + ipAddressServer + ':9090')
     client_core.inputsize, client_core.hiddensize, client_core.outputsize = job_server.register_worker(workerid, work_slots)
     pyglet.clock.schedule_interval_soft(lookforjob, 4)
-    pyglet.clock.schedule_interval_soft(register_alive, 30)
+    pyglet.clock.schedule_interval_soft(register_alive, 15)
 
     try:
         pyglet.app.run()

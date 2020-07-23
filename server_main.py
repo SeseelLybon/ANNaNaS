@@ -85,6 +85,9 @@ class Job_server(object):
     def get_jobs_amount(self):
         return len(self.unworked_meeps)
 
+    def get_claimed_jobs_amount(self):
+        return sum([self.workers[wid] for wid in self.workers])
+
     def get_results_amount(self):
         return len(self.results)
 
@@ -116,17 +119,21 @@ class Job_server(object):
     def register_worker(self, workerid, work_slots):
         self.workers[workerid] = Worker(workerid, work_slots)
         print("Jobserver:", self.get_registered_slots())
-        print("Jobserver:", self.workers.keys())
+        #print("Jobserver:", self.workers.keys())
         print("Jobserver:", "Worker registered to labour force", workerid)
         return self.inputsize, self.hiddensize, self.outputsize
 
 
     def register_alive(self, workerid):
+        #print("Debug; ", workerid)
+        #print("Debug;", self.workers.keys())
         self.workers[workerid].isAlive = True
 
 
     def test_ifWorkersAlive(self)->bool:
         deadworkers = []
+
+        # TODO: UTTERLY FUCKING BREAKS SOMEHOW!?
 
         for worker in self.workers.values():
             if not worker.isAlive:
@@ -137,6 +144,7 @@ class Job_server(object):
                 self.hasUnworkedMeeps = True
                 continue
             else:
+                #Set them all to false as they have to set it to true again.
                 worker.isAlive = False
 
         if len(deadworkers) > 0:
@@ -152,8 +160,8 @@ class Job_server(object):
 
 if __name__ == "__main__":
 
-    max_attempts = 30  # amount of attempts a mastermind can make before being considered dead
-    max_dif_pegs = 6  # numbers simulate the diffirent colours of pegs
+    max_attempts = 10  # amount of attempts a mastermind can make before being considered dead
+    max_dif_pegs = 5  # numbers simulate the diffirent colours of pegs
     max_pegs = 4  # how many pegs have to be guessed
 
     server_IP = sys.argv[1]
@@ -163,8 +171,8 @@ if __name__ == "__main__":
     else:
         load_from_save =  "False"
 
-    inputsize=max_pegs*max_attempts+4*max_attempts
-    hiddensize=tuple([0])
+    inputsize=max_pegs*max_attempts*2
+    hiddensize=tuple([max_pegs*max_attempts, max_pegs*max_dif_pegs])
     outputsize=max_dif_pegs*max_pegs
 
     print("Server: Starting server_main.py as __main__")
