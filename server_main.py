@@ -46,6 +46,13 @@ class Job_server(object):
         claimed_meeps = self.unworked_meeps[:self.workers[workerid].work_slots]
         self.workers[workerid].claimedMeeps += self.unworked_meeps[:self.workers[workerid].work_slots]
         self.unworked_meeps[:] = self.unworked_meeps[self.workers[workerid].work_slots:]
+
+
+        print(workerid, "claimed", self.workers[workerid].work_slots, "jobs" )
+        print(self.get_jobs_amount(),
+              self.get_claimed_jobs_amount(),
+              self.get_results_amount())
+
         return claimed_meeps
 
 
@@ -53,6 +60,11 @@ class Job_server(object):
         self.results += x
         self.workers[workerid].isWorkingOnJobs = False
         self.workers[workerid].claimedMeeps.clear()
+
+        print(workerid, "is returning", len(x), "results")
+        print(self.get_jobs_amount(),
+              self.get_claimed_jobs_amount(),
+              self.get_results_amount())
 
 
     def get_hasUnworkedMeeps(self)->bool:
@@ -86,7 +98,7 @@ class Job_server(object):
         return len(self.unworked_meeps)
 
     def get_claimed_jobs_amount(self):
-        return sum([self.workers[wid] for wid in self.workers])
+        return self.max_jobs-len(self.unworked_meeps)-len(self.results)
 
     def get_results_amount(self):
         return len(self.results)
@@ -111,9 +123,9 @@ class Job_server(object):
         self.current_generation = cur_gen
 
 
-    def return_job_results(self, workerid, worked_meeps):
-        self.worked_meeps.append(worked_meeps)
-        self.workers[workerid].hasReturnedResults = True
+    #def return_job_results(self, workerid, worked_meeps):
+    #    self.worked_meeps.append(worked_meeps)
+    #    self.workers[workerid].hasReturnedResults = True
 
 
     def register_worker(self, workerid, work_slots):
@@ -133,7 +145,6 @@ class Job_server(object):
     def test_ifWorkersAlive(self)->bool:
         deadworkers = []
 
-        # TODO: UTTERLY FUCKING BREAKS SOMEHOW!?
 
         for worker in self.workers.values():
             if not worker.isAlive:
@@ -151,6 +162,10 @@ class Job_server(object):
             for deadworkerid in deadworkers:
                 self.workers.pop(deadworkerid)
                 print("Jobserver:", "Worker", deadworkerid, "left the building")
+
+            print(self.get_jobs_amount(),
+                  self.get_claimed_jobs_amount(),
+                  self.get_results_amount())
             return False
         else:
             return True
@@ -172,8 +187,8 @@ if __name__ == "__main__":
         load_from_save =  "False"
 
     inputsize=max_pegs*max_attempts*2
-    hiddensize=tuple([max_pegs*max_attempts, max_pegs*max_dif_pegs])
-    outputsize=max_dif_pegs*max_pegs
+    hiddensize=tuple([max_pegs*max_attempts*2, max_pegs*max_attempts, max_pegs*max_dif_pegs])
+    outputsize=max_pegs*max_dif_pegs
 
     print("Server: Starting server_main.py as __main__")
     #server_IP = "10.19.38.66"

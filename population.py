@@ -66,9 +66,9 @@ class Population:
                 meep.brain.train(sanitize_input(meep.results_list), soutput, 0.01 )
 
                 if attempt == list(mastermind_solution):
-                    print("someone found a solution...", meep.ID, meep.epochs)
-                    meep.brain.score += min(meep.epochs, 7) # 1
-                    meep.brain.fitness += min(meep.epochs, 7)
+                    meep.brain.score += min(meep.epochs, 7)+1 # 1
+                    meep.brain.fitness += min(meep.epochs, 7)+1
+                    print("someone found a solution...", meep.ID, meep.epochs, meep.brain.score)
                     #meep.isDone = True
                     meep.isAlive = False
                     continue
@@ -334,7 +334,7 @@ class Population:
             else:
                 scorebins[score] = 1
 
-
+        newline:str = ""
         with open("spreadsheetdata.txt", "a") as f:
             temp_string = ""
             for value in scorebins.values():
@@ -343,26 +343,27 @@ class Population:
             f.write(str(time.time()) + "\t" +
                     str(self.highestScore) + "\t" +
                     str(max(self.pop, key=lambda kv: kv.brain.score).brain.score) + "\t" +
-                    str(self.generation) +
-                    temp_string + "\n")
+                    str(self.generation) + "\n")# +
+                    #temp_string + "\n")
             # Time, Highest score overall, highst score generation, generation, deathbin
 
 
 
-            for specie_i in range(len(self.species), min(len(self.species), 50)):
+            for specie_i in range(len(self.species), min(len(self.species), 10)):
                 specie = self.species[specie_i]
                 specie.sortSpecie()
-                f.write("\t" +
-                        str(specie.speciesID) + "\t" +
-                        str(len(specie.meeples)) + "\t" +
-                        str(specie.meeples[0].brain.fitness) + "\t" +
-                        str(specie.meeples[-1].brain.fitness) + "\t" +
-                        str(specie.averageFitness) + "\t" +
-                        str(specie.meeples[len(specie.meeples)//2] )
-                        )
+                newline += "\t" + \
+                          str(specie.speciesID) + "\t" + \
+                          str(len(specie.meeples)) + "\t" + \
+                          str(specie.meeples[0].brain.fitness) + "\t" + \
+                          str(specie.meeples[-1].brain.fitness) + "\t" + \
+                          str(specie.averageFitness) + "\t" + \
+                          str(specie.meeples[len(specie.meeples)//2] + "\n" )
+                f.write( newline )
         #for key, value in sorted(scorebins.items(), key=lambda kv: kv[0]):
         #    print(key,":",value, " - ")
         print("death bin:amount,", sorted(scorebins.items(), key=lambda kv: kv[0]))
+        print(newline)
 
     def pickle_population_to_file(self):
 
@@ -460,7 +461,9 @@ def sanitize_output(output, max_pegs):
 
     soutput = []
     for mp_i in range(max_pegs):
-       soutput.append( np.argmax(output[max_pegs*mp_i:max_pegs*(mp_i+1)] ) )
+        # The +/-1 is because I need to shift the solution a bit as 0 is an empty peg.
+        # atm of writing I dunno if this  works correctly.
+       soutput.append( np.argmax(output[max_pegs*mp_i:max_pegs*(mp_i+1)]  ) +1 )
 
     return soutput
 
@@ -470,7 +473,7 @@ def sanitize_output_inv(solution, max_dif_pegs, max_pegs):
 
     for mp_i in range(max_pegs):
         temp=[0 for i in range(max_dif_pegs)]
-        temp[solution[mp_i]]=1
+        temp[solution[mp_i]-1]=1
         soutput += temp
 
     #for mdp_i in range(max_dif_pegs):

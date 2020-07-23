@@ -113,7 +113,7 @@ def update(dt):
 
         # generate new solution to test all meeps against
         # Not sure if this generation works, as in the memory, unused output is 0
-        mastermind_solution = np.random.randint(0, max_dif_pegs, max_pegs)
+        mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs)
 
         print("starting run", runi, mastermind_solution)
 

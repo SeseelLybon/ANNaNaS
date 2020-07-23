@@ -78,13 +78,15 @@ class Main_manager:
 
     def waiting_for_isDone(self):
 
+        #The issue of workers getting kicked out by the server because they don't reply in time is a blocking function issue on the worker side.
+
         lasttime = 0
         while self.state is not States.done:
 
             curtime = time.time()
-            if curtime-lasttime >= 60:
-                print("Testing if all workers were alive")
-                print("all workers alive?", self.local_job_server.test_ifWorkersAlive())
+            if curtime-lasttime >= 120:
+                print("Testing if all workers were alive - ", end="")
+                print("all workers alive? ", self.local_job_server.test_ifWorkersAlive() )
                 lasttime = curtime
             else:
                 #print("skipped testing if workers are alive")
@@ -116,6 +118,6 @@ class Main_manager:
             else:
                 #print("Not all jobs are done...")
                 #print(self.local_job_server.get_jobs_amount(),
-                      #self.local_job_server.get_claimed_jobs_amount(),
+                #      self.local_job_server.get_claimed_jobs_amount(),
                 #      self.local_job_server.get_results_amount())
                 time.sleep(10)
