@@ -78,7 +78,14 @@ class Main_manager:
 
     def waiting_for_isDone(self):
 
-        #The issue of workers getting kicked out by the server because they don't reply in time is a blocking function issue on the worker side.
+        # The issue of workers getting kicked out by the server because they don't reply in time is a blocking function
+        #   issue on the worker side.
+        # Unsure how to fix though, since "population.updateAlive()" can take an arbetrary long amount of time to run.
+        # Any speed up gained in this function is only temporary to whenever I use a bigger ANN + update() function.
+        # Best solution is to somehow offload the 'ping server I'm alive' function. Like a second progres;
+        #   but this one wouldn't crash if the client crashes.
+        # That said, this function doesn't actually have to ping a large amount of times anyway, so in that regard I can
+        #   could justify delaying the inevitable. But this is gonna bound up showing up eventually.
 
         lasttime = 0
         while self.state is not States.done:
