@@ -3,7 +3,7 @@
 import numpy as np
 from typing import List
 from species import Species
-from math import floor
+import math
 #import pyglet - not drawing stuff atm
 from meeple import Meeple
 
@@ -31,7 +31,7 @@ class Population:
         self.training_data = training_data
         self.training_answers = training_answers
 
-        self.maxStaleness = 15 # how often a species can not improve before it's considered stale/stuck
+        self.maxStaleness = 10 # how often a species can not improve before it's considered stale/stuck
 
         for i in range(self.pop.shape[0]):
             self.pop[i] = Meeple(input_size, hidden_size, output_size, isHallow=isHallow)
@@ -58,7 +58,7 @@ class Population:
                 meep.brain.set_inputs(sanitize_input(meep.results_list))
                 meep.brain.fire_network()
                 output = meep.brain.get_outputs()
-                attempt = sanitize_output(output, max_pegs)
+                attempt = sanitize_output(output, max_pegs, max_dif_pegs)
                 result = check_attempt(attempt, mastermind_solution)
                 meep.results_list.append((attempt, result))
 
@@ -117,7 +117,7 @@ class Population:
         species_pre_speciate:int = -1
         species_pre_cull:int = -1
 
-        print(deltaTimeS(last_time),"s- Starting Natural Selection")
+        print(deltaTimeS(last_time),"s - Starting Natural Selection")
 
         while self.MassExtingtionEvent == True or runonce:
             if UnMassExtingtionEventsAttempt >= 3:
@@ -134,23 +134,25 @@ class Population:
                 self.species.clear()
             else:
                 UnMassExtingtionEventsAttempt+=1
-                print(deltaTimeS(last_time),"s- Attempt", UnMassExtingtionEventsAttempt, "to speciate")
+                print(deltaTimeS(last_time),"s - Attempt", UnMassExtingtionEventsAttempt, "to speciate")
 
             runonce = False
             self.MassExtingtionEvent = False
 
-            print(deltaTimeS(last_time), "s- Sorting Species")
+            print(deltaTimeS(last_time), "s - Speciating")
             species_pre_speciate = len(self.species)
             self.speciate()  # seperate the existing population into species for the purpose of natural selection
             species_pre_cull = len(self.species)
+            print(deltaTimeS(last_time), "s - Sorting Species")
             self.calculateFitness()  # calc fitness of each meeple, currently not needed
             self.sortSpecies()  # sort all the species to the average fitness, best first. In the species sort by meeple's fitness
 
             # Clean the species
-            print(deltaTimeS(last_time), "s- Cleaning Species")
+            print(deltaTimeS(last_time), "s - Culling Species")
             self.cullSpecies()
             self.setBestMeeple()
 
+            print(deltaTimeS(last_time), "s - Killing Species")
             self.killBadSpecies()
             self.killStaleSpecies()
 
@@ -162,7 +164,6 @@ class Population:
 
         if species_pre_cull - species_pre_speciate > 0:
             print("Added", species_pre_cull - species_pre_speciate, "new species")
-
 
         print(deltaTimeS(last_time), "s- Species prespeciate:precull:postcull", species_pre_speciate, species_pre_cull, len(self.species))
 
@@ -189,8 +190,8 @@ class Population:
             #add the best meeple of a specie to the new generation list
             children.append(specie.bestMeeple.clone())
 
-            #generate number of children based on how well the species is soing compared to the rest; the better the bigger.
-            newChildrenAmount = floor((specie.averageFitness/self.getAverageFitnessSum()) *self.pop.size) -1
+            #generate number of children based on how well the species is doing compared to the rest; the better the bigger.
+            newChildrenAmount = math.floor((specie.averageFitness/self.getAverageFitnessSum()) *self.pop.size) -1
 
             for i in range(newChildrenAmount):
                 children.append(specie.generateChild())
@@ -241,7 +242,7 @@ class Population:
 
     def calculateFitness(self):
         for meep in self.pop:
-            meep.brain.fitness = meep.brain.score*2
+            meep.brain.fitness = meep.brain.score**2
 
     #get the sum of averages from each specie
     def getAverageFitnessSum(self)->float:
@@ -349,17 +350,16 @@ class Population:
 
 
 
-            for specie_i in range(len(self.species), min(len(self.species), 10)):
-                specie = self.species[specie_i]
-                specie.sortSpecie()
-                newline += "\t" + \
-                          str(specie.speciesID) + "\t" + \
-                          str(len(specie.meeples)) + "\t" + \
-                          str(specie.meeples[0].brain.fitness) + "\t" + \
-                          str(specie.meeples[-1].brain.fitness) + "\t" + \
-                          str(specie.averageFitness) + "\t" + \
-                          str(specie.meeples[len(specie.meeples)//2] + "\n" )
-                f.write( newline )
+            #for specie in self.species[:max(10, len(self.species))]:
+            #    specie.sortSpecie()
+            #    newline += "\t" + \
+            #              str(specie.speciesID) + "\t" + \
+            #              str(len(specie.meeples)) + "\t" + \
+            #              str(specie.meeples[0].brain.fitness) + "\t" + \
+            #              str(specie.meeples[len(specie.meeples)//2] ) + "\t" + \
+            #              str(specie.meeples[-1].brain.fitness) + "\t" + \
+            #              str(specie.averageFitness) + "\t" + "\n"
+            #    f.write( newline )
         #for key, value in sorted(scorebins.items(), key=lambda kv: kv[0]):
         #    print(key,":",value, " - ")
         print("death bin:amount,", sorted(scorebins.items(), key=lambda kv: kv[0]))
@@ -423,7 +423,7 @@ class Population:
 
 
 def deltaTimeS(last_time):
-    return int((time.time()-last_time)%60)
+    return int((time.time()-last_time)//60)
 
 
 # Custom Code for Mastermind
@@ -452,7 +452,7 @@ def check_attempt(attempt, mastermind_solution)->List[int]:
     return result
 
 # Turn the output of the ANN into a 'choice'
-def sanitize_output(output, max_pegs):
+def sanitize_output(output, max_pegs, max_dif_pegs):
     #soutput = [ np.argmax(output[:max_dif_pegs*1]),
     #            np.argmax(output[max_dif_pegs*1:max_dif_pegs*2]),
     #            np.argmax(output[max_dif_pegs*2:max_dif_pegs*3]),
@@ -463,7 +463,7 @@ def sanitize_output(output, max_pegs):
     for mp_i in range(max_pegs):
         # The +/-1 is because I need to shift the solution a bit as 0 is an empty peg.
         # atm of writing I dunno if this  works correctly.
-       soutput.append( np.argmax(output[max_pegs*mp_i:max_pegs*(mp_i+1)]  ) +1 )
+       soutput.append( np.argmax(output[max_dif_pegs*mp_i:max_dif_pegs*(mp_i+1)]  ) +1 )
 
     return soutput
 
@@ -487,3 +487,36 @@ def sanitize_input(results):
         sinput += t[0]+t[1]
     #print(sinput)
     return np.array(sinput)
+
+
+
+if __name__ == '__main__':
+    max_attempts = 10  # amount of attempts a mastermind can make before being considered dead
+    max_dif_pegs = 4  # numbers simulate the diffirent colours of pegs
+    max_pegs = 2  # how many pegs have to be guessed
+
+    inputsize=max_pegs*max_attempts*2 # Double to count for the 'hit and blow'
+    hiddensize=tuple([max_pegs*max_attempts*2, max_pegs*max_attempts, max_pegs*max_dif_pegs])
+    #hiddensize=tuple([60, 40, 20])
+    outputsize=max_pegs*max_dif_pegs
+
+    mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs)
+
+    meep:Meeple = Meeple(input_size=inputsize, hidden_size=hiddensize, output_size=outputsize,
+                             isHallow=False)
+
+
+    for i in range(10):
+
+        meep.brain.set_inputs(sanitize_input(meep.results_list))
+        meep.brain.fire_network()
+        output = meep.brain.get_outputs()
+        attempt = sanitize_output(output, max_pegs, max_dif_pegs)
+        result = check_attempt(attempt, mastermind_solution)
+        meep.results_list.append((attempt, result))
+        print(i)
+        print("mastermind_solution",mastermind_solution)
+        print("output", output)
+        print("attempt", attempt)
+        print("result", result)
+    print("meep.results_list",meep.results_list)

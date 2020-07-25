@@ -176,18 +176,25 @@ class Job_server(object):
 if __name__ == "__main__":
 
     max_attempts = 10  # amount of attempts a mastermind can make before being considered dead
-    max_dif_pegs = 5  # numbers simulate the diffirent colours of pegs
+    max_dif_pegs = 6  # numbers simulate the diffirent colours of pegs
     max_pegs = 4  # how many pegs have to be guessed
 
-    server_IP = sys.argv[1]
-    pop_size = int(sys.argv[2])
-    if len(sys.argv) == 4:
-        load_from_save = sys.argv[3]
-    else:
+    try:
+        server_IP = sys.argv[1]
+        pop_size = int(sys.argv[2])
+        if len(sys.argv) == 4:
+            load_from_save = sys.argv[3]
+        else:
+            load_from_save =  "False"
+    except IndexError:
+        server_IP = "localhost"
+        pop_size = 300
         load_from_save =  "False"
 
-    inputsize=max_pegs*max_attempts*2
+
+    inputsize=max_pegs*max_attempts*2 # Double to count for the 'hit and blow'
     hiddensize=tuple([max_pegs*max_attempts*2, max_pegs*max_attempts, max_pegs*max_dif_pegs])
+    #hiddensize=tuple([60, 40, 20])
     outputsize=max_pegs*max_dif_pegs
 
     print("Server: Starting server_main.py as __main__")

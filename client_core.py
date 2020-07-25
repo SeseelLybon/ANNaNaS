@@ -31,7 +31,7 @@ skip_once = False
 from meeple import Meeple
 
 max_attempts = 10 # amount of attempts a mastermind can make before being considered dead
-max_dif_pegs = 5 # numbers simulate the diffirent colours of pegs
+max_dif_pegs = 6 # numbers simulate the diffirent colours of pegs
 max_pegs = 4 # how many pegs have to be guessed
 
 
@@ -43,62 +43,6 @@ max_pegs = 4 # how many pegs have to be guessed
 client_isDone = False
 
 
-
-
-
-#score_label = pyglet.text.Label('score: ' + str(score),
-#                  font_name='Times New Roman',
-#                  font_size=12,
-#                  x=50, y=450,
-#                  anchor_x='left', anchor_y='center')
-#score_best_label = pyglet.text.Label('best score: ',
-#                  font_name='Times New Roman',
-#                  font_size=12,
-#                  x=50, y=425,
-#                  anchor_x='left', anchor_y='center')
-#dinos_live_label = pyglet.text.Label("Dino's alive: ",
-#                   font_name='Times New Roman',
-#                   font_size=12,
-#                   x=50, y=400,
-#                   anchor_x='left', anchor_y='center')
-
-#@window.event
-#def on_draw():
-#    global client_population
-#    global window
-#    global score
-#    global lastspawnscore
-#    global showGraph
-#
-#    window.clear()
-#
-#    return
-#
-##    if client_population.bestMeeple is not None and showGraph:
-##        client_population.bestMeeple.brain.updateposGFX([600, 750], [550, 500])
-##        client_population.bestMeeple.brain.updateintensityGFX([2, 2,  # dinner pos
-##                                                               0.5, 2, 3, 3,  # first object
-##                                                               1.5])       # score
-##        client_population.bestMeeple.brain.draw()
-##
-##    # Run the game here
-##    # Move the objects/obstacles on the platform, not the dino or the platform
-##    # Use the update() and isDone() function
-##
-##    score_label.text = 'score: ' + str(score)
-##    score_label.draw()
-##    score_best_label.text = 'best score: ' + str(client_population.highestScore)
-##    score_best_label.draw()
-##    dinos_live_label.text = "Dino's alive: " + str(client_population.countAlive()) + " of " + str(client_population.size)
-##    dinos_live_label.draw()
-##
-##    obt.ground.draw()
-##
-##    client_population.drawAlife()
-##
-##    for obst in obstacle_drawlist:
-##        obst.draw()
-##    #pops.bestMeeple.draw()
 
 runi = 0
 runm = 50
@@ -113,7 +57,9 @@ def update(dt):
 
         # generate new solution to test all meeps against
         # Not sure if this generation works, as in the memory, unused output is 0
-        mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs)
+        #mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs, )
+
+        mastermind_solution = generate_mastermind_solution()
 
         print("starting run", runi, mastermind_solution)
 
@@ -180,84 +126,59 @@ def dojob(job):
     pyglet.clock.schedule_interval_soft(update, 1 / 1000)
 
 
+def generate_mastermind_solution(t='unique'):
+    global max_dif_pegs
+    global max_pegs
+
+    if t == 'unique':
+        temp_rng = list(range(1, max_dif_pegs + 1))
+        np.random.shuffle(temp_rng)
+        mastermind_solution = temp_rng[:max_pegs]
+    else:
+        mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs)
+    return mastermind_solution
 
 
 
 
 
 
-
-
-#if __name__ == '__main__':
-#    max_attempts = 10
-#
-#    input_size=max_pegs*max_attempts+4*max_attempts
-#    hidden_size=tuple([0])
-#    output_size=max_dif_pegs*max_pegs
-#
-#
-#    client_population = Population(10, input_size=input_size, hidden_size=hidden_size, output_size=output_size,
-#                                   isHallow=False)
-#
-#
-#    for meep in client_population.pop:
-#        meep.brain.score = 0
-#        meep.brain.fitness = 0
-#
-#
-#    # Run test
-#    for runi in range(100):
-#        print("starting run", runi)
-#        # generate new solution to test all meeps against
-#        mastermind_solution = np.random.randint(1, max_dif_pegs, max_pegs)
-#
-#        # reset meeps every run except score
-#        for meep in client_population.pop:
-#            meep: Meeple = meep
-#            meep.results_list = []  # whipe it's memory of attempts
-#            meep.epochs = max_attempts # reset the amount of times it can try
-#            meep.isAlive = True
-#            meep.isDone = False
-#
-#        # run all meeps against this until pop.isDone.
-#        while not client_population.isDone():
-#            client_population.updateAlive(mastermind_solution, max_dif_pegs)
-#
-#    print("--------------------------------------------")
-#    print("All dino's are either done or dead.")
-#    print("Best score this batch:", max([meep.brain.score for meep in client_population.pop]))
-
-
-
-if __name__ == '__main__':
+def test():
+    max_dif_pegs = 4
+    max_pegs = 4
+    max_attempts = 10
 
     inputsize = max_pegs * max_attempts * 2
-    hiddensize = tuple([max_pegs * max_attempts])
+    hiddensize=tuple([60, 40, 20])
     outputsize = max_dif_pegs * max_pegs
 
-    testpop:Population = Population(1, input_size=inputsize, hidden_size=hiddensize, output_size=outputsize, isHallow=False)
+    testpop:Population = Population(50, input_size=inputsize, hidden_size=hiddensize, output_size=outputsize, isHallow=False)
+
 
     print("starting run", runi)
     # generate new solution to test all meeps against
-    mastermind_solution = np.random.randint(1, max_dif_pegs, max_pegs)
 
-
+    mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs)
 
     # run all meeps against this until pop.isDone.
     while not testpop.isDone():
         print("----")
         testpop.updateAlive(mastermind_solution, max_dif_pegs, max_pegs)
 
+    print("--------------------------------------------")
+    print("All dino's are either done or dead.")
+    best_score = max([meep.brain.score for meep in testpop.pop])
+    print("Best score this batch:", best_score)
+
+
+    testpop.naturalSelection()
 
 
 
-    if runi >= runm:
-        print("--------------------------------------------")
-        print("All dino's are either done or dead.")
-        best_score = max([meep.brain.score for meep in testpop.pop])
-        print("Best score this batch:", best_score)
-        pyglet.clock.unschedule(update)
-        client_isDone = True
+if __name__ == '__main__':
+    import cProfile
 
-
-
+    p = cProfile.Profile()
+    #p.runctx('oldbrain.ReLU(x)', locals={}, globals={'oldbrain':oldbrain} )
+    p.runcall(test)
+    p.print_stats()

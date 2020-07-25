@@ -116,7 +116,7 @@ class Main_manager:
                 print("Starting natural selection")
                 master_population.naturalSelection()
 
-                print("Done Natural Selection/MachineLearning. Sending jobs to warehouse")
+                print("Done Natural Selection/MachineLearning. Sending", len(master_population.pop),"jobs to warehouse")
                 # send population back to server
                 self.local_job_server.set_jobs(master_population.pickle_population_to_list())
                 master_population.pickle_population_to_file()

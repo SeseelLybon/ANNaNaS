@@ -1,14 +1,20 @@
 import math
 import numpy as np
 import pyglet
-import copy
+
 from pyglet.gl import *
 from typing import List
 
 import serpent
 import copy
 
-import ast
+
+# atm code needs to be rewritten to use numba, but reading it up, it looks promising as a quick&dirty solution
+# import numba as nb
+# #performance-debug info
+# import llvmlite.binding as llvm
+# llvm.set_option('', '--debug-only=loop-vectorize')
+
 
 class NeuralNetwork:
 
@@ -654,32 +660,29 @@ class Node:
         #                                   batch=batch )
         self.sprite = None
 
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
+
+    import timeit
+    import cProfile
     print("Starting Neuralnetwork.py as main")
     import pickle
 
     print("Printing data old brain")
-    oldbrain = NeuralNetwork(4,tuple([4,4]),4)
-    oldbrain.set_inputs(np.array([1,2,3,4]))
-    oldbrain.fire_network()
-    print(oldbrain.get_outputs())
+    oldbrain = NeuralNetwork(60,tuple([80,40,16]),16)
+    oldbrain.set_inputs(np.array(range(60)))
 
-    pickledbrain1 = oldbrain.serpent_serialize()
-
-    print("Printing data new (hollow) brain")
-    newbrain = NeuralNetwork(4,tuple([4,4]),4, isHollow=True)
-    newbrain.set_inputs(np.array([1,2,3,4]))
-    newbrain.fire_network()
-    print(newbrain.get_outputs())
-
-    print("Printing data new brain with unpickled brain")
-    newbrain.serpent_deserialize(pickledbrain1)
-    newbrain.set_inputs(np.array([1,2,3,4]))
-    newbrain.fire_network()
-    print(newbrain.get_outputs())
-
-    temp = False
-
+    p = cProfile.Profile()
+    #p.runctx('oldbrain.ReLU(x)', locals={'x': 5}, globals={'oldbrain':oldbrain} )
+    p.runcall(oldbrain.fire_network)
+    p.print_stats()
 
     print("Finished Neuralnetwork.py as main")
 
