@@ -44,7 +44,7 @@ client_isDone = False
 
 
 
-runi = 0
+runi = 1
 runm = 50
 
 def update(dt):
@@ -53,13 +53,13 @@ def update(dt):
     global client_isDone
     global client_population
 
-    if runi < runm:
+    if runi <= runm:
 
         # generate new solution to test all meeps against
         # Not sure if this generation works, as in the memory, unused output is 0
         #mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs, )
 
-        mastermind_solution = generate_mastermind_solution()
+        mastermind_solution = generate_mastermind_solution("ununique")
 
         print("starting run", runi, mastermind_solution)
 
@@ -73,7 +73,7 @@ def update(dt):
 
         # run all meeps against this until pop.isDone.
         while not client_population.isDone():
-            client_population.updateAlive(mastermind_solution, max_dif_pegs, max_pegs)
+            client_population.updateAlive(mastermind_solution, max_dif_pegs, max_pegs, runi, runm)
 
         runi+=1
 
@@ -83,7 +83,7 @@ def update(dt):
     #    del meep.results_list
 
 
-    if runi >= runm:
+    if runi > runm:
         print("--------------------------------------------")
         print("All dino's are either done or dead.")
         best_score = max([meep.brain.score for meep in client_population.pop])
@@ -120,7 +120,7 @@ def dojob(job):
         meep.brain.score = 0
         meep.brain.fitness = 0
 
-    runi = 0
+    runi = 1
 
     # start the simulation and poll if it's done
     pyglet.clock.schedule_interval_soft(update, 1 / 1000)

@@ -66,10 +66,10 @@ class Population:
                 meep.brain.train(sanitize_input(meep.results_list), soutput, 0.01 )
 
                 if attempt == list(mastermind_solution):
-                    meep.brain.wins += 1
+                    meep.wins += 1
                     meep.brain.score += min(meep.epochs, 7)+1 # 1
                     meep.brain.fitness += min(meep.epochs, 7)+1
-                    print("someone found a solution...", meep.ID, meep.epochs, meep.brain.score, round(meep.brain/cur_run*100, 2))
+                    print("someone found a solution...", meep.ID, meep.epochs, meep.brain.score, round((meep.wins/cur_run)*100, 2))
                     #meep.isDone = True
                     meep.isAlive = False
                     continue
