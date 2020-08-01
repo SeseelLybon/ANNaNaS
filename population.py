@@ -387,6 +387,34 @@ class Population:
         with open('pickledmeeps.picklejar', 'wb') as the_file:
             serpent.dump( [self.generation, Meeple.global_ID[0]-self.size, ser_bytes_meeps], the_file)
 
+
+    def pickle_bestmeep_to_file(self):
+
+        try:
+            os_remove('pickledbestmeep.picklejar_old')
+        except FileNotFoundError:
+            pass
+            # File doesn't exist, so doesn't need to be removed
+        finally:
+            try:
+                os_rename('pickledbestmeep.picklejar', 'pickledbestmeep.picklejar_old')
+            except FileNotFoundError:
+                pass
+                # File doesn't exist, so doesn't need to be renamed
+
+        with open('pickledbestmeep.picklejar', 'wb') as the_file:
+            serpent.dump( [self.bestMeeple.brain.serpent_serialize()], the_file)
+
+
+    def unpickle_bestmeep_from_file(self):
+
+        with open('pickledbestmeep.picklejar', 'rb') as the_file:
+            unpickledjar = serpent.load(the_file)
+
+        self.bestMeeple = unpickledjar[0]
+
+
+
     def unpickle_population_from_file(self):
 
         with open('pickledmeeps.picklejar', 'rb') as the_file:
