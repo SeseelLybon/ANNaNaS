@@ -44,7 +44,7 @@ class Population:
 
 
     #update all the meeps that are currently alive
-    def updateAlive(self, mastermind_solution, max_dif_pegs, max_pegs):
+    def updateAlive(self, mastermind_solution, max_dif_pegs, max_pegs, cur_run, max_run):
 
 #        print("Updating all alive", self.countAlive())
         #Run through all meeps
@@ -66,9 +66,10 @@ class Population:
                 meep.brain.train(sanitize_input(meep.results_list), soutput, 0.01 )
 
                 if attempt == list(mastermind_solution):
+                    meep.brain.wins += 1
                     meep.brain.score += min(meep.epochs, 7)+1 # 1
                     meep.brain.fitness += min(meep.epochs, 7)+1
-                    print("someone found a solution...", meep.ID, meep.epochs, meep.brain.score)
+                    print("someone found a solution...", meep.ID, meep.epochs, meep.brain.score, round(meep.brain/cur_run*100, 2))
                     #meep.isDone = True
                     meep.isAlive = False
                     continue

@@ -116,6 +116,10 @@ class Main_manager:
                 print("Starting natural selection")
                 master_population.naturalSelection()
 
+                print("Pickling best meep of this generation, with his score of", master_population.bestMeeple.brain.score)
+                print("... I hope that's a high score.")
+                master_population.pickle_bestmeep_to_file()
+
                 print("Done Natural Selection/MachineLearning. Sending", len(master_population.pop),"jobs to warehouse")
                 # send population back to server
                 self.local_job_server.set_jobs(master_population.pickle_population_to_list())

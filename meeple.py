@@ -9,6 +9,7 @@ class Meeple:
     def __init__(self, input_size:int, hidden_size:tuple, output_size:int, isHallow=False, epochs=10):
         self.ID = self.global_ID[0]
         self.global_ID[0] += 1
+        self.wins = 0
         self.epochs = epochs
         self.brain: NeuralNetwork
         self.isAlive = True
