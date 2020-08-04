@@ -1,12 +1,8 @@
-import math
 import numpy as np
-import pyglet
 
-from pyglet.gl import *
 from typing import List
 
 import serpent
-import copy
 
 import tensorflow as tf
 
@@ -183,59 +179,66 @@ class NeuralNetwork:
 
     def serpent_serialize(self):
 
-        if self.hidden_layers[0] is not 0:
-            pickleblebrain = [[[None for j in range(self.hidden_layers[i].size)] for i in range(len(self.hidden_layers))],
-                              [None for i in range(self.output_layer.size)]
-                              ]
+        #pickledbrain = serpent.dumps([self.model.get_config(),
+        #                              [ [list(map(float, list(self.model.layers[0].get_weights()[0][0]))),
+        #                                 list(map(float, list(self.model.layers[0].get_weights()[1]))) ] for i in range(len(self.model.layers))],
+        #                              self.score])
 
-            # Get the weight lists from the hidden nodes
-            for layer_i in range(len(pickleblebrain[0])):
-                for node_i in range(len(pickleblebrain[0][layer_i])):
-                    pickleblebrain[0][layer_i][node_i] = list(copy.deepcopy(self.hidden_layers[layer_i][node_i].weights))
+        pickableweightslist = []
 
-            # Get the weight lists from the output nodes
-            for i in range(len(pickleblebrain[1])):
-                pickleblebrain[1][i] = list(copy.deepcopy(self.output_layer[i].weights))
+        for li in range(len(self.hidden_size)+1):
+            temp_W = []
+            temp_B = []
+            for pli in range(len(self.model.layers[li].get_weights()[0])):
+                temp_W += [self.model.layers[li].get_weights()[0][pli].tolist()]
+            temp_B = self.model.layers[li].get_weights()[1].tolist()
+            pickableweightslist.append([temp_W, temp_B])
 
-            # TODO: Also pickle the fitness of the brain
-
-
-        else:
-            pickleblebrain = [None for i in range(self.output_layer.size)]
-
-            # Get the weight lists from the output nodes
-            for node_i in range(len(pickleblebrain)):
-                pickleblebrain[node_i] = list(copy.deepcopy(self.output_layer[node_i].weights))
-
-            # TODO: Also pickle the fitness of the brain
-
-        pickledbrain = serpent.dumps([pickleblebrain, self.score])
+        pickledbrain = serpent.dumps([self.model.get_config(),
+                                      pickableweightslist,
+                                      self.score])
 
         return pickledbrain
 
 
     def serpent_deserialize(self, pickledbrain):
 
-        # TODO: Needs to also unpickle the fitness
         unpickledbrain = serpent.loads(serpent.tobytes(pickledbrain))
-        self.score = unpickledbrain[1]
-        unpickledbrain = unpickledbrain[0]
+        self.score = unpickledbrain[2]
+
+        self.model = tf.keras.Sequential.from_config(unpickledbrain[0])
+
+        if self.hidden_size[0] != 0:
+            for hli in range(len(self.hidden_size)): # hli: hidden layer index
+                temp = self.model.layers[hli].get_weights()
+                for pli in range(len(unpickledbrain[1][hli][0])):
+                    for owi in range(len(unpickledbrain[1][hli][0][pli])): # owi; output weight index
+                        # copy either the self or parent2 ***weight*** of this weight on this layer into the child
+                        temp[0][pli][owi] = np.float32(unpickledbrain[1][hli][0][pli][owi])
+                        pass
+
+                for owi in range(len(unpickledbrain[1][hli][1])):
+                    temp[1][owi] = unpickledbrain[1][hli][1][owi]
+
+                self.model.layers[hli].set_weights(temp)
 
 
-        if self.hidden_layers[0] is not 0:
+        temp = self.model.layers[-1].get_weights()
+        for pli in range(len(unpickledbrain[1][-1][0])):
+            for owi in range(len(unpickledbrain[1][-1][0][pli])): # owi; output weight index
+                # copy either the self or parent2 ***weight*** of this weight on this layer into the child
+                temp[0][pli][owi] = np.float32(unpickledbrain[1][-1][0][pli][owi])
 
-            # Get the weight lists from the hidden nodes
-            for layer_i in range(len(unpickledbrain[0])):
-                for node_i in range(len(unpickledbrain[0][layer_i])):
-                    self.hidden_layers[layer_i][node_i].weights = np.array(unpickledbrain[0][layer_i][node_i])
+        for owi in range(len(unpickledbrain[1][-1][1])):
+            temp[1][owi] = unpickledbrain[1][-1][1][owi]
 
-            # Get the weight lists from the output nodes
-            for node_i in range(len(unpickledbrain[1])):
-                self.output_layer[node_i].weights = np.array(unpickledbrain[1][node_i])
-        else:
+        self.model.layers[-1].set_weights(temp)
 
-            for node_i in range(len(unpickledbrain)):
-                self.output_layer[node_i].weights = np.array(unpickledbrain[node_i])
+        self.model.compile(optimizer=self.optimizer,
+                           loss=self.loss,
+                           metrics=[self.metrics]) # Turn this to True to be able to debug the models.
+
+        self.model.build([None, self.input_size])
 
 
     def getAmountWeights(self)->int:
@@ -268,25 +271,10 @@ if __name__ == "__main__":
     brain1 = NeuralNetwork(input_size, hidden_size, output_size)
 
     train_set = np.array( [[0],[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14],[15]] )
-    answer_set = np.array( [[0,0,0,0], # 0
-                            [1,0,0,0],
-                            [0,1,0,0],
-                            [1,1,0,0], # 3
-
-                            [0,0,1,0], # 4
-                            [1,0,1,0],
-                            [0,1,1,0],
-                            [1,1,1,0], # 7
-
-                            [0,0,0,1], # 8
-                            [1,0,0,1],
-                            [0,1,0,1],
-                            [1,1,0,1], # 11
-
-                            [0,0,1,1], # 12
-                            [1,0,1,1],
-                            [0,1,1,1],
-                            [1,1,1,1], # 15
+    answer_set = np.array( [[0,0,0,0],[1,0,0,0],[0,1,0,0],[1,1,0,0],
+                            [0,0,1,0],[1,0,1,0],[0,1,1,0],[1,1,1,0],
+                            [0,0,0,1],[1,0,0,1],[0,1,0,1],[1,1,0,1],
+                            [0,0,1,1],[1,0,1,1],[0,1,1,1],[1,1,1,1],
                             ] )
 
     print("training brain 1")
@@ -324,13 +312,32 @@ if __name__ == "__main__":
     brain3.model = brain1.crossover(brain2)
 
     print("predictions of brain 3")
-    print(brain3.predict([[3]]))
-    print(brain3.predict([[7]]))
-    print(brain3.predict([[11]]))
-    print(brain3.predict([[15]]))
 
     #brain1.model.layers[0].set_weights()
-    for mli in range(len(brain1.model.layers)): # mli model layer index
+    for mli in range(1): #len(brain1.model.layers)): # mli model layer index
         print("B1",brain1.model.layers[mli].get_weights()[0][0] )
         print("B2",brain2.model.layers[mli].get_weights()[0][0] )
         print("B3",brain3.model.layers[mli].get_weights()[0][0] )
+
+    print("pickling brain 3")
+    pickledbrain3 = brain3.serpent_serialize()
+    print("setting up brain 4")
+    brain4 = NeuralNetwork(input_size, hidden_size, output_size, isHollow=True)
+    print("unpickling brain 3 into brain 4")
+    brain4.serpent_deserialize(pickledbrain3)
+
+    print("predictions of brain 4")
+    print(brain3.predict([[3]]))
+    print(brain4.predict([[3]]))
+    print()
+    print(brain3.predict([[7]]))
+    print(brain4.predict([[7]]))
+    print()
+    print(brain4.predict([[11]]))
+    print(brain3.predict([[11]]))
+    print()
+    print(brain4.predict([[15]]))
+    print(brain3.predict([[15]]))
+
+    #print(brain3.model.get_weights())
+    #print(brain4.model.get_weights())
