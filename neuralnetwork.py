@@ -21,7 +21,8 @@ class NeuralNetwork:
                  activation='relu',
                  optimizer='adam',
                  loss=tf.keras.losses.poisson,
-                 metrics='accuracy'):
+                 metrics='accuracy',
+                 run_eagerly=False):
 
         self.input_size:int = input_size
         self.hidden_size:tuple = hidden_size
@@ -29,6 +30,7 @@ class NeuralNetwork:
         self.optimizer=optimizer
         self.loss=loss
         self.metrics=metrics
+        self.run_eagerly=run_eagerly
 
         self.fitness = float('-inf')
         self.score = float('-inf')
@@ -62,7 +64,7 @@ class NeuralNetwork:
             self.model.compile(optimizer=optimizer,
                                loss=loss,
                                metrics=[metrics],
-                               run_eagerly=False) # Turn this to True to be able to debug the models.
+                               run_eagerly=run_eagerly) # Turn this to True to be able to debug the models.
 
             self.model.build([None, self.input_size])
         else:
@@ -83,8 +85,8 @@ class NeuralNetwork:
         clone = tf.keras.models.clone_model(self.model)
 
         if self.hidden_size[0] == 0:
-            clone.layers[0].set_weights(self.model.layers[0].get_weights() )
             # if [0]==0, there are no hidden layers to deal with
+            clone.layers[0].set_weights(self.model.layers[0].get_weights() )
         else:
             # clone first layer
             clone.layers[0].set_weights(self.model.layers[0].get_weights() )
@@ -107,34 +109,35 @@ class NeuralNetwork:
 
 
     def mutate(self,mutatechance=1/30, mutatestrength=1):
-        for nodei in range(self.input_layer.size):
-            for weighti in range(self.input_layer[nodei].weights.size):
-                if np.random.rand() <= mutatechance:
-                    #self.input_layer[nodei].weights[weighti] = np.random.uniform(-5,5)
-                    if np.random.rand() < 0.5:
-                        self.input_layer[nodei].weights[weighti] += np.random.uniform(0,mutatestrength)
-                    else:
-                        self.input_layer[nodei].weights[weighti] -= np.random.uniform(0,mutatestrength)
+        ms_half = mutatestrength/2
 
-        if self.hidden_layers[0] is not 0:
-            for layeri in range(len(self.hidden_layers)):
-                for nodei in range(self.hidden_layers[layeri].size):
-                    for weighti in range(self.hidden_layers[layeri][nodei].weights.size):
-                        if np.random.rand() <= mutatechance:
-                            #self.hidden_layers[layeri][nodei].weights[weighti] = np.random.uniform(-5,5)
-                            if np.random.rand() < 0.5:
-                                self.hidden_layers[layeri][nodei].weights[weighti] += np.random.uniform(0,mutatestrength)
-                            else:
-                                self.hidden_layers[layeri][nodei].weights[weighti] -= np.random.uniform(0,mutatestrength)
-
-        for nodei in range(self.output_layer.size):
-            for weighti in range(self.output_layer[nodei].weights.size):
+        if self.hidden_size[0] == 0:
+            # mutate the output layer
+            temp = self.model.layers[0].get_weights()
+            for owi in range(self.output_size): # owi; output weight index
                 if np.random.rand() <= mutatechance:
-                    #self.output_layer[nodei].weights[weighti] = np.random.uniform(-5,5)
-                    if np.random.rand() < 0.5:
-                        self.output_layer[nodei].weights[weighti] += np.random.uniform(0,mutatestrength)
-                    else:
-                        self.output_layer[nodei].weights[weighti] -= np.random.uniform(0,mutatestrength)
+                    temp[0][0][owi] += np.random.uniform(-ms_half,ms_half)
+                    temp[1][owi] += np.random.uniform(-ms_half,ms_half)
+            self.model.layers[0].set_weights(temp)
+
+        else:
+            # mutate the hidden layers
+            for hwi in range(len(self.hidden_size)):
+                temp = self.model.layers[hwi].get_weights()
+                for owi in range(self.hidden_size[hwi]): # owi; output weight index
+                    if np.random.rand() <= mutatechance:
+                        temp[0][0][owi] += np.random.uniform(-ms_half,ms_half)
+                        temp[1][owi] += np.random.uniform(-ms_half,ms_half)
+                self.model.layers[hwi].set_weights(temp)
+
+            temp = self.model.layers[-1].get_weights()
+            for owi in range(self.output_size): # owi; output weight index
+                if np.random.rand() <= mutatechance:
+                    temp[0][0][owi] += np.random.uniform(-ms_half,ms_half)
+                    temp[1][owi] += np.random.uniform(-ms_half,ms_half)
+            self.model.layers[-1].set_weights(temp)
+
+
 
 
 
@@ -263,7 +266,7 @@ if __name__ == "__main__":
 
 
 
-    brain1 = NeuralNetwork(1, (0,), 4)
+    brain1 = NeuralNetwork(1, (5,10), 4)
 
     train_set = np.array( [[0],[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14],[15]] )
     answer_set = np.array( [[0,0,0,0], # 0
@@ -296,13 +299,23 @@ if __name__ == "__main__":
     print(brain1.predict([[11]]))
     print(brain1.predict([[15]]))
 
-    brain2 = NeuralNetwork(1, (0,), 4, isHollow=True)
+    brain2 = NeuralNetwork(1, (5,10), 4, isHollow=True)
     brain2.model = brain1.clone()
+    print("mutating brain 2 1")
+    brain2.mutate(mutatechance=0.5)
 
-    print("training brain 1")
+    #print("training brain 1")
     #brain2.train(train_set, answer_set, epochs=100, batch_size=16)
 
-    print("predictions of brain 1")
+    print("predictions of brain 2 1")
+    print(brain2.predict([[3]]))
+    print(brain2.predict([[7]]))
+    print(brain2.predict([[11]]))
+    print(brain2.predict([[15]]))
+
+    print("mutating brain 2 2")
+    brain2.mutate(mutatechance=0.5)
+    print("predictions of brain 2 2")
     print(brain2.predict([[3]]))
     print(brain2.predict([[7]]))
     print(brain2.predict([[11]]))
@@ -311,8 +324,10 @@ if __name__ == "__main__":
 
 
     #brain1.model.layers[0].set_weights()
-    print(brain1.model.layers[-1].get_weights()[0] )
-    print(brain2.model.layers[-1].get_weights()[0] )
+    for mli in range(len(brain1.model.layers)):
+        print("B1",brain1.model.layers[mli].get_weights()[0][0] )
+        print("B2",brain2.model.layers[mli].get_weights()[0][0] )
+    print()
 
 
     test_keras = False
