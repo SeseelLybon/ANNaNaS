@@ -8,12 +8,7 @@ from typing import List
 import serpent
 import copy
 
-
-# atm code needs to be rewritten to use numba, but reading it up, it looks promising as a quick&dirty solution
-# import numba as nb
-# #performance-debug info
-# import llvmlite.binding as llvm
-# llvm.set_option('', '--debug-only=loop-vectorize')
+import tensorflow as tf
 
 
 class NeuralNetwork:
@@ -670,20 +665,29 @@ class Node:
 
 if __name__ == "__main__":
 
-    import timeit
-    import cProfile
-    print("Starting Neuralnetwork.py as main")
-    import pickle
-
-    print("Printing data old brain")
-    oldbrain = NeuralNetwork(60,tuple([80,40,16]),16)
-    oldbrain.set_inputs(np.array(range(60)))
-
-    p = cProfile.Profile()
-    #p.runctx('oldbrain.ReLU(x)', locals={'x': 5}, globals={'oldbrain':oldbrain} )
-    p.runcall(oldbrain.fire_network)
-    p.print_stats()
-
-    print("Finished Neuralnetwork.py as main")
 
 
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(10, input_dim=1, activation=tf.keras.activations.relu),
+        tf.keras.layers.Dense(10, activation='relu'),
+        tf.keras.layers.Dense(5, activation=tf.keras.activations.relu)
+    ])
+
+    model.compile(optimizer='adam',
+                  loss=tf.keras.losses.binary_crossentropy,
+                  metrics=['accuracy'])
+
+    train_set = np.array( [[0],[1],[2],[3],[4]] )
+    answer_set = np.array( [[1,0,0,0,0],
+                            [0,1,0,0,0],
+                            [0,0,1,0,0],
+                            [0,0,0,1,0],
+                            [0,0,0,0,1]] )
+
+    model.fit(train_set, answer_set, epochs=100, batch_size=5)
+
+    print( model.predict([[0]]) )
+    print( model.predict([[1]]) )
+    print( model.predict([[2]]) )
+    print( model.predict([[3]]) )
+    print( model.predict([[4]]) )
