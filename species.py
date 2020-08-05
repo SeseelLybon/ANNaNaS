@@ -51,32 +51,38 @@ class Species:
     def getAmtSimilarGenes(self, meep1:Meeple, meep2:Meeple)->float:
         similairweights:float = 0.0
 
-        # must assume hidden layers are the same.
-        if meep1.brain.hidden_layers[0] is not 0 and meep2.brain.hidden_layers[0] is not 0:
-            #go through all the layers
-            for meep1_layer, meep2_layer in zip(meep1.brain.hidden_layers, meep2.brain.hidden_layers):
-                #go through all the nodes
-                for meep1_node, meep2_node in zip(meep1_layer, meep2_layer):
-                    #go through all the weights
-                    for meep1_weight, meep2_weight in zip(meep1_node.weights, meep2_node.weights):
-                        if (meep1_weight > 0) == (meep2_weight > 0): # test if both variables have the same sign
-                            if abs(meep1_weight - meep2_weight) < self.similairy_threshold_gene:
+        #if meep1.brain.input_size == meep2.brain.input_size and \
+        #    meep1.brain.hidden_size == meep2.brain.hidden_size and \
+        #    meep1.brain.output_size == meep2.brain.output_size and \
+        #    meep1.brain.getAmountWeights() == meep2.brain.getAmountWeights():
+
+        if meep1.brain.input_size == meep2.brain.input_size and \
+           meep1.brain.hidden_size == meep2.brain.hidden_size and \
+           meep1.brain.output_size == meep2.brain.output_size:
+
+            if meep1.brain.hidden_size[0] != 0:
+                # crossover the hidden layers
+                for hli in range(len(meep1.brain.hidden_size)):  # hli: hidden layer index
+                    # crossover the output layer
+                    temp_P1 = meep1.brain.model.layers[hli].get_weights()
+                    temp_P2 = meep2.brain.model.layers[hli].get_weights()
+                    for owi in range(len(temp_P1[0][hli])):  # owi; output weight index
+                        # copy either the self or parent2 ***weight*** of this weight on this layer into the child
+                        if (temp_P1[0][hli][owi] > 0) == (temp_P2[0][hli][owi] > 0): # test if both variables have the same sign
+                            if abs(temp_P1[0][hli][owi] - temp_P2[0][hli][owi]) < self.similairy_threshold_gene:
                                 similairweights += 1
 
-                            #elif (meep1_weight > 0) == (meep2_weight > 0):
-                            #    difweights+=2/(meep1_weight-meep2_weight**1+1)
-                            #    pass
+            # mutate the output layer# crossover the output layer
+            temp_P1 = meep1.brain.model.layers[-1].get_weights()
+            temp_P2 = meep2.brain.model.layers[-1].get_weights()
+            for owi in range(len(temp_P1[0][-1])):  # owi; output weight index
+                # copy either the self or parent2 ***weight*** of this weight on this layer into the child
+                if (temp_P1[0][-1][owi] > 0) == (temp_P2[0][-1][owi] > 0): # test if both variables have the same sign
+                    if abs(temp_P1[0][-1][owi] - temp_P2[0][-1][owi]) < self.similairy_threshold_gene:
+                        similairweights += 1
 
         else:
-            #no hidden layers
             pass
-
-        for meep1_node, meep2_node in zip(meep1.brain.output_layer, meep2.brain.output_layer):
-            # go through all the weights
-            for meep1_weight, meep2_weight in zip(meep1_node.weights, meep2_node.weights):
-                if (meep1_weight > 0) == (meep2_weight > 0): # test if both variables have the same sign
-                    if abs(meep1_weight - meep2_weight) < self.similairy_threshold_gene:
-                        similairweights += 1
 
 
         return similairweights

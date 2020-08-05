@@ -70,11 +70,10 @@ class NeuralNetwork:
 
     # Fires all input nodes
     def predict(self, input_array:np.array)->np.array:
-        return self.model.predict(np.array([input_array]))
-
+        return self.model.predict(input_array)
 
     def train(self, training_data:np.array, training_answers:np.array, epochs:int=1, batch_size:int=1, verbose=0):
-        self.model.fit(np.array([training_data]), np.array([training_answers]), epochs=epochs, batch_size=batch_size, verbose=verbose)
+        self.model.fit(training_data, training_answers, epochs=epochs, batch_size=batch_size, verbose=verbose)
 
 
     def clone(self)->tf.keras.Model:
@@ -254,8 +253,10 @@ class NeuralNetwork:
 
         else:
             totalWeights:int = self.output_size*self.hidden_size[-1]
-            for hli in range(len(self.hidden_size)-1, -1 ,-1):# hidden layer index
-                totalWeights += self.hidden_size[-1]*self.hidden_size[hli]
+            for hli in range(len(self.hidden_size)-1, 0 ,-1):# hidden layer index
+                totalWeights += self.hidden_size[hli-1]*self.hidden_size[hli]
+
+            totalWeights += self.hidden_size[0]*self.input_size
 
         return totalWeights
 
@@ -264,11 +265,24 @@ class NeuralNetwork:
 
 
 
+thing1 = False
+thing2 = True
+if __name__ == '__main__' and thing1:
+
+    max_attempts = 10  # amount of attempts a mastermind can make before being considered dead
+    max_dif_pegs = 6  # numbers simulate the diffirent colours of pegs
+    max_pegs = 4  # how many pegs have to be guessed
+
+    inputsize=max_pegs*max_attempts*2 # Double to count for the 'hit and blow'
+    hiddensize=tuple([max_pegs*max_attempts*2, max_pegs*max_attempts, max_pegs*max_dif_pegs])
+    #hiddensize=tuple([60, 40, 20])
+    outputsize=max_pegs*max_dif_pegs
+
+    brain1 = NeuralNetwork(inputsize, hiddensize, outputsize)
 
 
 
-
-if __name__ == "__main__":
+if __name__ == "__main__" and thing2:
 
     input_size = 1
     hidden_size = (5,5,5)
@@ -283,67 +297,81 @@ if __name__ == "__main__":
                             [0,0,1,1],[1,0,1,1],[0,1,1,1],[1,1,1,1],
                             ] )
 
-    print("training brain 1")
-    brain1.train(train_set, answer_set, epochs=100, batch_size=16)
+    #print("training brain 1")
+    brain1.train(train_set, answer_set, epochs=100, batch_size=16, verbose=1)
 
     print("predictions of brain 1")
-    print(brain1.predict([[3]]))
-    print(brain1.predict([[7]]))
-    print(brain1.predict([[11]]))
-    print(brain1.predict([[15]]))
+    print(brain1.predict(   np.array([3], dtype=float)    ))
+    print(brain1.predict(   np.array([7], dtype=float)    ))
+    print(brain1.predict(   np.array([11], dtype=float)   ))
+    print(brain1.predict(   np.array([15], dtype=float)   ))
 
-    print("Cloning brain 1 as brain 2")
-    brain2 = NeuralNetwork(input_size, hidden_size, output_size, isHollow=True)
-    brain2.model = brain1.clone()
+    #for i in range(50):
+    #    brain1.train(train_set, answer_set, epochs=100, batch_size=16)
+        #for j in range(16):
+        #    print(brain1.predict(   np.array([j], dtype=float)   ))
 
-    #print("training brain 1")
-    #brain2.train(train_set, answer_set, epochs=100, batch_size=16)
 
-    print("predictions of brain 2")
-    print(brain2.predict([[3]]))
-    print(brain2.predict([[7]]))
-    print(brain2.predict([[11]]))
-    print(brain2.predict([[15]]))
-
-    print("mutating brain 2")
-    brain2.mutate(mutatechance=0.9)
-    print("predictions of brain 2 2")
-    print(brain2.predict([[3]]))
-    print(brain2.predict([[7]]))
-    print(brain2.predict([[11]]))
-    print(brain2.predict([[15]]))
-
-    print("Crossing brain1 and brain2 to brain3")
-    brain3  = NeuralNetwork(input_size, hidden_size, output_size)
-    brain3.model = brain1.crossover(brain2)
-
-    print("predictions of brain 3")
-
-    #brain1.model.layers[0].set_weights()
-    for mli in range(1): #len(brain1.model.layers)): # mli model layer index
-        print("B1",brain1.model.layers[mli].get_weights()[0][0] )
-        print("B2",brain2.model.layers[mli].get_weights()[0][0] )
-        print("B3",brain3.model.layers[mli].get_weights()[0][0] )
-
-    print("pickling brain 3")
-    pickledbrain3 = brain3.serpent_serialize()
-    print("setting up brain 4")
-    brain4 = NeuralNetwork(input_size, hidden_size, output_size, isHollow=True)
-    print("unpickling brain 3 into brain 4")
-    brain4.serpent_deserialize(pickledbrain3)
-
-    print("predictions of brain 4")
-    print(brain3.predict([[3]]))
-    print(brain4.predict([[3]]))
-    print()
-    print(brain3.predict([[7]]))
-    print(brain4.predict([[7]]))
-    print()
-    print(brain4.predict([[11]]))
-    print(brain3.predict([[11]]))
-    print()
-    print(brain4.predict([[15]]))
-    print(brain3.predict([[15]]))
+    #print("Cloning brain 1 as brain 2")
+    #brain2 = NeuralNetwork(input_size, hidden_size, output_size, isHollow=True)
+    #brain2.model = brain1.clone()
+#
+    ##print("training brain 1")
+    ##brain2.train(train_set, answer_set, epochs=100, batch_size=16)
+#
+    #print("predictions of brain 2")
+    #print(brain2.predict([[3]]))
+    #print(brain2.predict([[7]]))
+    #print(brain2.predict([[11]]))
+    #print(brain2.predict([[15]]))
+#
+    #print("mutating brain 2")
+    #brain2.mutate(mutatechance=0.9)
+    #print("predictions of brain 2 2")
+    #print(brain2.predict([[3]]))
+    #print(brain2.predict([[7]]))
+    #print(brain2.predict([[11]]))
+    #print(brain2.predict([[15]]))
+#
+    #print("Crossing brain1 and brain2 to brain3")
+    #brain3  = NeuralNetwork(input_size, hidden_size, output_size)
+    #brain3.model = brain1.crossover(brain2)
+#
+    #print("predictions of brain 3")
+#
+    ##brain1.model.layers[0].set_weights()
+    #for mli in range(1): #len(brain1.model.layers)): # mli model layer index
+    #    print("B1",brain1.model.layers[mli].get_weights()[0][0] )
+    #    print("B2",brain2.model.layers[mli].get_weights()[0][0] )
+    #    print("B3",brain3.model.layers[mli].get_weights()[0][0] )
+#
+    #print("pickling brain 3")
+    #pickledbrain3 = brain3.serpent_serialize()
+    #print("setting up brain 4")
+    #brain4 = NeuralNetwork(input_size, hidden_size, output_size, isHollow=True)
+    #print("unpickling brain 3 into brain 4")
+    #brain4.serpent_deserialize(pickledbrain3)
+#
+    #print("predictions of brain 4")
+    #print(brain3.predict([[3]]))
+    #print(brain4.predict([[3]]))
+    #print()
+    #print(brain3.predict([[7]]))
+    #print(brain4.predict([[7]]))
+    #print()
+    #print(brain4.predict([[11]]))
+    #print(brain3.predict([[11]]))
+    #print()
+    #print(brain4.predict([[15]]))
+    #print(brain3.predict([[15]]))
+#
+    #for dummy in range(50):
+    #    brain4.predict([[5]])
 
     #print(brain3.model.get_weights())
     #print(brain4.model.get_weights())
+
+
+
+
+    print("DONE")

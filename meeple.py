@@ -17,6 +17,7 @@ class Meeple:
         self.isKilled = False
 
         #Custom code; this is something that doens't need be cloned, though.
+        #self.results_list:np.array
         self.results_list = []
 
         if isHallow:
