@@ -70,19 +70,17 @@ class NeuralNetwork:
 
     # Fires all input nodes
     def predict(self, input_array:np.array)->np.array:
-        return self.model.predict(input_array)
+        return self.model.predict(np.array([input_array]))
 
 
     def train(self, training_data:np.array, training_answers:np.array, epochs:int=1, batch_size:int=1, verbose=0):
-        self.model.fit(training_data, training_answers, epochs=epochs, batch_size=batch_size, verbose=verbose)
+        self.model.fit(np.array([training_data]), np.array([training_answers]), epochs=epochs, batch_size=batch_size, verbose=verbose)
 
 
     def clone(self)->tf.keras.Model:
         clone = tf.keras.models.clone_model(self.model)
 
-        # clone layers
-        for hz_i in range(len(self.hidden_size)+1):
-            clone.layers[hz_i].set_weights(self.model.layers[hz_i].get_weights() )
+        clone.set_weights(self.model.get_weights())
 
         clone.compile(optimizer=self.optimizer,
                       loss=self.loss,
@@ -98,21 +96,31 @@ class NeuralNetwork:
         ms_half = mutatestrength/2
 
         if self.hidden_size[0] != 0:
-            # mutate the hidden layers
-            for hli in range(len(self.hidden_size)): # hli: hidden layer index
+            # crossover the hidden layers
+            for hli in range(len(self.hidden_size)):  # hli: hidden layer index
                 temp = self.model.layers[hli].get_weights()
-                for owi in range( self.hidden_size[hli] ): # owi; output weight index
+                for owi in range(len(temp[0][hli])):  # owi; output weight index
+                    # copy either the self or parent2 ***weight*** of this weight on this layer into the child
                     if np.random.rand() <= mutatechance:
-                        temp[0][0][owi] += np.random.uniform(-ms_half,ms_half)
-                        temp[1][owi] += np.random.uniform(-ms_half,ms_half)
+                        temp[0][hli][owi] += np.random.uniform(-ms_half,ms_half)
+
+                    if hli == 0:
+                        # copy either the self or parent2 ***bias*** of this weight on this layer into the child
+                        if np.random.rand() <= 0.5:
+                            temp[1][owi] += np.random.uniform(-ms_half,ms_half)
+
                 self.model.layers[hli].set_weights(temp)
 
         # mutate the output layer
         temp = self.model.layers[-1].get_weights()
-        for owi in range(self.output_size):  # owi; output weight index
+        for owi in range(len(temp[0][-1])):  # owi; output weight index
+            # copy either the self or parent2 ***weight*** of this weight on this layer into the child
             if np.random.rand() <= mutatechance:
-                temp[0][0][owi] += np.random.uniform(-ms_half, ms_half)
-                temp[1][owi] += np.random.uniform(-ms_half, ms_half)
+                temp[0][-1][owi] += np.random.uniform(-ms_half,ms_half)
+
+            # copy either the self or parent2 ***bias*** of this weight on this layer into the child
+            if np.random.rand() <= 0.5:
+                temp[1][owi] += np.random.uniform(-ms_half,ms_half)
         self.model.layers[-1].set_weights(temp)
 
 
@@ -130,40 +138,38 @@ class NeuralNetwork:
                 temp_P1 = self.model.layers[hli].get_weights()
                 temp_P2 = parent2.model.layers[hli].get_weights()
                 temp_C = child.layers[hli].get_weights()
-                for owi in range(self.hidden_size[hli]):  # owi; output weight index
+                for owi in range(len(temp_P1[0][hli])):  # owi; output weight index
                     # copy either the self or parent2 ***weight*** of this weight on this layer into the child
                     if np.random.rand() <= 0.5:
-                        temp_C[0][0][owi] = temp_P1[0][0][owi]
-                        print("P1-",end="")
+                        temp_C[0][hli][owi] = temp_P1[0][hli][owi]
                     else:
-                        temp_C[0][0][owi] = temp_P2[0][0][owi]
-                        print("P2-", end="")
+                        temp_C[0][hli][owi] = temp_P2[0][hli][owi]
 
-                    # copy either the self or parent2 ***bias*** of this weight on this layer into the child
-                    if np.random.rand() <= 0.5:
-                        temp_C[1][owi] = temp_P1[0][0][owi]
-                    else:
-                        temp_C[1][owi] = temp_P2[0][0][owi]
+                    if hli == 0:
+                        # copy either the self or parent2 ***bias*** of this weight on this layer into the child
+                        if np.random.rand() <= 0.5:
+                            temp_C[1][owi] = temp_P1[0][0][owi]
+                        else:
+                            temp_C[1][owi] = temp_P2[0][0][owi]
 
                 child.layers[hli].set_weights(temp_C)
-            print()
 
         # crossover the output layer
         temp_P1 = self.model.layers[-1].get_weights()
         temp_P2 = parent2.model.layers[-1].get_weights()
         temp_C = child.layers[-1].get_weights()
-        for owi in range(self.output_size): # owi; output weight index
+        for owi in range(len(temp_P1[0][-1])):  # owi; output weight index
             # copy either the self or parent2 ***weight*** of this weight on this layer into the child
             if np.random.rand() <= 0.5:
-                temp_C[0][0][owi] = temp_P1[0][0][owi]
+                temp_C[0][-1][owi] = temp_P1[0][-1][owi]
             else:
-                temp_C[0][0][owi] = temp_P2[0][0][owi]
+                temp_C[0][-1][owi] = temp_P2[0][-1][owi]
 
             # copy either the self or parent2 ***bias*** of this weight on this layer into the child
             if np.random.rand() <= 0.5:
-                temp_C[1][owi] = temp_P1[1][owi]
+                temp_C[1][owi] = temp_P1[0][0][owi]
             else:
-                temp_C[1][owi] = temp_P2[1][owi]
+                temp_C[1][owi] = temp_P2[0][0][owi]
 
             child.layers[-1].set_weights(temp_C)
 

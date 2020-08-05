@@ -73,7 +73,7 @@ def update(dt):
 
         # run all meeps against this until pop.isDone.
         while not client_population.isDone():
-            client_population.updateAlive(mastermind_solution, max_dif_pegs, max_pegs, runi, runm)
+            client_population.updateAlive(mastermind_solution, max_dif_pegs, max_pegs, max_attempts, runi, runm)
 
         runi+=1
 

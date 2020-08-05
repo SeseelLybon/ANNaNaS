@@ -80,7 +80,7 @@ if __name__ == '__main__':
         work_slots = int(sys.argv[2])
     except IndexError:
         ipAddressServer = "localhost"
-        work_slots = 50
+        work_slots = 5
 
     job_server = Pyro4.core.Proxy('PYRO:Greeting@' + ipAddressServer + ':9090')
     client_core.inputsize, client_core.hiddensize, client_core.outputsize = job_server.register_worker(workerid, work_slots)

@@ -26,12 +26,12 @@ class Meeple:
 
     # Clones Brain
     def clone(self): #->Meeple:
-        temp:Meeple = Meeple(self.brain.input_size-1,
-                             tuple([x-1 for x in self.brain.hidden_size]),
+        temp:Meeple = Meeple(self.brain.input_size,
+                             self.brain.hidden_size,
                              self.brain.output_size,
                              isHallow=True
                              )
-        temp.brain = self.brain.clone()
+        temp.brain.model = self.brain.clone()
         return temp
 
 #    def cloneinto(self, other):
@@ -45,8 +45,8 @@ class Meeple:
 
     # Crosses the Brain of 2 meeps
     def crossover(self, parent2): #parent1:Meeple, parent2:Meeple) -> Meeple:
-        temp:Meeple = Meeple(self.brain.input_size-1,
-                             tuple([x-1 for x in self.brain.hidden_size]),
+        temp:Meeple = Meeple(self.brain.input_size,
+                             self.brain.hidden_size,
                              self.brain.output_size,
                              isHallow=True
                              )
@@ -56,5 +56,24 @@ class Meeple:
 
 
 if __name__ == "__main__":
-    meeple1 = Meeple(4,tuple([0]),16)
-    print(meeple1.fitness)
+    import numpy as np
+
+    print("making meeple1")
+    meeple1 = Meeple(4,(5,5),16)
+    print(meeple1.brain.predict([[1,1,1,1]]))
+
+    print("making meeple1")
+    meeple2 = Meeple(4,(5,5),16)
+    print(meeple2.brain.predict([[1,1,1,1]]))
+
+    print("cloning meeple2 into 3")
+    meeple3 = meeple2.clone()
+    print(meeple2.brain.predict([[1,1,1,1]]))
+
+    print("crossing meeple1 and meeple2 to meeple 3")
+    meeple4 = meeple1.crossover(meeple2)
+    print(meeple2.brain.predict([[1,1,1,1]]))
+
+    meeple3.brain.mutate(0.9)
+    print(meeple2.brain.model.get_weights())
+    print(meeple3.brain.model.get_weights())

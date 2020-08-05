@@ -44,7 +44,7 @@ class Population:
 
 
     #update all the meeps that are currently alive
-    def updateAlive(self, mastermind_solution, max_dif_pegs, max_pegs, cur_run, max_run):
+    def updateAlive(self, mastermind_solution, max_dif_pegs, max_pegs, max_attempts, cur_run, max_run):
 
 #        print("Updating all alive", self.countAlive())
         #Run through all meeps
@@ -55,15 +55,14 @@ class Population:
             #if meep.isAlive or not meep.isDone:
             if meep.isAlive:
                 meep.epochs -= 1
-                meep.brain.set_inputs(sanitize_input(meep.results_list))
-                meep.brain.fire_network()
-                output = meep.brain.get_outputs()
+                output = meep.brain.predict(sanitize_input(meep.results_list,max_pegs,max_attempts))
                 attempt = sanitize_output(output, max_pegs, max_dif_pegs)
                 result = check_attempt(attempt, mastermind_solution)
                 meep.results_list.append((attempt, result))
 
-                soutput=sanitize_output_inv(mastermind_solution,max_dif_pegs,max_pegs)
-                meep.brain.train(sanitize_input(meep.results_list), soutput, 0.01 )
+                # seems it's not recommended to train per step, but in batches
+                # soutput=sanitize_output_inv(mastermind_solution,max_dif_pegs,max_pegs)
+                # meep.brain.train(sanitize_input(meep.results_list,max_pegs,max_attempts), soutput )
 
                 if attempt == list(mastermind_solution):
                     meep.wins += 1
@@ -481,18 +480,18 @@ def check_attempt(attempt, mastermind_solution)->List[int]:
     return result
 
 # Turn the output of the ANN into a 'choice'
-def sanitize_output(output, max_pegs, max_dif_pegs):
+def sanitize_output(us_output, max_pegs, max_dif_pegs):
     #soutput = [ np.argmax(output[:max_dif_pegs*1]),
     #            np.argmax(output[max_dif_pegs*1:max_dif_pegs*2]),
     #            np.argmax(output[max_dif_pegs*2:max_dif_pegs*3]),
     #            np.argmax(output[max_dif_pegs*3:])
     #            ]
-
+    us_output=us_output[0]
     soutput = []
     for mp_i in range(max_pegs):
         # The +/-1 is because I need to shift the solution a bit as 0 is an empty peg.
         # atm of writing I dunno if this  works correctly.
-       soutput.append( np.argmax(output[max_dif_pegs*mp_i:max_dif_pegs*(mp_i+1)]  ) +1 )
+       soutput.append( int(np.argmax(us_output[max_dif_pegs*mp_i:max_dif_pegs*(mp_i+1)] ) +1 ) )
 
     return soutput
 
@@ -508,21 +507,24 @@ def sanitize_output_inv(solution, max_dif_pegs, max_pegs):
     #for mdp_i in range(max_dif_pegs):
     #   soutput.append( np.argmax(output[max_dif_pegs*mdp_i:max_dif_pegs*(mdp_i+1)] ) )
 
-    return soutput
+    return np.array(soutput, dtype=int)
 
-def sanitize_input(results):
+def sanitize_input(results, max_pegs, max_attempts):
     sinput = []
     for t in results:
         sinput += t[0]+t[1]
-    #print(sinput)
-    return np.array(sinput)
+
+    for i in range(len(sinput), max_pegs*2*max_attempts):
+        sinput += [0]
+
+    return np.array(sinput, dtype=int)
 
 
 
 if __name__ == '__main__':
     max_attempts = 10  # amount of attempts a mastermind can make before being considered dead
     max_dif_pegs = 4  # numbers simulate the diffirent colours of pegs
-    max_pegs = 2  # how many pegs have to be guessed
+    max_pegs = 4  # how many pegs have to be guessed
 
     inputsize=max_pegs*max_attempts*2 # Double to count for the 'hit and blow'
     hiddensize=tuple([max_pegs*max_attempts*2, max_pegs*max_attempts, max_pegs*max_dif_pegs])
@@ -531,15 +533,16 @@ if __name__ == '__main__':
 
     mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs)
 
-    meep:Meeple = Meeple(input_size=inputsize, hidden_size=hiddensize, output_size=outputsize,
-                             isHallow=False)
+    meep:Meeple = Meeple(input_size=inputsize,
+                         hidden_size=hiddensize,
+                         output_size=outputsize,
+                         isHallow=False)
 
 
-    for i in range(10):
-
-        meep.brain.set_inputs(sanitize_input(meep.results_list))
-        meep.brain.fire_network()
-        output = meep.brain.get_outputs()
+    for i in range(10):#max_attempts):
+        sinput = sanitize_input(meep.results_list, max_pegs, max_attempts)
+        output = meep.brain.predict(sinput)
+        print(output)
         attempt = sanitize_output(output, max_pegs, max_dif_pegs)
         result = check_attempt(attempt, mastermind_solution)
         meep.results_list.append((attempt, result))
