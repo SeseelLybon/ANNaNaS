@@ -481,48 +481,57 @@ def check_attempt(attempt, mastermind_solution)->List[int]:
     return result
 
 # Turn the output of the ANN into a 'choice'
-def sanitize_output(output, max_pegs, max_dif_pegs):
+def sanitize_output(usputput, # unsanitized output from ANN
+                    max_pegs,
+                    max_dif_pegs):
     #soutput = [ np.argmax(output[:max_dif_pegs*1]),
     #            np.argmax(output[max_dif_pegs*1:max_dif_pegs*2]),
     #            np.argmax(output[max_dif_pegs*2:max_dif_pegs*3]),
     #            np.argmax(output[max_dif_pegs*3:])
     #            ]
 
-    soutput = []
-    for mp_i in range(max_pegs):
+    soutput = np.ndarray([max_pegs], dtype=int)
+
+    for i in range(max_pegs):
         # The +/-1 is because I need to shift the solution a bit as 0 is an empty peg.
         # atm of writing I dunno if this  works correctly.
-       soutput.append( np.argmax(output[max_dif_pegs*mp_i:max_dif_pegs*(mp_i+1)]  ) +1 )
+        #   still dont.
+       soutput[i] = int( np.argmax( usputput[max_dif_pegs*i:max_dif_pegs*(i+1)] )
+                         +1 )
 
     return soutput
 
-# Turn the solution into
-def sanitize_output_inv(solution, max_dif_pegs, max_pegs):
-    soutput = []
+# Turn the mastermind solution into what the ANN output should look like.
+def sanitize_output_inv(solution, max_pegs, max_dif_pegs):
+    #make an array the size of the output
+    soutput = np.zeros([max_dif_pegs*max_pegs], dtype=int)
 
-    for mp_i in range(max_pegs):
-        temp=[0 for i in range(max_dif_pegs)]
-        temp[solution[mp_i]-1]=1
-        soutput += temp
-
-    #for mdp_i in range(max_dif_pegs):
-    #   soutput.append( np.argmax(output[max_dif_pegs*mdp_i:max_dif_pegs*(mdp_i+1)] ) )
+    for i in range(max_pegs):
+        soutput[i*max_dif_pegs+solution[i]] = 1
 
     return soutput
 
-def sanitize_input(results):
-    sinput = []
-    for t in results:
-        sinput += t[0]+t[1]
-    #print(sinput)
-    return np.array(sinput)
+# Turn the results list into the input the ANN wants
+def sanitize_input(results, max_pegs, max_attempts):
+    sinput = np.zeros([max_attempts*max_pegs*2], dtype=int )
+
+    for ai in range(0, len(results)):#, max_pegs*2): #ai =attempt index
+        for j in range(max_pegs):
+            sinput[ai*max_pegs*2+j] = results[ai][0][j]
+            sinput[ai*max_pegs*2+j+max_pegs] = results[ai][1][j]
+
+    return sinput
 
 
 
 if __name__ == '__main__':
+    import time
+
+    cur_time = time.time()
+
     max_attempts = 10  # amount of attempts a mastermind can make before being considered dead
-    max_dif_pegs = 4  # numbers simulate the diffirent colours of pegs
-    max_pegs = 2  # how many pegs have to be guessed
+    max_dif_pegs = 6  # numbers simulate the diffirent colours of pegs
+    max_pegs = 4  # how many pegs have to be guessed
 
     inputsize=max_pegs*max_attempts*2 # Double to count for the 'hit and blow'
     hiddensize=tuple([max_pegs*max_attempts*2, max_pegs*max_attempts, max_pegs*max_dif_pegs])
@@ -537,7 +546,7 @@ if __name__ == '__main__':
 
     for i in range(10):
 
-        meep.brain.set_inputs(sanitize_input(meep.results_list))
+        meep.brain.set_inputs(sanitize_input(meep.results_list, max_pegs, max_attempts) )
         meep.brain.fire_network()
         output = meep.brain.get_outputs()
         attempt = sanitize_output(output, max_pegs, max_dif_pegs)
@@ -549,3 +558,6 @@ if __name__ == '__main__':
         print("attempt", attempt)
         print("result", result)
     print("meep.results_list",meep.results_list)
+
+
+    print(time.time()- cur_time)
