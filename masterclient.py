@@ -91,7 +91,7 @@ class Main_manager:
         while self.state is not States.done:
 
             curtime = time.time()
-            if curtime-lasttime >= 120:
+            if curtime-lasttime >= 300:
                 print("Testing if all workers were alive - ", end="")
                 print("all workers alive? ", self.local_job_server.test_ifWorkersAlive() )
                 lasttime = curtime

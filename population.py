@@ -64,11 +64,11 @@ class Population:
                 # soutput=sanitize_output_inv(mastermind_solution,max_dif_pegs,max_pegs)
                 # meep.brain.train(sanitize_input(meep.results_list,max_pegs,max_attempts), soutput )
 
-                if attempt == list(mastermind_solution):
+                if np.all([attempt, mastermind_solution] ):
                     meep.wins += 1
                     meep.brain.score += min(meep.epochs, 7)+1 # 1
                     meep.brain.fitness += min(meep.epochs, 7)+1
-                    print("someone found a solution...", meep.ID, meep.epochs, meep.brain.score, round((meep.wins/cur_run)*100, 2))
+                    #print("someone found a solution...", meep.ID, meep.epochs, meep.brain.score, round((meep.wins/cur_run)*100, 2))
                     #meep.isDone = True
                     meep.isAlive = False
                     continue
@@ -121,7 +121,7 @@ class Population:
 
         while self.MassExtingtionEvent == True or runonce:
             if UnMassExtingtionEventsAttempt >= 3:
-
+                # If this runs, something *really* bad happened*
                 #Reset the population from the ground up
                 self.pop = np.ndarray([self.size], dtype=Meeple)
                 for i in range(self.pop.shape[0]):
@@ -182,27 +182,32 @@ class Population:
 
         self.bestMeeple = self.bestMeeple.clone()
         #self.bestMeeple.sprite.color = (0,200,100)
-        children:List[Meeple] = [self.bestMeeple]
+        children:np.array = np.ndarray([self.size], dtype=Meeple)
+        children[0] = self.bestMeeple
 
         print(deltaTimeS(last_time), "s- Making new meeps from parents")
 
+        children_index = 0
         for specie in self.species:
             #add the best meeple of a specie to the new generation list
-            children.append(specie.bestMeeple.clone())
+            children[children_index] = specie.bestMeeple.clone()
+            children_index += 1
 
             #generate number of children based on how well the species is doing compared to the rest; the better the bigger.
             newChildrenAmount = math.floor((specie.averageFitness/self.getAverageFitnessSum()) *self.pop.size) -1
 
             for i in range(newChildrenAmount):
-                children.append(specie.generateChild())
+                children[children_index] = specie.generateChild()
+                children_index += 1
 
         print(deltaTimeS(last_time), "s- Making new meeps from scratch")
 
         # If the pop-cap hasn't been filled yet, keep getting children from the best specie till it is filled
         while len(children) < self.size:
-            children.append(self.species[0].generateChild())
+            children[children_index] = self.species[0].generateChild()
+            children_index += 1
 
-        self.pop = np.array(children, dtype=Meeple)
+        self.pop = children
         self.generation += 1
 
 

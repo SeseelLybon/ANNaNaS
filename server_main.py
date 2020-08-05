@@ -188,7 +188,7 @@ if __name__ == "__main__":
             load_from_save =  "False"
     except IndexError:
         server_IP = "localhost"
-        pop_size = 300
+        pop_size = 100
         load_from_save =  "False"
 
 
