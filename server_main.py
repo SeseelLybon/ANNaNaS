@@ -192,8 +192,10 @@ if __name__ == "__main__":
         load_from_save =  "False"
 
 
-    inputsize=max_pegs*max_attempts*2 # Double to count for the 'hit and blow'
-    hiddensize=tuple([max_pegs*max_attempts*2, max_pegs*max_attempts, max_pegs*max_dif_pegs])
+    inputsize=(max_attempts-1)*max_pegs*2 # Double to count for the 'hit and blow'
+    hiddensize=tuple([(max_attempts-1)*max_pegs*2, max_pegs*(max_attempts-1), max_pegs*max_dif_pegs])
+    #inputsize=max_pegs*max_attempts*2 # Double to count for the 'hit and blow'
+    #hiddensize=tuple([max_pegs*max_attempts*2, max_pegs*max_attempts, max_pegs*max_dif_pegs])
     #hiddensize=tuple([60, 40, 20])
     outputsize=max_pegs*max_dif_pegs
 

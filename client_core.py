@@ -45,7 +45,8 @@ client_isDone = False
 
 
 runi = 1
-runm = 50
+#runm = 4096
+runm = 10
 
 def update(dt):
     global runi
@@ -59,7 +60,7 @@ def update(dt):
         # Not sure if this generation works, as in the memory, unused output is 0
         #mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs, )
 
-        mastermind_solution = generate_mastermind_solution("ununique")
+        mastermind_solution = generate_mastermind_solution("unique")
 
         print("starting run", runi, mastermind_solution)
 
@@ -73,7 +74,7 @@ def update(dt):
 
         # run all meeps against this until pop.isDone.
         while not client_population.isDone():
-            client_population.updateAlive(mastermind_solution, max_dif_pegs, max_pegs, runi, runm)
+            client_population.updateAlive(mastermind_solution, max_dif_pegs, max_pegs, max_attempts, runi)
 
         runi+=1
 

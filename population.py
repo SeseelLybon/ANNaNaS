@@ -44,7 +44,7 @@ class Population:
 
 
     #update all the meeps that are currently alive
-    def updateAlive(self, mastermind_solution, max_dif_pegs, max_pegs, cur_run, max_run):
+    def updateAlive(self, mastermind_solution, max_dif_pegs, max_pegs, max_attempts, cur_run):
 
 #        print("Updating all alive", self.countAlive())
         #Run through all meeps
@@ -55,20 +55,24 @@ class Population:
             #if meep.isAlive or not meep.isDone:
             if meep.isAlive:
                 meep.epochs -= 1
-                meep.brain.set_inputs(sanitize_input(meep.results_list))
+                meep.brain.set_inputs(sanitize_input(meep.results_list, max_pegs, max_attempts))
                 meep.brain.fire_network()
                 output = meep.brain.get_outputs()
                 attempt = sanitize_output(output, max_pegs, max_dif_pegs)
                 result = check_attempt(attempt, mastermind_solution)
+
+
+                soutput=sanitize_output_inv(mastermind_solution,max_pegs,max_dif_pegs)
+                meep.brain.train(sanitize_input(meep.results_list, max_pegs, max_attempts), soutput, 0.01 )
+
+
                 meep.results_list.append((attempt, result))
 
-                soutput=sanitize_output_inv(mastermind_solution,max_dif_pegs,max_pegs)
-                meep.brain.train(sanitize_input(meep.results_list), soutput, 0.01 )
 
-                if attempt == list(mastermind_solution):
+                if np.array_equal(attempt, mastermind_solution):
                     meep.wins += 1
-                    meep.brain.score += min(meep.epochs, 7)+1 # 1
-                    meep.brain.fitness += min(meep.epochs, 7)+1
+                    meep.brain.score += min(meep.epochs, 6)+1 # 1
+                    meep.brain.fitness += min(meep.epochs, 6)+1
                     print("someone found a solution...", meep.ID, meep.epochs, meep.brain.score, round((meep.wins/cur_run)*100, 2))
                     #meep.isDone = True
                     meep.isAlive = False
@@ -507,13 +511,15 @@ def sanitize_output_inv(solution, max_pegs, max_dif_pegs):
     soutput = np.zeros([max_dif_pegs*max_pegs], dtype=int)
 
     for i in range(max_pegs):
-        soutput[i*max_dif_pegs+solution[i]] = 1
+        soutput[i*max_dif_pegs+(solution[i]-1)] = 1
 
     return soutput
 
 # Turn the results list into the input the ANN wants
 def sanitize_input(results, max_pegs, max_attempts):
-    sinput = np.zeros([max_attempts*max_pegs*2], dtype=int )
+    #sinput = np.zeros([max_attempts*max_pegs*2], dtype=int )
+    # max_attempt-1 because the ANN shouldn't try to run an 11th attempt
+    sinput = np.zeros([(max_attempts-1)*max_pegs*2], dtype=int )
 
     for ai in range(0, len(results)):#, max_pegs*2): #ai =attempt index
         for j in range(max_pegs):
