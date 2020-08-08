@@ -529,12 +529,8 @@ def sanitize_input(results, max_pegs, max_attempts):
     return sinput
 
 
-
-if __name__ == '__main__':
-    import time
-
-    cur_time = time.time()
-
+def testpopo():
+    print("running testpopo")
     max_attempts = 10  # amount of attempts a mastermind can make before being considered dead
     max_dif_pegs = 6  # numbers simulate the diffirent colours of pegs
     max_pegs = 4  # how many pegs have to be guessed
@@ -550,20 +546,57 @@ if __name__ == '__main__':
                              isHallow=False)
 
 
-    for i in range(10):
+    #for i in range(10):
+    meep.brain.set_inputs(sanitize_input(meep.results_list, max_pegs, max_attempts))
+    meep.brain.fire_network()
+    output = meep.brain.get_outputs()
+    attempt = sanitize_output(output, max_pegs, max_dif_pegs)
+    result = check_attempt(attempt, mastermind_solution)
 
-        meep.brain.set_inputs(sanitize_input(meep.results_list, max_pegs, max_attempts) )
-        meep.brain.fire_network()
-        output = meep.brain.get_outputs()
-        attempt = sanitize_output(output, max_pegs, max_dif_pegs)
-        result = check_attempt(attempt, mastermind_solution)
-        meep.results_list.append((attempt, result))
-        print(i)
-        print("mastermind_solution",mastermind_solution)
-        print("output", output)
-        print("attempt", attempt)
-        print("result", result)
-    print("meep.results_list",meep.results_list)
+    soutput = sanitize_output_inv(mastermind_solution, max_pegs, max_dif_pegs)
+    meep.brain.train(sanitize_input(meep.results_list, max_pegs, max_attempts), soutput, 0.01)
+
+    meep.results_list.append((attempt, result))
 
 
-    print(time.time()- cur_time)
+if __name__ == '__main__':
+    import time
+
+    cur_time = time.time()
+
+    import cProfile
+    #import pstats
+#
+    #profiler = cProfile.Profile()
+    #cProfile.runctx('testpopo()', globals(), locals(), filename="population.profile")
+    #profiler.run('testpopo')
+    testpopo()
+#
+    #profiler.print_stats()
+    ##p = pstats.Stats('population.profile')
+    ##p.sort_stats('cumulative').print_stats(10)
+
+
+
+    #time_dif = time.time()- cur_time
+    #print("time total s :", time_dif)
+    #print("time total *250 s:", time_dif * 250)
+    #print("time total *250*4k s:", time_dif * 250*4096)
+    #print("time total *250*4k m:", (time_dif * 250*4096 )/60 )
+    #print("time total *250*4k h:", ((time_dif * 250*4096 )/60)/60)
+    #print("time total *250*4k d:", (((time_dif * 250*4096 )/60)/60)/24)
+
+
+    print("start profile")
+    cProfile.runctx('testpopo()', globals(), locals(), filename="population.profile")
+    print("done profile")
+
+    #cur_time = time.time()
+    #testpopo()
+    #time_dif = time.time()- cur_time
+    #print("time total s :", time_dif)
+    #print("time total *250 s:", time_dif * 250)
+    #print("time total *250*4k s:", time_dif * 250*4096)
+    #print("time total *250*4k m:", (time_dif * 250*4096 )/60 )
+    #print("time total *250*4k h:", ((time_dif * 250*4096 )/60)/60)
+    #print("time total *250*4k d:", (((time_dif * 250*4096 )/60)/60)/24)
