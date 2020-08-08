@@ -28,8 +28,10 @@ class NeuralNetwork:
 
         self.pos:tuple = (0,0)
         self.dim:tuple = (0,0)
-        self.fitness = float("-inf")
-        self.score = float("-inf")
+        #self.fitness = float("-inf")
+        #self.score = float("-inf")
+        self.fitness = 0
+        self.score = 0
 
         #self.input_layer = [None]*input_size
         self.input_layer:np.ndarray = np.ndarray([self.input_size], Node)
