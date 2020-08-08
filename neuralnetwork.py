@@ -72,7 +72,12 @@ class NeuralNetwork:
     def predict(self, input_array:np.array)->np.array:
         return self.model.predict(input_array)
 
-    def train(self, training_data:np.array, training_answers:np.array, epochs:int=1, batch_size:int=1, verbose=0):
+        #turn np.array into Tensor
+        #return self.model.predict( tf.convert_to_tensor(input_array) )
+
+
+    def train(self, training_data:tf.Tensor, training_answers:tf.Tensor, epochs:int=1, batch_size:int=1, verbose=0):
+        #turn np.array into Tensor
         self.model.fit(training_data, training_answers, epochs=epochs, batch_size=batch_size, verbose=verbose)
 
 

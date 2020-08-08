@@ -122,3 +122,5 @@ pickledmeeps - 4-6-10-s.picklejar
 *.picklejar
 
 *.picklejar_old
+
+*.profile

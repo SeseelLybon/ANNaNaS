@@ -144,13 +144,14 @@ def generate_mastermind_solution(t='unique'):
 
 
 def test():
-    max_dif_pegs = 4
-    max_pegs = 4
-    max_attempts = 10
+    max_attempts = 10  # amount of attempts a mastermind can make before being considered dead
+    max_dif_pegs = 6  # numbers simulate the diffirent colours of pegs
+    max_pegs = 4  # how many pegs have to be guessed
 
-    inputsize = max_pegs * max_attempts * 2
-    hiddensize=tuple([60, 40, 20])
-    outputsize = max_dif_pegs * max_pegs
+    inputsize=(max_attempts-1)*max_pegs*2 # Double to count for the 'hit and blow'
+    hiddensize=tuple([(max_attempts-1)*max_pegs*2, max_pegs*(max_attempts-1), max_pegs*max_dif_pegs])
+    # hiddensize=tuple([60, 40, 20])
+    outputsize = max_pegs * max_dif_pegs
 
     testpop:Population = Population(50, input_size=inputsize, hidden_size=hiddensize, output_size=outputsize, isHallow=False)
 
@@ -163,7 +164,7 @@ def test():
     # run all meeps against this until pop.isDone.
     while not testpop.isDone():
         print("----")
-        testpop.updateAlive(mastermind_solution, max_dif_pegs, max_pegs)
+        testpop.updateAlive(mastermind_solution, max_dif_pegs, max_pegs, max_attempts)
 
     print("--------------------------------------------")
     print("All dino's are either done or dead.")

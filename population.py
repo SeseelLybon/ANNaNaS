@@ -44,7 +44,7 @@ class Population:
 
 
     #update all the meeps that are currently alive
-    def updateAlive(self, mastermind_solution, max_dif_pegs, max_pegs, max_attempts, cur_run, max_run):
+    def updateAlive(self, mastermind_solution, max_dif_pegs, max_pegs, max_attempts):
 
 #        print("Updating all alive", self.countAlive())
         #Run through all meeps
@@ -55,16 +55,19 @@ class Population:
             #if meep.isAlive or not meep.isDone:
             if meep.isAlive:
                 meep.epochs -= 1
-                output = meep.brain.predict(sanitize_input(meep.results_list,max_pegs,max_attempts))
+                sinput = sanitize_input(meep.results_list ,max_pegs, max_attempts)
+                output = meep.brain.predict(sinput)
                 attempt = sanitize_output(output, max_pegs, max_dif_pegs)
                 result = check_attempt(attempt, mastermind_solution)
+
+                #seems it's not recommended to train per step, but in batches
+                soutputinv = sanitize_output_inv(mastermind_solution, max_pegs, max_dif_pegs)
+                meep.brain.train( sinput, soutputinv )
+                #meep.brain.train( np.array([0, sinput]), np.array([0, [soutputinv]) )
+
                 meep.results_list.append((attempt, result))
 
-                # seems it's not recommended to train per step, but in batches
-                # soutput=sanitize_output_inv(mastermind_solution,max_dif_pegs,max_pegs)
-                # meep.brain.train(sanitize_input(meep.results_list,max_pegs,max_attempts), soutput )
-
-                if np.all([attempt, mastermind_solution] ):
+                if np.array_equal(attempt, mastermind_solution):
                     meep.wins += 1
                     meep.brain.score += min(meep.epochs, 7)+1 # 1
                     meep.brain.fitness += min(meep.epochs, 7)+1
@@ -508,18 +511,20 @@ def sanitize_output(usputput, # unsanitized output from ANN
 # Turn the mastermind solution into what the ANN output should look like.
 def sanitize_output_inv(solution, max_pegs, max_dif_pegs):
     #make an array the size of the output
-    soutput = np.zeros([max_dif_pegs*max_pegs], dtype=int)
+    soutput = np.zeros([1, max_dif_pegs*max_pegs], dtype=int)
 
     for i in range(max_pegs):
-        soutput[i*max_dif_pegs+solution[i]] = 1
+        soutput[0, i*max_dif_pegs+(solution[i]-1)] = 1
+        #soutput[0, i*max_dif_pegs+solution[i]] = 1
 
     return soutput
 
 # Turn the results list into the input the ANN wants
 def sanitize_input(results, max_pegs, max_attempts):
-    sinput = np.zeros([1,max_attempts*max_pegs*2], dtype=int )
+    sinput = np.zeros([1, (max_attempts-1)*max_pegs*2], dtype=int )
+    #sinput = np.zeros([1,max_attempts*max_pegs*2], dtype=int )
 
-    for ai in range(0, len(results)):#, max_pegs*2): #ai =attempt index
+    for ai in range( len(results) ):#, max_pegs*2): #ai =attempt index
         for j in range(max_pegs):
             sinput[0, ai*max_pegs*2+j] = results[ai][0][j]
             sinput[0, ai*max_pegs*2+j+max_pegs] = results[ai][1][j]
@@ -528,7 +533,68 @@ def sanitize_input(results, max_pegs, max_attempts):
 
 
 
+def testpopo(meep):
+    print("running testpopo")
+
+    for dummy in range(10):
+        sinput = sanitize_input(meep.results_list ,max_pegs, max_attempts)
+        output = meep.brain.predict(sinput)
+        attempt = sanitize_output(output, max_pegs, max_dif_pegs)
+        result = check_attempt(attempt, mastermind_solution)
+
+        #seems it's not recommended to train per step, but in batches
+        soutputinv = sanitize_output_inv(mastermind_solution, max_pegs, max_dif_pegs)
+        meep.brain.train( sinput, soutputinv )
+        #meep.brain.train( np.array([0, sinput]), np.array([0, [soutputinv]) )
+
+        meep.results_list.append((attempt, result))
+
+
 if __name__ == '__main__':
+    import cProfile
+
+
+
+    max_attempts = 10  # amount of attempts a mastermind can make before being considered dead
+    max_dif_pegs = 6  # numbers simulate the diffirent colours of pegs
+    max_pegs = 4  # how many pegs have to be guessed
+
+    inputsize=(max_attempts-1)*max_pegs*2 # Double to count for the 'hit and blow'
+    hiddensize=tuple([(max_attempts-1)*max_pegs*2, max_pegs*(max_attempts-1), max_pegs*max_dif_pegs])
+    # hiddensize=tuple([60, 40, 20])
+    outputsize = max_pegs * max_dif_pegs
+
+    mastermind_solution = np.random.randint(1, max_dif_pegs + 1, max_pegs)
+
+    meep: Meeple = Meeple(input_size=inputsize, hidden_size=hiddensize, output_size=outputsize,
+                          isHallow=False)
+
+    testpopo(meep)
+    meep: Meeple = Meeple(input_size=inputsize, hidden_size=hiddensize, output_size=outputsize,
+                          isHallow=False)
+
+    import time
+    cur_time = time.time()
+
+
+    testpopo(meep)
+    time_dif = time.time()- cur_time
+    print("time total s :", time_dif)
+    print("time total *25 s:", time_dif * 25)
+    print("time total *25*4k s:", time_dif * 25*4096)
+    print("time total *25*4k m:", (time_dif * 25*4096 )/60 )
+    print("time total *25*4k h:", ((time_dif * 25*4096 )/60)/60)
+    print("time total *25*4k d:", (((time_dif * 25*4096 )/60)/60)/24)
+
+    meep: Meeple = Meeple(input_size=inputsize, hidden_size=hiddensize, output_size=outputsize,
+                          isHallow=False)
+
+    print("start profile")
+    cProfile.runctx('testpopo(meep)', globals(), locals(), filename="population.profile")
+    print("done profile")
+
+
+if __name__ == '__main__' and False:
     max_attempts = 10  # amount of attempts a mastermind can make before being considered dead
     max_dif_pegs = 6  # numbers simulate the diffirent colours of pegs
     max_pegs = 4  # how many pegs have to be guessed
