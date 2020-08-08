@@ -562,7 +562,7 @@ def testpopo():
 if __name__ == '__main__':
     import time
 
-    cur_time = time.time()
+    #cur_time = time.time()
 
     import cProfile
     #import pstats
@@ -591,12 +591,12 @@ if __name__ == '__main__':
     cProfile.runctx('testpopo()', globals(), locals(), filename="population.profile")
     print("done profile")
 
-    #cur_time = time.time()
-    #testpopo()
-    #time_dif = time.time()- cur_time
-    #print("time total s :", time_dif)
-    #print("time total *250 s:", time_dif * 250)
-    #print("time total *250*4k s:", time_dif * 250*4096)
-    #print("time total *250*4k m:", (time_dif * 250*4096 )/60 )
-    #print("time total *250*4k h:", ((time_dif * 250*4096 )/60)/60)
-    #print("time total *250*4k d:", (((time_dif * 250*4096 )/60)/60)/24)
+    cur_time = time.time()
+    testpopo()
+    time_dif = time.time()- cur_time
+    print("time total s :", time_dif)
+    print("time total *250 s:", time_dif * 250)
+    print("time total *250*4k s:", time_dif * 250*4096)
+    print("time total *250*4k m:", (time_dif * 250*4096 )/60 )
+    print("time total *250*4k h:", ((time_dif * 250*4096 )/60)/60)
+    print("time total *250*4k d:", (((time_dif * 250*4096 )/60)/60)/24)
