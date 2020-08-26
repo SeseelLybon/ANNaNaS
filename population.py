@@ -540,7 +540,7 @@ def testpopo():
     #hiddensize=tuple([60, 40, 20])
     outputsize=max_pegs*max_dif_pegs
 
-    mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs)
+    mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs, dtype=np.uint64)
 
     meep:Meeple = Meeple(input_size=inputsize, hidden_size=hiddensize, output_size=outputsize,
                              isHallow=False)
@@ -559,7 +559,16 @@ def testpopo():
     meep.results_list.append((attempt, result))
 
 
+
+
 if __name__ == '__main__':
+    print(2**64)
+    print(np.random.randint(0, 2**64, dtype=np.uint64))
+
+
+
+
+if __name__ == '__main__' and False:
     import time
 
     #cur_time = time.time()

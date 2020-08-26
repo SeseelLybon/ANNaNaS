@@ -136,7 +136,7 @@ def generate_mastermind_solution(t='unique'):
         np.random.shuffle(temp_rng)
         mastermind_solution = temp_rng[:max_pegs]
     else:
-        mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs)
+        mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs, dtype=np.uint64)
     return mastermind_solution
 
 
@@ -160,7 +160,7 @@ def test():
     print("starting run", runi)
     # generate new solution to test all meeps against
 
-    mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs)
+    mastermind_solution = np.random.randint(1, max_dif_pegs+1, max_pegs, dtype=np.uint64)
 
     # run all meeps against this until pop.isDone.
     while not testpop.isDone():

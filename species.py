@@ -88,7 +88,7 @@ class Species:
         return float("inf")
 
     def selectParent(self)->Meeple:
-        rand = np.random.randint(0, max(self.fitnessSum, 1))
+        rand = np.random.randint(0, max(self.fitnessSum, 1), dtype=np.uint64)
         runningSum = 0
         for i in range(len(self.meeples)):
             runningSum +=  self.meeples[i].brain.fitness
